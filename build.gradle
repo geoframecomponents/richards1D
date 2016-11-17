@@ -1,0 +1,46 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+sourceCompatibility = '1.8'
+
+// to get project version from command line, just type
+// $ gradle -PprojVersion=<version_number> build
+// default is na
+if (project.hasProperty('projVersion')) {
+      project.version = project.projVersion
+} else {
+      project.version = 'na'
+}
+
+// name with versioning of the jar file
+jar {
+    manifest {
+        attributes 'Implementation-Title' : 'Gradle Quickstart',
+                   'Implementation-Version': version
+    }
+}
+
+repositories {
+
+    mavenCentral()
+
+    flatDir {
+        dirs 'lib'
+    }
+
+}
+
+dependencies {
+
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile name: 'cpptasks-1.0b6-od'
+    compile name: 'groovy-all-2.3.9'
+    compile name: 'jcommon-1.0.15'
+    compile name: 'jfreechart-1.0.12'
+    compile name: 'omsx-csip'
+    compile name: 'renjin-script-engine-0.8.2165-jar-with-dependencies'
+
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+
+}
