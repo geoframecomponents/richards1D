@@ -360,6 +360,7 @@ echo '
 			java $MEM -Doms.sim.resources=$JARS -Doms3.work=$PROJDIR -jar $OMSALL_PATH/oms-all.jar $CMDARGS
 	    ;;
 	    *)
+		# Add supporto for INLA
 	    ;;
 	esac
 	shift
