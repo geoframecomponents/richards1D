@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: :omsx-csip:">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/omsx-csip.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

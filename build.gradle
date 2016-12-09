@@ -1,5 +1,7 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
+test.scanForTestClasses = false
+compileJava.options.fork = true
+// compileJava.options.forkOptions.executable = /usr/bin/javac
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 sourceCompatibility = '1.8'

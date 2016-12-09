@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: :renjin-script-engine-0.8.2165-jar-with-dependencies:">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/renjin-script-engine-0.8.2165-jar-with-dependencies.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
