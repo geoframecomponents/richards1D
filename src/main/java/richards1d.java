@@ -47,9 +47,10 @@ public class Richards1d {
 		int time 					= 0;
 
 		// Working variables
-		double[] psi 				= new double[num_control_volumes];
+		double[] psis 				= new double[num_control_volumes];
 		double kappa_r				= 0;
 		double kappa_l				= 0;
+		double[] kappas				= new double[num_control_volumes];
 
 		// Initial domain conditions
 		for(int i = 0; i <= num_control_volumes; i++) {
@@ -64,26 +65,32 @@ public class Richards1d {
 		        time_delta = time_end-time_initial;
 		    }
 
+		    // TODO
+		    // Not sure about what that means... Sort of Boundary conditions, but why that form? 
 		    if(time <= Math.pow(10,5)) {
 		        psi_r = -0.05 + 0.03*Math.sin(2*Math.PI * time/Math.pow(10,5));
-		    } else if(time>1e5 && time<=1.8e5) {
+		    } else if(time > Math.pow(10,5) && time <= 1.8*Math.pow(10,5) {
 		        psi_r = +0.1;
 		    }
 		    else {
 		        psi_r = -0.05+2952.45*Math.exp(-time/18204.8);
 		    }
 
+		    // Gets every kappas right
 		    kappa_r = kappa(psi_r); 
 		    kappa_l = kappa(psi_l);
 		    for(int i = 0; i < max_iterations; i++) {
-			    theta(i)=Thetaf(psi(i));
-			    K(i) = kappa(psi(i));           
+			    theta[i] = thetaf(theta_s, theta_r, alpha, psi, n, m, psis[i]);
+			    kappas[i] = kappa(alpha, theta_2, theta_r, psi[i]);           
 			}
 
 		
+			// "The show must go on"
 		   	time = time + time_delta;
-		   	if(time > time_end) {
 
+		   	// "Your time has come"
+		   	if(time > time_end) {
+		   		break;
 		   	}
 		}
 
@@ -108,16 +115,31 @@ public class Richards1d {
 	    return sequence;  
 	}
 
-	// Computes the Kappa
-	public static double k(double alpha, double theta_s, double theta_r, double psis) {
+	/**
+	 * Returns a double  
+	 * <p>
+	 * The lower and upper bounds need not be in growing order: in 
+	 * case min>max, the method generates a sequence of decreasing 
+	 * real numbers
+	 *
+	 * @param  alpha  	a real number, the value of the lower bound of the sequence
+	 * @param  theta_s  an integer, the number of equally spaced points in the sequence 
+	 * @param  theta_r  an integer, the number of equally spaced points in the sequence 
+	 * @return 			a real number storing the control volume's K
+	 */	
+	public static double k(double alpha, double theta_s, double theta_r, double psi) {
+		
 		double kappa;
 		double saturation;
 
-		saturation = 
+		saturation = (thetaf(psi) - theta_r) / (theta_s - theta_r); 
+		kappa = Ks * sqrt(saturation) * Math.pow(1 - (1 - Math.pow(Math.pow(sat,1/m)),m), 2);
+		return kappa;
 	}
 
 	// Computes the \theta_{f}
 	public static double thetaf(double theta_s, double theta_r, double alpha, double psi, double n, double m) {
+
 		double theta_f;
 
 		if(psi <= 0) {
@@ -125,7 +147,7 @@ public class Richards1d {
 		} else {
 		    theta_f = theta_s;
 		}
-		return 
+		return theta_f;
 	}
 
 function K=kappa(psi)
