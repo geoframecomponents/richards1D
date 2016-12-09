@@ -110,26 +110,20 @@ public class Richards1d {
 
 		            k_p = 0.5*(kappas[i] + k_r);
 		            k_m = 0.5*(kappas[i] + k_l);
-		            a[i] = -k_m * time_delta / space_;
+		            a[i] = -k_m * gridvar;
 		            b[i] = gridvarsq * (k_m + 2*k_p);
 		            c[i] = 0;
 		            rhs[i] = thetas[i] + gridvar * (k_p-k_m) + 2 * k_p * gridvarsq * psi_r; 
 
-		            Kp = 0.5*(K(i)+KR);
-		            Km = 0.5*(K(i)+K(i-1));
-		            a(i) = -Km*dt/dx^2;
-		            b(i) = dt/dx^2*(Km+2*Kp);
-		            c(i) = 0;
-		            rhs(i) = theta(i) + dt/dx*(Kp-Km) + 2*Kp*dt/dx^2*psi_r;              
-
 				} else {
 
-		            Kp = 0.5*(K(i)+K(i+1));
-		            Km = 0.5*(K(i)+K(i-1));
-		            a(i) = -Km*dt/dx^2;
-		            b(i) = dt/dx^2*(Km+Kp);
-		            c(i) = -Kp*dt/dx^2;
-		            rhs(i) = theta(i) + dt/dx*(Kp-Km);           
+		            k_p = 0.5*(kappas[i] + kappas[i+1]);
+		            k_m = 0.5*(kappas[i] + kappas[i-1]);
+		            a[i] = -k_m * gridvarsq;
+		            b[i] = gridvarsq * (k_m + k_p);
+		            c[i] = 0;
+		            rhs[i] = thetas[i] + gridvar * (k_p-k_m); 
+     
 				}
 			}
 		
