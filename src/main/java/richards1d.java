@@ -25,43 +25,55 @@ public class Richards1d {
 	public static void main(String[] args) {
 		// Model parameters - SI UNITS
 		int 	static 	days				= 24*3600;
-		double 			ks 					= 0.062/day;  //[meter/second]
+		double 			ks 					= 0.062/day;  	//[meter/second]
 		double 			theta_s				= 0.41;         //[-] saturated water content
 		double 			theta_r				= 0.095;        //[-] residuel water content
 		double 			n					= 1.31;         // For Van Genuchten
 		double 			m					= 1-1/n;        // For Van Genuchten
 		double 	static	alpha				= 1.9;          // For Van Genuchten
 		double 			psic 				= Math.pow(-1/alpha * (n-1)/n , 1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
-		double 			psi_r				= 0;					// Right boundary condition for pressure	
-		double 			psi_l				= 0;					// Left boundary condition for pressure
+		double 			psi_r				= 0;			// Right boundary condition for pressure	
+		double 			psi_l				= 0;			// Left boundary condition for pressure
 
-		// Domain
+		// Space
 		double 	static 	space_bottom		= 0;
 		double 	static 	space_top			= 2;
 		double 	static 	num_control_volumes	= 100; 
 		double 	static 	space_delta			= (space_top - space_bottom) / num_control_volumes; 			// delta
 		double 	static 	space_cv_centres[]	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,num_control_volumes); // Centres of the "control volumes"
 
-		// Cycle variables
-		int    	static 	max_iterations 		= 100000;
+		// Time
 		double 	static 	time_end 			= Math.exp(3,5);            
 		double 	static 	time_initial 		= 0.0;
 		int 	static 	time_delta 			= 1000;
 		int 			time 				= 0;
 
-		// Working variables
+		// Time and space
 		double 	static	gridvar				= time_delta / space_delta;
 		double 	static	gridvarsq			= Math.pow((time_delta / space_delta),2);		
-		double[] 		psis 				= new double[num_control_volumes];
-		double 			k_r					= 0;
+
+		// Working variables
+		double[] 		psis 				= new double[num_control_volumes];	
+		double 			psi_in				= 0;								// Initial guess for \psi
+		double[] 		psis_outer			= 0;								// Used for saving \psi of the outer iteration to be plugged inside the inner iteration
+		double 			k_r					= 0;								
 		double 			k_l					= 0;
 		double[] 		kappas				= new double[num_control_volumes];
 		double[] 		a 					= new double[num_control_volumes];
 		double[] 		b 					= new double[num_control_volumes];
 		double[] 		c 					= new double[num_control_volumes];
+		double[] 		fs					= new double[num_control_volumes];
+		double[] 		fk					= new double[num_control_volumes];
 		double[] 		rhss				= new double[num_control_volumes];
 		double 			k_p					= 0;
 		double 			k_m					= 0;
+		double 			outer_residual		= 0;
+		double 			inner_residual		= 0;
+
+		// Cycle variables
+		int    	static 	max_iterations 		= 100000;
+		int 	static  max_iterations_newt = 100;
+		int 	static	newton_tolerance	= Math.pow(10,-12)
 
 		// Initial domain conditions
 		for(int i = 0; i <= num_control_volumes; i++) {
@@ -69,7 +81,7 @@ public class Richards1d {
 		}
 
 		////////////////////
-		//// Main cycle ////
+		//// MAIN CYCLE ////
 		////////////////////
 		for(int niter = 0; niter < max_iterations; niter++) {
 		    if(time_initial + time_delta > time_end) {
@@ -87,7 +99,7 @@ public class Richards1d {
 		        psi_r = -0.05 + 2952.45 * Math.exp(-time / 18204.8);
 		    }
 
-		    // Gets every kappas right
+			//// KAPPAS ////
 		    k_r = kappa(psi_r); 
 		    k_l = kappa(psi_l);
 		    for(int i = 0; i < max_iterations; i++) {
@@ -95,7 +107,7 @@ public class Richards1d {
 			    kappas[i] = kappa(alpha, theta_2, theta_r, psi[i]);           
 			}
 
-			// Right-hand side of equation
+			//// RIGHT HAND SIDE ////
 			for(int i = 0; i < max_iterations; i++) {
 				if( i==1 ) {
 
@@ -126,9 +138,72 @@ public class Richards1d {
      
 				}
 			}
-		
+
+			// Initial guess of psis
+			for(int i = 0; i < num_control_volumes; i++) {
+				psis[i] = Math.min(psis[i], psic);
+			}
+
+			//// NESTED NEWTON ////
+		    //// OUTER CYCLE, linearizes one of q_{1}, q_{2} ////
+		    for(int i = 0; i < max_iterations_newt; i++) {
+
+		    	for(int ii=0; ii < max_iterations; ii++) {
+
+		    		fs[i] = thetaf(psi[i]) - rhs[i];        
+
+			        if(i == 1) {
+			            f[i] = f[i] + b[i]*psi[i] + c[i]*psi[i+1];
+			        }
+			        else if(i == max_iterations) {
+			            f[i] = f[i] + a[i]*psi[i-1] + b[i]*psi[i];
+			        }
+			        else {
+			            f[i] = f[i] + a[i]*psi[i-1] + b[i]*psi[i] + c[i]*psi[i+1];
+			        }
+			        outer_residual += f[i];
+		    	}
+		    
+			    System.out.println('Outer iteration ' + i ' with residual ' +  outer_residual));    
+    			if(outer_residual < newton_tolerance) {
+    				break;
+    			}
+
+    			System.arraycopy(psis, 0, psis_outer, 0);
+
+				// Initial guess of psis
+				for(int ii = 0; ii < num_control_volumes; ii++) {
+					psis[ii] = Math.max(psis[ii], psic);
+				}
+
+			    //// INNER CYCLE ////
+				for(int j = 0; j < num_control_volumes; j++) {
+
+					for(int l=0; l < max_iterations; l++) {
+
+				        fk(i)=Theta1(psi(i))-(Theta2(psik(i))+dTheta2(psik(i))*(psi(i)-psik(i)))-rhs(i);  %Tk is frozen
+				            if(i==1)
+				                fk(i)=fk(i)+b(i)*psi(i)+c(i)*psi(i+1);
+				            elseif(i==IMAX)
+				                fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i);
+				            else
+				                fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i)+c(i)*psi(i+1);
+				            end
+				            di(i)=dTheta1(psi(i))-dTheta2(psik(i));
+				        end
+				        inres=sqrt(sum(fk.*fk));
+			    		
+			    		System.out.println('Inner iteration ' + l + ' with residual ' +  inner_residual));    
+				        if(inres<tol) {
+				            break;
+				        }
+				        dpsi = Thomas(a,b+di,c,fk); %inner Newton step
+				        psi = psi(:)-dpsi(:); %update temperature at the inner iteration
+
+					}
+
 			// "The show must go on"
-		   	time =+ time_delta;
+		   	time += time_delta;
 
 		   	// "Your time has come"
 		   	if(time > time_end) {

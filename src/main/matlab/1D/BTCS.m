@@ -21,7 +21,7 @@ xR = 2;                 %surface
 IMAX = 100;             %number of control volumes
 dx = (xR-xL)/IMAX;      %mesh spacing
 x = linspace(xL+dx/2,xR-dx/2,IMAX);
-tend = 3e5;             %set the final simulation time
+tend = 3e8;             %set the final simulation time
 time = 0;               %initial time
 %set the initial condition (the right temperature-than it start freezing from the left)
 for i=1:IMAX
@@ -29,7 +29,7 @@ for i=1:IMAX
 end
 NMAX=100000;
 for nit=1:NMAX
-    dt = 1000;   %BTCS is unconditionalli stable (choose what you want)
+    dt = 100000;   %BTCS is unconditionalli stable (choose what you want)
     if(time+dt>tend)
         dt=tend-time;
     end
@@ -93,25 +93,27 @@ for nit=1:NMAX
     psi = min(psi,psic);
     for iNewton=1:100 %outer Newton iterations
         %The task of the outer iterations is ONLY to linearize one of the
-        %two nonlinear functions q1 or q2  (è il ciclo in k sul quaderno)
-    for i=1:IMAX
-        %compute the true non linear function f(psi)
-        f(i) = Thetaf(psi(i))-rhs(i);        
-        if(i==1)
-            f(i) = f(i) + b(i)*psi(i) + c(i)*psi(i+1);
-        elseif(i==IMAX)
-            f(i) = f(i)+a(i)*psi(i-1)+b(i)*psi(i);
-        else
-            f(i) = f(i)+a(i)*psi(i-1)+b(i)*psi(i)+c(i)*psi(i+1);
+        %two nonlinear functions q1 or q2  (ï¿½ il ciclo in k sul quaderno)
+        for i=1:IMAX
+            %compute the true non linear function f(psi)
+            f(i) = Thetaf(psi(i))-rhs(i);        
+            if(i==1)
+                f(i) = f(i) + b(i)*psi(i) + c(i)*psi(i+1);
+            elseif(i==IMAX)
+                f(i) = f(i)+a(i)*psi(i-1)+b(i)*psi(i);
+            else
+                f(i) = f(i)+a(i)*psi(i-1)+b(i)*psi(i)+c(i)*psi(i+1);
+            end
         end
+        outres = sqrt(sum(f.*f)); %outer residual
+        disp(sprintf('Outer iteration %d, outres=%e',iNewton, outres));    
+        if(outres<tol)
+            break %tolerance has been reached
     end
-    outres = sqrt(sum(f.*f)); %outer residual
-    disp(sprintf('Outer iteration %d, outres=%e',iNewton, outres));    
-    if(outres<tol)
-        break %tolerance has been reached
-    end
+
     psik = psi;             % save the value at the current outer iteration    
     psi = max(psi,psic); % initial guess for the inner iteration
+
     for inner=1:100
         for i=1:IMAX
             fk(i)=Theta1(psi(i))-(Theta2(psik(i))+dTheta2(psik(i))*(psi(i)-psik(i)))-rhs(i);  %Tk is frozen
@@ -130,11 +132,8 @@ for nit=1:NMAX
             break
         end
         dpsi = Thomas(a,b+di,c,fk); %inner Newton step
-        psi = psi(:)-dpsi(:); %update temperature at the inner iteration
-    end
-   %in the outer iteration we freeze the temperature that we need for the
-   %linearization of the second function 
-    
+        psi = psi(:)-dpsi(:);
+    end    
 end
     time = time+dt;     %advance time
 end
