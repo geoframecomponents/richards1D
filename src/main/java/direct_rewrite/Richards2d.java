@@ -20,6 +20,7 @@
 
 // I want to try it with as little dependencies as possible, first
 import java.lang.Math;
+import java.util.Arrays;
 
 public class Richards2d {
 	// "Static" keyword defines automatically a globally accessible variable
@@ -98,12 +99,12 @@ public class Richards2d {
 
 		// Domain initial conditions
 		for(int i=0; i < NUM_CV_X; i++) {
-		    for(int j; j < NUM_CV_Y; j++) {
-		        psis[i][j] = -x(i); // Hydrostatic pressure  
+		    for(int j = 0; j < NUM_CV_Y; j++) {
+		        psis[i][j] = -space_cv_centres_x[i]; // Hydrostatic pressure  
 		    }
 		}
 
-		for(int main_iter = 0; main_inter < MAXITER; main_inter++) {
+		for(int main_iter = 0; main_iter < MAXITER; main_iter++) {
 		    if(time + time_delta > time_end) {
 		        time_delta = time_end - time;
 		    }
@@ -123,7 +124,7 @@ public class Richards2d {
 		    k_r = kappa(psi_r); 
 		    k_l = kappa(psi_l);
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 				    thetas[i][j] = thetaf(psis[i][j]);
 				    kappas[i][j] = kappa(psis[i][j]);           
 				}
@@ -134,29 +135,28 @@ public class Richards2d {
 		    }
 
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 
-		            if(i==1) {
+		            if(i == 0) {
 		                k_p = 0.5*(kappas[i][j]+kappas[i+1][j]);
 		                k_m = 0.5*(kappas[i][j]+k_l);
 		                // Dirichlet (pressure) boundary condition
-		                rhss[i][j] = theta[i][j] + gridvar*(k_p-k_m) + 2*k_m*gridvarsq*psi_l;
+		                rhss[i][j] = thetas[i][j] + gridvar*(k_p-k_m) + 2*k_m*gridvarsq*psi_l;
 		            } else if(i == NUM_CV_X -1) {
-		                k_p = 0.5*(kappas[i][j]] + k_r);
+		                k_p = 0.5*(kappas[i][j] + k_r);
 		                k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
 		                // Dirichlet (pressure) boundary condition
-		                rhss[i][j] = theta[i][j] + gridvar*(k_p-k_m) + 2*k_p*gridvarsq*psi_r;
+		                rhss[i][j] = thetas[i][j] + gridvar*(k_p-k_m) + 2*k_p*gridvarsq*psi_r;
 		            } else {
-		            	k_p = 0.5*(kappas[i][j] + kappas[i+1][j])
-		                k_m = 0.5*(kappas[i][j] + kappas[i-1][j])
-		                rhss[i,j] = thetas[i][j] + gridvar*(k_p-k_m)
+		            	k_p = 0.5*(kappas[i][j] + kappas[i+1][j]);
+		                k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
+		                rhss[i][j] = thetas[i][j] + gridvar*(k_p-k_m);
 		            }
 				}
 			}
-
 			// Initial guess for psi
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {			
+		    	for(int j = 0; j < NUM_CV_Y; j++) {			
 		    		psis[i][j] = Math.min(psis[i][j], psi_crit);
 		    	}
 		    }
@@ -170,9 +170,9 @@ public class Richards2d {
 				// Fill each row
 				for (double[] row: dis)
 				    Arrays.fill(row, 0.0);
-				mpsis = matop(dis,psis);
+				mpsis = matop(psis, dis, kappas, k_r, k_l);
 			    for(int i = 0; i < NUM_CV_X; i++) {
-			    	for(int j = 0; j < NUM_CV_X; j++) {			
+			    	for(int j = 0; j < NUM_CV_Y; j++) {			
 			    		fs[i][j] = thetaf(psis[i][j]) + mpsis[i][j] - rhss[i][j];
 			    		outer_residual += Math.pow(Math.abs(fs[i][j]*fs[i][j]),1.0/2.0);
 			    	}
@@ -183,7 +183,7 @@ public class Richards2d {
 
 			    psis_outer = psis.clone();
 			    for(int i = 0; i < NUM_CV_X; i++) {
-			    	for(int j = 0; j < NUM_CV_X; j++) {			
+			    	for(int j = 0; j < NUM_CV_Y; j++) {			
 			    		psis[i][j] = Math.max(psis[i][j],psi_crit);
 			    	}
 			    }
@@ -192,11 +192,10 @@ public class Richards2d {
 					for (double[] row: dis)
 					    Arrays.fill(row, 0.0);
 
-					mpsis = matop(psis, dis);
-
+					mpsis = matop(psis, dis, kappas, k_r, k_l);
 				    for(int i = 0; i < NUM_CV_X; i++) {
-				    	for(int j = 0; j < NUM_CV_X; j++) {			
-		                    fks[i][j]=theta1(psis[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psis[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhs[i][j];
+				    	for(int j = 0; j < NUM_CV_Y; j++) {			
+		                    fks[i][j]=theta1(psis[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psis[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhss[i][j];
 		                    dis[i][j]=dtheta1(psis[i][j]) - dtheta2(psis_outer[i][j]);
 		                    inner_residual += Math.pow(Math.abs(fks[i][j]*fks[i][j]),1.0/2.0);
 				    	}
@@ -204,12 +203,11 @@ public class Richards2d {
 				    if(inner_residual < newton_tolerance) {
 				    	break;
 				    }
-
 				    //// CONJUGATE-MATOP GRADIENT ////
-				    dpsis = cjop(fks, dis);
+				    dpsis = cjop(fks, dis, kappas, k_r, k_l);
 
 				    for(int i = 0; i < NUM_CV_X; i++) {
-				    	for(int j = 0; j < NUM_CV_X; j++) {			
+				    	for(int j = 0; j < NUM_CV_Y; j++) {			
 				    		psis[i][j] = psis[i][j] - dpsis[i][j];
 				    	}
 				    }
@@ -354,27 +352,27 @@ public class Richards2d {
 		return theta2;	
 	}
 
-	public static double[] cjop(double[][] fks, double[][] di) {
+	public static double[][] cjop(double[][] fks, double[][] dis, double[][] kappas, double k_r, double k_l) {
 		double[][] x = new double[NUM_CV_X][NUM_CV_Y];
 		double[][] r = new double[NUM_CV_X][NUM_CV_Y];
 		double[][] p = new double[NUM_CV_X][NUM_CV_Y];
 		double[][] t = new double[NUM_CV_X][NUM_CV_Y];
 		double[][] v = new double[NUM_CV_X][NUM_CV_Y];
 
-		double alpha;
-		double alphak;
-		double lambda;
-		double lambdak;
+		double alpha = 0.0;
+		double alphak = 0.0;
+		double lambda = 0.0;
+		double lambdak = 0.0;
 
-		int NUMEL = x.length*x[0].length
+		int NUMEL = x.length*x[0].length;
 		int NUMIT = 4*NUMEL;
 
-		t = matop(fks);
+		t = matop(fks, dis, kappas, k_r, k_l);
 		x = fks.clone();
 	    for(int i = 0; i < NUM_CV_X; i++) {
-	    	for(int j = 0; j < NUM_CV_X; j++) {
+	    	for(int j = 0; j < NUM_CV_Y; j++) {
 	    		r[i][j] = x[i][j] - t[i][j];
-				alpha += Math.pow(r[i][j],2.0) 
+				alpha += Math.pow(r[i][j],2.0);
 			}
 		}		
 		p = r.clone();
@@ -384,28 +382,28 @@ public class Richards2d {
 				break;
 			}
 
-    		v = matop(p);
+    		v = matop(p, dis, kappas, k_r, k_l);
     		lambdak = 0;
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 		    		lambdak += p[i][j]*v[i][j];
 				}
 			}
 			lambda = alpha/lambdak;
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 		    		x[i][j] += lambda*p[i][j];
 		    		r[i][j] -= lambda*v[i][j];
 				}
 			}					
 			alphak = alpha;
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 		    		alpha += r[i][j]*r[i][j];
 				}
 			}
 		    for(int i = 0; i < NUM_CV_X; i++) {
-		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    	for(int j = 0; j < NUM_CV_Y; j++) {
 		    		p[i][j] = r[i][j] + alpha/(alphak*p[i][j]);
 		    	}
 		    }
@@ -414,38 +412,38 @@ public class Richards2d {
 		return x;
 	}
 
-	public static double[] matop(double[][] psis, double[][] dis) {
-		double[][] apsis ==	new double[NUM_CV_X][NUM_CV_Y];
+	public static double[][] matop(double[][] psis, double[][] dis, double[][] kappas, double k_r, double k_l) {
+		double[][] apsis =	new double[NUM_CV_X][NUM_CV_Y];
 		double k_p;
 		double k_m;
 
 	    for(int i = 0; i < NUM_CV_X; i++) {
-	    	for(int j = 0; j < NUM_CV_X; j++) {
+	    	for(int j = 0; j < NUM_CV_Y; j++) {
 	    		apsis[i][j] = dis[i][j]*psis[i][j];
 	    	}
 	    }
 
-	    for(int i = 0; i < NUM_CV_X; i++) {
-	    	for(int j = 0; j < NUM_CV_X; j++) {
+	    for(int i = 0; i < NUM_CV_X -1; i++) {
+	    	for(int j = 0; j < NUM_CV_Y -1; j++) {
 	        	// X FLUXES
-	    		if(i == 1) {
+	    		if(i == 0) {
 		            k_p = 0.5*(kappas[i][j]+kappas[i+1][j]);
 		            k_m = 0.5*(kappas[i][j]+k_l);
-		            apsis[i][j] = apsis[i][j] - gridvarsq * ( k_p*(psi[i+1][j] - psis[i][j]) - 2*k_m*psis[i][j] );
-	        	} else if (i == NUM_CV_X) {
+		            apsis[i][j] = apsis[i][j] - gridvarsq * ( k_p*(psis[i+1][j] - psis[i][j]) - 2*k_m*psis[i][j] );
+	        	} else if (i == NUM_CV_Y) {
 		            k_p = 0.5*(kappas[i][j] + k_r);
 		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
-		            apsis[i][j] = apsis[i][j] - gridvarsq *  ( 2*k_p*(-psis[i][j]) - k_m*(psis[i][j]-psi[i-1][j]) );
+		            apsis[i][j] = apsis[i][j] - gridvarsq *  ( 2*k_p*(-psis[i][j]) - k_m*(psis[i][j]-psis[i-1][j]) );
 	        	} else {
 		            k_p = 0.5*(kappas[i][j] + kappas[i+1][j]);
 		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
-		            apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psi[i+1][j] - psis[i][j]) - k_m*(psis[i][j]-psi[i-1][j]) );
+		            apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psis[i+1][j] - psis[i][j]) - k_m*(psis[i][j]-psis[i-1][j]) );
 	        	}
 	        	// Y FLUXES
-	        	if (j == 1) {
-		           k_p = 0.5*(kappas[i][j] + kappas[i,j+1]);
-		           apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psis(i,j+1) - psis[i][j]) - 0 );
-		        } else if (j==JMAX) {
+	        	if (j == 0) {
+		           k_p = 0.5*(kappas[i][j] + kappas[i][j+1]);
+		           apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psis[i][j+1] - psis[i][j]) - 0 );
+		        } else if (j == NUM_CV_Y) {
 		           k_m = 0.5*(kappas[i][j] + kappas[i][j-1]);
 		           apsis[i][j] = apsis[i][j] - gridvarsq*(- k_m*(psis[i][j]-psis[i][j-1]) );
 		        } else {
@@ -455,6 +453,7 @@ public class Richards2d {
 		        }
 	    	}
 	    }
+	    return apsis;
 	}
 
 	// UTILITY METHODS
@@ -483,4 +482,7 @@ public class Richards2d {
 	private static void printArray(double[] arr) {
 		System.out.println(java.util.Arrays.toString(arr));
 	}
+	private static void printArray(double[][] arr) {
+		System.out.println(java.util.Arrays.deepToString(arr));
+	}	
 }
