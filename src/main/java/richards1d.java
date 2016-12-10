@@ -19,43 +19,52 @@
 
 
 // I want to try it with as little dependencies as possible, first
-import java.lang.Math
+import java.lang.Math;
 
 public class Richards1d {
-	public static void main(String[] args) {
-		// Model parameters - SI UNITS
+	// "Static" keyword defines automatically a globally accessible variable
+	// Useful for soil parameters that does not change in time: we can assume them
+	// to be the same for the entire program cycle, thus making them accessible
+	// to functions without having to pass them as arguments (improves readability)
+	static  int 	days				= 24*3600;
+	static	double 	ks 					= 0.062/day;  	//[meter/second]
+	static	double 	theta_s				= 0.41;         //[-] saturated water content
+	static	double 	theta_r				= 0.095;        //[-] residuel water content
+	static	double 	n					= 1.31;         // For Van Genuchten
+	static	double 	m					= 1-1/n;        // For Van Genuchten
+	static	double 	alpha				= 1.9;          // For Van Genuchten
+	static	double 	psi_crit			= Math.pow(-1/alpha * (n-1)/n , 1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 
-		// "Static" keyword defines automatically a globally accessible variable
-		// Useful for soil parameters that does not change in time: we can assume them
-		// to be the same for the entire program cycle, thus making them accessible
-		// to functions without having to pass them as arguments (improves readability)
-		int 	static 	days				= 24*3600;
-		double 	static	ks 					= 0.062/day;  	//[meter/second]
-		double 	static	theta_s				= 0.41;         //[-] saturated water content
-		double 	static	theta_r				= 0.095;        //[-] residuel water content
-		double 	static	n					= 1.31;         // For Van Genuchten
-		double 	static	m					= 1-1/n;        // For Van Genuchten
-		double 	static	alpha				= 1.9;          // For Van Genuchten
-		double 	static	psi_crit			= Math.pow(-1/alpha * (n-1)/n , 1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+	// Space
+	static 	double 	space_bottom		= 0;
+	static 	double 	space_top			= 2;
+	static 	int 	NUM_CONTROL_VOLUMES	= 100; 
+	static 	double 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; 			// delta
+	static 	double[] space_cv_centres	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
+
+	// Time
+	static 	double 	time_end 			= Math.exp(3,5);            
+	static 	double 	time_initial 		= 0.0;
+	static 	int 	time_delta 			= 1000;
+
+	// Time and space
+	static	double 	gridvar				= time_delta / space_delta;
+	static	double 	gridvarsq			= Math.pow((time_delta / space_delta),2);		
+
+	// Cycle variables
+	static 	int 	MAXITER 			= 100000;
+	static  int 	MAXITER_NEWT 		= 100;
+	static	int 	newton_tolerance	= Math.pow(10,-12)
+
+
+	public static void main(String[] args) {
+
+		// Model parameters - SI UNITS
 		double 			psi_r				= 0;			// Right boundary condition for pressure	
 		double 			psi_l				= 0;			// Left boundary condition for pressure
 
-		// Space
-		double 	static 	space_bottom		= 0;
-		double 	static 	space_top			= 2;
-		double 	static 	NUM_CONTROL_VOLUMES	= 100; 
-		double 	static 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; 			// delta
-		double 	static 	space_cv_centres[]	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
-
 		// Time
-		double 	static 	time_end 			= Math.exp(3,5);            
-		double 	static 	time_initial 		= 0.0;
-		int 	static 	time_delta 			= 1000;
 		int 			time 				= 0;
-
-		// Time and space
-		double 	static	gridvar				= time_delta / space_delta;
-		double 	static	gridvarsq			= Math.pow((time_delta / space_delta),2);		
 
 		// Working variables
 		double[] 		psis 				= new double[NUM_CONTROL_VOLUMES];	
@@ -76,10 +85,6 @@ public class Richards1d {
 		double 			outer_residual		= 0;
 		double 			inner_residual		= 0;
 
-		// Cycle variables
-		int    	static 	MAXITER 		= 100000;
-		int 	static  MAXITER_NEWT = 100;
-		int 	static	newton_tolerance	= Math.pow(10,-12)
 
 		// Initial domain conditions
 		for(int i = 0; i <= NUM_CONTROL_VOLUMES; i++) {
