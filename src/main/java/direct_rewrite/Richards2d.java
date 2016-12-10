@@ -77,6 +77,8 @@ public class Richards2d {
 		// Working variables
 		double[][] 		psis 				= new double[NUM_CV_X][NUM_CV_Y];	
 		double[][] 		dpsis 				= new double[NUM_CV_X][NUM_CV_Y];	
+		double[][] 		dis 				= new double[NUM_CV_X][NUM_CV_Y];	
+		double[][] 		mpsis 				= new double[NUM_CV_X][NUM_CV_Y];	
 		double[][] 		psis_outer			= new double[NUM_CV_X][NUM_CV_Y];	// Used for saving \psi of the outer iteration to be plugged inside the inner iteration
 		double 			k_r					= 0.0;								
 		double 			k_l					= 0.0;
@@ -97,7 +99,7 @@ public class Richards2d {
 		// Domain initial conditions
 		for(int i=0; i < NUM_CV_X; i++) {
 		    for(int j; j < NUM_CV_Y; j++) {
-		        psi(i,j) = -x(i); // Hydrostatic pressure  
+		        psi[i][j] = -x(i); // Hydrostatic pressure  
 		    }
 		}
 
@@ -161,51 +163,63 @@ public class Richards2d {
 
 
 
-		    /////
-		    for iNewton=1:100 %outer Newton iterations
-		        %The task of the outer iterations is ONLY to linearize one of the
-		        %two nonlinear functions q1 or q2  (è il ciclo in k sul quaderno)
-		        di = zeros(IMAX,JMAX); %set the derivative of the nonlinear function to 0
-		        Mpsi = matop2D(psi);
-		        for i=1:IMAX
-		            for j=1:JMAX
-		                %compute the true non linear function f(psi)
-		                f(i,j)=Thetaf(psi(i,j))+ Mpsi(i,j)-rhs(i,j);
-		            end
-		        end
-		        outres = sqrt(sum(sum(f.*f))); %outer residual
-		        disp(sprintf('Outer iteration %d, outres=%e',iNewton, outres));
-		        if(outres<tol)
-		            break  %tolerance has been reached
-		        end
-		        psik = psi;          % save the value at the current outer iteration
-		        psi = max(psi,psic); % initial guess for the inner iteration
-		        for inner =1:100
-		            di = zeros(IMAX,JMAX);
-		            Mpsi = matop2D(psi);
-		            for i=1:IMAX
-		                for j=1:JMAX
-		                    fk(i,j)=Theta1(psi(i,j))-(Theta2(psik(i,j))+dTheta2(psik(i,j))*(psi(i,j)-psik(i,j)))+ Mpsi(i,j)-rhs(i,j);  %Tk is frozen
-		                    di(i,j)=dTheta1(psi(i,j))-dTheta2(psik(i,j));
-		                end
-		            end
-		            inres = sqrt(sum(sum(fk.*fk)));
-		            disp(sprintf(' -Inner iteration %d, inres= %e', inner,inres));
-		            if(inres<tol)
-		                break
-		            end
-		            dpsi = CGop2D(fk); % Can not use Thomas any more, because the matrix M is 5-diagonal!!
-		            psi = psi-dpsi;    %update temperature at the inner iteration
-		        end
+		    ///// NEWTON ////
+		    for(int newt_iter = 0; newt_iter < MAXITER_NEWT; newt_iter++) {
+		    	// A double gets assigned by default the 0.0 value, but if I want to have the array filled with
+		    	// some other value, that could be useful:
+				// Fill each row
+				for (double[] row: dis)
+				    Arrays.fill(row, 0.0);
+				mpsis = matop(dis,psis);
+			    for(int i = 0; i < NUM_CV_X; i++) {
+			    	for(int j = 0; j < NUM_CV_X; j++) {			
+			    		fs[i][j] = thetaf(psis[i][j]) + mpsis[i][j] - rhss[i][j];
+			    		outer_residual += Math.pow(Math.abs(fs[i][j]*fs[i][j]),1.0/2.0);
+			    	}
+			    }
+			    if(outer_residual < newton_tolerance) {
+			    	break;
+			    }
+
+			    psis_outer = psis.clone();
+			    for(int i = 0; i < NUM_CV_X; i++) {
+			    	for(int j = 0; j < NUM_CV_X; j++) {			
+			    		psis[i][j] = Math.max(psis[i][j],psi_crit);
+			    	}
+			    }
+
+			    for(int inner_iter = 0; inner_iter < MAXITER_NEWT; inner_iter++) {
+					for (double[] row: dis)
+					    Arrays.fill(row, 0.0);
+					mpsis = matop(dis,psis);
+				    for(int i = 0; i < NUM_CV_X; i++) {
+				    	for(int j = 0; j < NUM_CV_X; j++) {			
+		                    fks[i][j]=theta1(psi[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psi[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhs[i][j];
+		                    dis[i][j]=dtheta1(psi[i][j]) - dtheta2(psis_outer[i][j]);
+		                    inner_residual += Math.pow(Math.abs(fks[i][j]*fks[i][j]),1.0/2.0);
+				    	}
+				    }
+				    if(inner_residual < newton_tolerance) {
+				    	break;
+				    }
+				    dpsis = cgop(fks);
+				    for(int i = 0; i < NUM_CV_X; i++) {
+				    	for(int j = 0; j < NUM_CV_X; j++) {			
+				    		psis[i][j] = psis[i][j] - dpsis[i][j];
+				    	}
+				    }
+				}			 
+		    }
 		        
-		    end
 		    time += time_delta;
 
-	} //// MAIN ENDED ////
+		} //// MAIN CYCLE ENDED ////
+	} /// MAIN METHOD ENDED ///
+
 
 	////////////////////
-	//// METHODS ////
-	////////////////////
+	// OTHER METHODS //
+	///////////////////
 
 	/**
 	 * Returns a K, given the soil parameters
@@ -405,37 +419,43 @@ public class Richards2d {
 	% diagonal part including the derivatives of the nonlinear functions
 	Apsi = di.*psi;
 	% linear part
-	for i=1:IMAX
-	    for j=1:JMAX
-	        % x fluxes
+	public static double[] matop(double[][] di, double[][] psis) {
+		double[][] apsi ==
+	    for(int i = 0; i < NUM_CV_X; i++) {
+	    	for(int j = 0; j < NUM_CV_X; j++) {
+	    		if(i == 1) {
+
+	    		}
+	    	}
+	    }	
 	        if(i==1)
-	            Kp = 0.5*(K(i,j)+K(i+1,j));
-	            Km = 0.5*(K(i,j)+KL);
-	            Apsi(i,j) = Apsi(i,j)-dt/dx^2*( Kp*(psi(i+1,j)-psi(i,j))...
-	                                           - 2*Km*(psi(i,j)-0) );
+	            Kp = 0.5*(K[i][j]+K(i+1,j));
+	            Km = 0.5*(K[i][j]+KL);
+	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( Kp*(psi(i+1,j)-psi[i][j])...
+	                                           - 2*Km*(psi[i][j]-0) );
 	        elseif(i==IMAX)
-	            Kp = 0.5*(K(i,j) + KR);
-	            Km = 0.5*(K(i,j) + K(i-1,j));
-	            Apsi(i,j) = Apsi(i,j)-dt/dx^2*( 2*Kp*(0-psi(i,j))...
-	                                           -Km*(psi(i,j)-psi(i-1,j)) );
+	            Kp = 0.5*(K[i][j] + KR);
+	            Km = 0.5*(K[i][j] + K(i-1,j));
+	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( 2*Kp*(0-psi[i][j])...
+	                                           -Km*(psi[i][j]-psi(i-1,j)) );
 	        else
-	            Kp = 0.5*(K(i,j) + K(i+1,j));
-	            Km = 0.5*(K(i,j) + K(i-1,j));
-	            Apsi(i,j) = Apsi(i,j)-dt/dx^2*( Kp*(psi(i+1,j)-psi(i,j))...
-	                                           -Km*(psi(i,j)-psi(i-1,j)) );
+	            Kp = 0.5*(K[i][j] + K(i+1,j));
+	            Km = 0.5*(K[i][j] + K(i-1,j));
+	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( Kp*(psi(i+1,j)-psi[i][j])...
+	                                           -Km*(psi[i][j]-psi(i-1,j)) );
 	        end
 	        % y fluxes
 	        if (j==1)
-	           Kp = 0.5*(K(i,j) + K(i,j+1));
-	           Apsi(i,j) = Apsi(i,j) - dt/dy^2*( Kp*(psi(i,j+1)-psi(i,j)) - 0 );
+	           Kp = 0.5*(K[i][j] + K(i,j+1));
+	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( Kp*(psi(i,j+1)-psi[i][j]) - 0 );
 	        elseif (j==JMAX)
-	           Km = 0.5*(K(i,j)+K(i,j-1));
-	           Apsi(i,j) = Apsi(i,j) - dt/dy^2*( 0 - Km*(psi(i,j)-psi(i,j-1)) );
+	           Km = 0.5*(K[i][j]+K(i,j-1));
+	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( 0 - Km*(psi[i][j]-psi(i,j-1)) );
 	        else
-	           Kp = 0.5*(K(i,j)+K(i,j+1));
-	           Km = 0.5*(K(i,j)+K(i,j-1));
-	           Apsi(i,j) = Apsi(i,j) - dt/dy^2*( Kp*(psi(i,j+1)-psi(i,j))...
-	                                            -Km*(psi(i,j)-psi(i,j-1)) );
+	           Kp = 0.5*(K[i][j]+K(i,j+1));
+	           Km = 0.5*(K[i][j]+K(i,j-1));
+	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( Kp*(psi(i,j+1)-psi[i][j])...
+	                                            -Km*(psi[i][j]-psi(i,j-1)) );
 	        end
 	    end
 	end
