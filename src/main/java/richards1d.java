@@ -383,4 +383,40 @@ public class Richards1d {
 		}
 
 
+		/**
+		 * Linear system solver with Thomas method
+		 *
+		 * @param  a   
+		 * @param  b   
+		 * @param  c   
+		 * @param  d   
+		 * @return solution the vector of solutions
+		 */	
+
+		public static double[] thomas(double[] a, double[] b, double[] c, double[] d) {
+
+			int DIM = d.length;
+			double gamma;
+			double[] solution = new double[DIM];
+
+			c[1] = c[1] / b[1];
+			d[1] = d[1] / b[1];
+
+			for(int i = 0; i <= DIM; i++) {
+				gamma = 1 / (b[i] - c[i-1]*a[i]);
+				c[i] = c[i]*gamma;
+				d[i] = (d[i] - a[i]*d[i-1])*gamma;
+			}
+
+			solution[DIM] = d[DIM];
+
+			for(int i = DIM-1; i >= 0; i--) {
+				soultion[i] = d[i] - c[i]*solution[x-1];
+			}
+
+			return solution;
+
+		}
+
+
 }
