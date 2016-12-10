@@ -24,14 +24,19 @@ import java.lang.Math
 public class Richards1d {
 	public static void main(String[] args) {
 		// Model parameters - SI UNITS
+
+		// "Static" keyword defines automatically a globally accessible variable
+		// Useful for soil parameters that does not change in time: we can assume them
+		// to be the same for the entire program cycle, thus making them accessible
+		// to functions without having to pass them as arguments (improves readability)
 		int 	static 	days				= 24*3600;
-		double 			ks 					= 0.062/day;  	//[meter/second]
-		double 			theta_s				= 0.41;         //[-] saturated water content
-		double 			theta_r				= 0.095;        //[-] residuel water content
-		double 			n					= 1.31;         // For Van Genuchten
-		double 			m					= 1-1/n;        // For Van Genuchten
+		double 	static	ks 					= 0.062/day;  	//[meter/second]
+		double 	static	theta_s				= 0.41;         //[-] saturated water content
+		double 	static	theta_r				= 0.095;        //[-] residuel water content
+		double 	static	n					= 1.31;         // For Van Genuchten
+		double 	static	m					= 1-1/n;        // For Van Genuchten
 		double 	static	alpha				= 1.9;          // For Van Genuchten
-		double 			psic 				= Math.pow(-1/alpha * (n-1)/n , 1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+		double 	static	psi_crit			= Math.pow(-1/alpha * (n-1)/n , 1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 		double 			psi_r				= 0;			// Right boundary condition for pressure	
 		double 			psi_l				= 0;			// Left boundary condition for pressure
 
@@ -142,7 +147,7 @@ public class Richards1d {
 
 			// Initial guess of psis
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-				psis[i] = Math.min(psis[i], psic);
+				psis[i] = Math.min(psis[i], psi_crit);
 			}
 
 			//// NESTED NEWTON ////
@@ -174,7 +179,7 @@ public class Richards1d {
 
 				// Initial guess of psis
 				for(int ii = 0; ii < NUM_CONTROL_VOLUMES; ii++) {
-					psis[ii] = Math.max(psis[ii], psic);
+					psis[ii] = Math.max(psis[ii], psi_crit);
 				}
 
 			    //// INNER CYCLE ////
@@ -182,7 +187,7 @@ public class Richards1d {
 
 					for(int l=0; l < MAXITER; l++) {
 
-				        fks(l)=theta1(psis[l]) - (theta2(psis_outer[l])+dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhs[l];
+				        fks(l)=theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhs[l];
 			            if(l == 1) {
 			                fks[i] = fks[i] + b[l]*psis[l] + c[l]*psis[l+1];
 			            }
@@ -199,7 +204,7 @@ public class Richards1d {
 				        if(inner_residual < newton_tolerance) {
 				            break;
 				        }
-					    // TODO (MUST RETURN AN ARRAY)
+					    // TODO:_ conjgrad (MUST RETURN AN ARRAY)
 					    //// CONJGRAD ////
 				        dpsis = Thomas(a,b+deltas,c,fks);
 					    //// PSIS UPDATE ////
@@ -220,6 +225,7 @@ public class Richards1d {
 
 
 
+		// TODO: dtheta1, dtheta2, theta1, theta2
 		////////////////////
 		//// METHODS ////
 		////////////////////
@@ -248,43 +254,133 @@ public class Richards1d {
 		/**
 		 * Returns a K, given the soil parameters
 		 *
-		 * @param  alpha  	
-		 * @param  theta_s   
-		 * @param  theta_r   
 		 * @param  psi  	 
-		 * @param  m   
 		 * @return 			a real number representing the control volume's K
 		 */	
-		public static double k(double theta_s, double theta_r, double psi, double m) {
+		public static double k(double psi) {
 
 			double kappa;
 			double saturation;
 
 			saturation = (thetaf(psi) - theta_r) / (theta_s - theta_r); 
-			kappa = Ks * sqrt(saturation) * Math.pow(1 - (1 - Math.pow(Math.pow(sat,1/m)),m), 2);
+			kappa = ks * sqrt(saturation) * Math.pow(1 - (1 - Math.pow(Math.pow(sat,1 / m)), m), 2);
+
 			return kappa;
 		}
 
 		/**
 		 * Returns the thetaf term
 		 *
-		 * @param  alpha  	
-		 * @param  theta_s   
-		 * @param  theta_r   
 		 * @param  psi  	 
-		 * @param  m   
 		 * @return 			a real number representing the \theta_{f}
 		 */	
-		public static double thetaf(double theta_s, double theta_r, double alpha, double psi, double n, double m) {
+		public static double thetaf(double psi) {
 
 			double theta_f;
 
 			if(psi <= 0) {
-			    theta_f = theta_r + (theta_s-theta_r)/( (1+Math.abs(alpha*psi)^n)^m );
+			    theta_f = theta_r + (theta_s - theta_r) / ( Math.pow(1+Math.pow(Math.abs(alpha*psi), n), m);
 			} else {
 			    theta_f = theta_s;
 			}
+
 			return theta_f;
 		}
+
+		/**
+		 * Returns the dtheta term
+		 *
+		 * @param  psi   
+		 * @return 			a real number representing the $\delta(\theta)$
+		 */	
+		public static double dtheta(double psi) {
+
+			double dtheta;
+
+			if (psi <= 0) {
+				// Unsaturated case
+			    dtheta = alpha*n*m*(thetas - thetar) / ((1 + Math.pow(Math.pow(Math.abs(alpha*psi), n), (m + 1))*Math.pow(Math.abs(alpha*psi), (n - 1));
+			} else {
+			    dtheta = 0;
+			}
+
+			return dtheta;
+		}
+
+		/**
+		 * Returns the dtheta1 term
+		 *
+		 * @param  psi   
+		 * @return 			a real number representing the $\delta(\theta)1$
+		 */	
+		public static double dtheta1(double psi) {
+
+			double dtheta1;
+			
+			if (psi <= psi_crit) {
+			    // left of critical value, take the original derivative
+			    dtheta1 = dtheta(psi);
+			}
+			else {
+			    // on the right of the critical value, keep the maximum derivative
+			    dtheta1 = dtheta(psi_crit);
+			}
+
+			return dtheta1;
+
+		}
+
+		/**
+		 * Returns the dtheta2 term
+		 *
+		 * @param  psi   
+		 * @return 			a real number representing the $\delta(\theta)2$
+		 */	
+		public static double dtheta2(double psi) {
+
+			double dtheta2;
+			
+			dtheta2 = dtheta1(psi) - dtheta(psi);
+
+			return dtheta2;
+		}
+
+		/**
+		 * Returns the $\theta_{1}$ term
+		 *
+		 * @param  psi   
+		 * @return 			a real number representing the $\theta_{1}$
+		 */	
+		public static double theta1(double psi) {
+
+			double theta1;
+			
+			if(psi <= psi_crit) {
+				theta1 = thetaf(psi);
+			} else {
+				theta1 = thetaf(psi_crit) + dtheta(psi_crit)*(psi - psi_crit);
+			}
+
+			theta1 = dtheta1(psi) - dtheta(psi);
+
+			return theta1;
+		}
+
+
+		/**
+		 * Returns the $\theta_{2}$ term
+		 *
+		 * @param  psi   
+		 * @return 			a real number representing the $\theta_{2}$
+		 */	
+		public static double theta2(double psi) {
+
+			double theta2;
+			
+			theta2 = theta1(psi) - thetaf(psi);
+
+			return theta2;	
+		}
+
 
 }
