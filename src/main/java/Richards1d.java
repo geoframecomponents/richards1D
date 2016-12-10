@@ -27,9 +27,9 @@ public class Richards1d {
 	// to be the same for the entire program cycle, thus making them accessible
 	// to functions without having to pass them as arguments (improves readability)
 	static  int 	days				= 24*3600;
-	static	double 	ks 					= 0.062/days;  	// [meter/second]
-	static	double 	theta_s				= 0.41;         // Saturated water content
-	static	double 	theta_r				= 0.095;        // Residual water content
+	static	double 	ks 					= 0.062/days;  	//[meter/second]
+	static	double 	theta_s				= 0.41;         //[-] saturated water content
+	static	double 	theta_r				= 0.095;        //[-] residuel water content
 	static	double 	n					= 1.31;         // For Van Genuchten
 	static	double 	m					= 1-1/n;        // For Van Genuchten
 	static	double 	alpha				= 1.9;          // For Van Genuchten
@@ -50,7 +50,7 @@ public class Richards1d {
 
 	// Time and space
 	static	double 	gridvar				= time_delta / space_delta;
-	static	double 	gridvarsq			= time_delta / Math.pow(space_delta,2);		
+	static	double 	gridvarsq			= Math.pow((time_delta / space_delta),2);		
 
 	// Cycle variables
 	static 	int 	MAXITER 			= 100000;
@@ -142,12 +142,11 @@ public class Richards1d {
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m) + 2 * k_p * gridvarsq * psi_r; 
 
 				} else {
-
 		            k_p = 0.5*(kappas[i] + kappas[i+1]);
 		            k_m = 0.5*(kappas[i] + kappas[i-1]);
 		            a[i] = -k_m * gridvarsq;
 		            b[i] = gridvarsq * (k_m + k_p);
-		            c[i] = -k_p * gridvarsq;
+		            c[i] = 0;
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m); 
      
 				}
@@ -175,11 +174,10 @@ public class Richards1d {
 			        else {
 			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j] + c[j]*psis[j+1];
 			        }
-			        outer_residual += Math.pow(Math.abs(fs[j]*fs[j]),1.0/2.0);
-			    	System.out.println("Outer iteration " + j + " with residual " +  outer_residual);    
-
+			        outer_residual += Math.abs(fs[j]);
 		    	}
 
+			    System.out.println("Outer iteration " + i + " with residual " +  outer_residual);    
     			if(outer_residual < newton_tolerance) {
     				break;
     			}
@@ -193,7 +191,7 @@ public class Richards1d {
 
 			    //// INNER CYCLE ////
 				for(int j = 0; j < MAXITER_NEWT; j++) {
-
+					System.out.println("Inner iteration:" + j);		    
 					for(int l=0; l < NUM_CONTROL_VOLUMES -1; l++) {
 
 				        fks[l] = theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
@@ -209,11 +207,9 @@ public class Richards1d {
 			            }
 
 			            deltas[l] = dtheta1(psis[l]) - dtheta2(psis_outer[l]);
-				        inner_residual += Math.pow(Math.abs(fks[l]*fks[l]),1.0/2.0);
-
+				        inner_residual += Math.abs(fks[l]);
 				    }
 
-			    	System.out.println("Inner iteration " + j + " with residual " +  inner_residual);    
 			        if(inner_residual < newton_tolerance) {
 			            break;
 			        }
@@ -222,6 +218,14 @@ public class Richards1d {
 				    for(int y = 0; y < b.length; y++) {
 				    	b[y] += deltas[y];
 				    }
+				    System.out.println("Array A:");
+				    printArray(a);
+				    System.out.println("Array B:");
+				    printArray(b);
+				    System.out.println("Array C:");
+				    printArray(c);
+				    System.out.println("Array D:");
+				    printArray(d);
 			        dpsis = thomas(a,b,c,fks);
 				    //// PSIS UPDATE ////
 			        for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
@@ -398,7 +402,6 @@ public class Richards1d {
 			c[i] = c[i]*gamma;
 			d[i] = (d[i] - a[i]*d[i])*gamma;
 		}
-
 
 		solution[DIM-1] = d[DIM-1];
 
