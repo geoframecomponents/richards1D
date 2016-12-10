@@ -99,7 +99,7 @@ public class Richards2d {
 		// Domain initial conditions
 		for(int i=0; i < NUM_CV_X; i++) {
 		    for(int j; j < NUM_CV_Y; j++) {
-		        psi[i][j] = -x(i); // Hydrostatic pressure  
+		        psis[i][j] = -x(i); // Hydrostatic pressure  
 		    }
 		}
 
@@ -191,18 +191,23 @@ public class Richards2d {
 			    for(int inner_iter = 0; inner_iter < MAXITER_NEWT; inner_iter++) {
 					for (double[] row: dis)
 					    Arrays.fill(row, 0.0);
-					mpsis = matop(dis,psis);
+
+					mpsis = matop(psis, dis);
+
 				    for(int i = 0; i < NUM_CV_X; i++) {
 				    	for(int j = 0; j < NUM_CV_X; j++) {			
-		                    fks[i][j]=theta1(psi[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psi[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhs[i][j];
-		                    dis[i][j]=dtheta1(psi[i][j]) - dtheta2(psis_outer[i][j]);
+		                    fks[i][j]=theta1(psis[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psis[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhs[i][j];
+		                    dis[i][j]=dtheta1(psis[i][j]) - dtheta2(psis_outer[i][j]);
 		                    inner_residual += Math.pow(Math.abs(fks[i][j]*fks[i][j]),1.0/2.0);
 				    	}
 				    }
 				    if(inner_residual < newton_tolerance) {
 				    	break;
 				    }
-				    dpsis = cgop(fks);
+
+				    //// CONJUGATE-MATOP GRADIENT ////
+				    dpsis = cjop(fks, dis);
+
 				    for(int i = 0; i < NUM_CV_X; i++) {
 				    	for(int j = 0; j < NUM_CV_X; j++) {			
 				    		psis[i][j] = psis[i][j] - dpsis[i][j];
@@ -349,116 +354,108 @@ public class Richards2d {
 		return theta2;	
 	}
 
+	public static double[] cjop(double[][] fks, double[][] di) {
+		double[][] x = new double[NUM_CV_X][NUM_CV_Y];
+		double[][] r = new double[NUM_CV_X][NUM_CV_Y];
+		double[][] p = new double[NUM_CV_X][NUM_CV_Y];
+		double[][] t = new double[NUM_CV_X][NUM_CV_Y];
+		double[][] v = new double[NUM_CV_X][NUM_CV_Y];
 
-	/**
-	 * Linear system solver with Thomas method
-	 *
-	 * @param  a   
-	 * @param  b   
-	 * @param  c   
-	 * @param  d   
-	 * @return solution the vector of solutions
-	 */	
+		double alpha;
+		double alphak;
+		double lambda;
+		double lambdak;
 
-	public static double[] thomas(double[] a, double[] b, double[] c, double[] d) {
+		int NUMEL = x.length*x[0].length
+		int NUMIT = 4*NUMEL;
 
-		int DIM = d.length;
-		double gamma = 0.0;
-		double[] solution = new double[DIM];
-
-		c[0] = c[0] / b[0];
-		d[0] = d[0] / b[0];
-
-		for(int i = 0; i < DIM; i++) {
-			gamma = 1 / (b[i] - c[i]*a[i]);
-			c[i] = c[i]*gamma;
-			d[i] = (d[i] - a[i]*d[i])*gamma;
-		}
-
-
-		solution[DIM-1] = d[DIM-1];
-
-		for(int i = DIM-1; i > 0; i--) {
-			solution[i] = d[i] - c[i]*solution[i-1];
-		}
-
-		return solution;
-
-	}
-
-
-	%matrix-free conjugate method for the solution of A*x=b with A symmetric positive definite
-	%Input: (we don't need the matrix as input)
-	%       b = right hand side
-	%output: 
-	%       x = solution vector
-	%the user has to provide a function "matop2D(x)" wich computes the matrix-vector product A*x
-
-	function x=CGop2D(b)
-	x = b;                %initial guess
-	N = numel(b);         %get the problem size 
-	r = b-matop2D(x);     %residual
-	p = r;                %initial search direction
-	alpha = sum(sum(r.*r));  %square of r (scalar product) %or r'*r; 
-	for k=1:4*N           %2* or 4*N to have more precision
-	    if (sqrt(alpha)<1e-14)   %nominal machine operation is 1e-16 so we use something smaller
-	        %norm of the residual is sufficently small
-	        break
-	    end
-	    v = matop2D(p);      
-	    lambda = alpha/sum(sum(p.*v));
-	    x = x + lambda*p;   
-	    r = r - lambda*v;
-	    alphak = alpha;
-	    alpha = sum(sum(r.*r));
-	    p = r + alpha/alphak*p;   
-	end
-
-	function Apsi = matop2D(psi)
-	global di dx dy dt K IMAX JMAX KL KR
-	% diagonal part including the derivatives of the nonlinear functions
-	Apsi = di.*psi;
-	% linear part
-	public static double[] matop(double[][] di, double[][] psis) {
-		double[][] apsi ==
+		t = matop(fks);
+		x = fks.clone();
 	    for(int i = 0; i < NUM_CV_X; i++) {
 	    	for(int j = 0; j < NUM_CV_X; j++) {
-	    		if(i == 1) {
+	    		r[i][j] = x[i][j] - t[i][j];
+				alpha += Math.pow(r[i][j],2.0) 
+			}
+		}		
+		p = r.clone();
 
-	    		}
+		for(int niter = 0; niter < NUMIT; niter++) {
+			if(Math.pow(alpha,0.5) < Math.pow(10,-14)) {
+				break;
+			}
+
+    		v = matop(p);
+    		lambdak = 0;
+		    for(int i = 0; i < NUM_CV_X; i++) {
+		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    		lambdak += p[i][j]*v[i][j];
+				}
+			}
+			lambda = alpha/lambdak;
+		    for(int i = 0; i < NUM_CV_X; i++) {
+		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    		x[i][j] += lambda*p[i][j];
+		    		r[i][j] -= lambda*v[i][j];
+				}
+			}					
+			alphak = alpha;
+		    for(int i = 0; i < NUM_CV_X; i++) {
+		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    		alpha += r[i][j]*r[i][j];
+				}
+			}
+		    for(int i = 0; i < NUM_CV_X; i++) {
+		    	for(int j = 0; j < NUM_CV_X; j++) {
+		    		p[i][j] = r[i][j] + alpha/(alphak*p[i][j]);
+		    	}
+		    }
+		}
+
+		return x;
+	}
+
+	public static double[] matop(double[][] psis, double[][] dis) {
+		double[][] apsis ==	new double[NUM_CV_X][NUM_CV_Y];
+		double k_p;
+		double k_m;
+
+	    for(int i = 0; i < NUM_CV_X; i++) {
+	    	for(int j = 0; j < NUM_CV_X; j++) {
+	    		apsis[i][j] = dis[i][j]*psis[i][j];
 	    	}
-	    }	
-	        if(i==1)
-	            Kp = 0.5*(K[i][j]+K(i+1,j));
-	            Km = 0.5*(K[i][j]+KL);
-	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( Kp*(psi(i+1,j)-psi[i][j])...
-	                                           - 2*Km*(psi[i][j]-0) );
-	        elseif(i==IMAX)
-	            Kp = 0.5*(K[i][j] + KR);
-	            Km = 0.5*(K[i][j] + K(i-1,j));
-	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( 2*Kp*(0-psi[i][j])...
-	                                           -Km*(psi[i][j]-psi(i-1,j)) );
-	        else
-	            Kp = 0.5*(K[i][j] + K(i+1,j));
-	            Km = 0.5*(K[i][j] + K(i-1,j));
-	            Apsi[i][j] = Apsi[i][j]-dt/dx^2*( Kp*(psi(i+1,j)-psi[i][j])...
-	                                           -Km*(psi[i][j]-psi(i-1,j)) );
-	        end
-	        % y fluxes
-	        if (j==1)
-	           Kp = 0.5*(K[i][j] + K(i,j+1));
-	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( Kp*(psi(i,j+1)-psi[i][j]) - 0 );
-	        elseif (j==JMAX)
-	           Km = 0.5*(K[i][j]+K(i,j-1));
-	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( 0 - Km*(psi[i][j]-psi(i,j-1)) );
-	        else
-	           Kp = 0.5*(K[i][j]+K(i,j+1));
-	           Km = 0.5*(K[i][j]+K(i,j-1));
-	           Apsi[i][j] = Apsi[i][j] - dt/dy^2*( Kp*(psi(i,j+1)-psi[i][j])...
-	                                            -Km*(psi[i][j]-psi(i,j-1)) );
-	        end
-	    end
-	end
+	    }
+
+	    for(int i = 0; i < NUM_CV_X; i++) {
+	    	for(int j = 0; j < NUM_CV_X; j++) {
+	        	// X FLUXES
+	    		if(i == 1) {
+		            k_p = 0.5*(kappas[i][j]+kappas[i+1][j]);
+		            k_m = 0.5*(kappas[i][j]+k_l);
+		            apsis[i][j] = apsis[i][j] - gridvarsq * ( k_p*(psi[i+1][j] - psis[i][j]) - 2*k_m*psis[i][j] );
+	        	} else if (i == NUM_CV_X) {
+		            k_p = 0.5*(kappas[i][j] + k_r);
+		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
+		            apsis[i][j] = apsis[i][j] - gridvarsq *  ( 2*k_p*(-psis[i][j]) - k_m*(psis[i][j]-psi[i-1][j]) );
+	        	} else {
+		            k_p = 0.5*(kappas[i][j] + kappas[i+1][j]);
+		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
+		            apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psi[i+1][j] - psis[i][j]) - k_m*(psis[i][j]-psi[i-1][j]) );
+	        	}
+	        	// Y FLUXES
+	        	if (j == 1) {
+		           k_p = 0.5*(kappas[i][j] + kappas[i,j+1]);
+		           apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psis(i,j+1) - psis[i][j]) - 0 );
+		        } else if (j==JMAX) {
+		           k_m = 0.5*(kappas[i][j] + kappas[i][j-1]);
+		           apsis[i][j] = apsis[i][j] - gridvarsq*(- k_m*(psis[i][j]-psis[i][j-1]) );
+		        } else {
+		           k_p = 0.5*(kappas[i][j] + kappas[i][j+1]);
+		           k_m = 0.5*(kappas[i][j] + kappas[i][j-1]);
+		           apsis[i][j] = apsis[i][j] - gridvarsq*( k_p*(psis[i][j+1]-psis[i][j]) - k_m*(psis[i][j]-psis[i][j-1]) );
+		        }
+	    	}
+	    }
+	}
 
 	// UTILITY METHODS
 

@@ -3,7 +3,7 @@
 clear all
 close all
 clc
-global alpha thetas thetar n m Ks psic
+global alpha thetas thetar n m Ks psic 
 global di dx dy dt K IMAX JMAX KL KR
 %Phisical model parameters in SI units
 day = 24*3600;
@@ -94,7 +94,7 @@ for nit=1:NMAX
     psi=min(psi,psic);
     for iNewton=1:100 %outer Newton iterations
         %The task of the outer iterations is ONLY to linearize one of the
-        %two nonlinear functions q1 or q2  (è il ciclo in k sul quaderno)
+        %two nonlinear functions q1 or q2  (ï¿½ il ciclo in k sul quaderno)
         di = zeros(IMAX,JMAX); %set the derivative of the nonlinear function to 0
         Mpsi = matop2D(psi);
         for i=1:IMAX
