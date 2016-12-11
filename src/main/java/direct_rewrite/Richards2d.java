@@ -437,7 +437,7 @@ public class Richards2d {
 		            k_p = 0.5*(kappas[i][j]+kappas[i+1][j]);
 		            k_m = 0.5*(kappas[i][j]+k_l);
 		            apsis[i][j] = apsis[i][j] - gridvarsq * ( k_p*(psis[i+1][j] - psis[i][j]) - 2*k_m*psis[i][j] );
-	        	} else if (i == NUM_CV_Y-1) {
+	        	} else if (i == NUM_CV_X-1) {
 		            k_p = 0.5*(kappas[i][j] + k_r);
 		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
 		            apsis[i][j] = apsis[i][j] - gridvarsq *  ( 2*k_p*(-psis[i][j]) - k_m*(psis[i][j]-psis[i-1][j]) );
