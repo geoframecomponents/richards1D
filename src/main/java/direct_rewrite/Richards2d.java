@@ -105,9 +105,8 @@ public class Richards2d {
 		}
 
 		for(int main_iter = 0; main_iter < MAXITER; main_iter++) {
-		    if(time + time_delta > time_end) {
-		        time_delta = time_end - time;
-		    }
+
+		    System.out.println("Main cycle iteration:" + main_iter);		    
 
 		    // right-upper boundary condition for pressure
 		    if(time <= Math.pow(10,5)) {
@@ -174,9 +173,14 @@ public class Richards2d {
 			    for(int i = 0; i < NUM_CV_X; i++) {
 			    	for(int j = 0; j < NUM_CV_Y; j++) {			
 			    		fs[i][j] = thetaf(psis[i][j]) + mpsis[i][j] - rhss[i][j];
-			    		outer_residual += Math.pow(Math.abs(fs[i][j]*fs[i][j]),1.0/2.0);
+			    		outer_residual += fs[i][j]*fs[i][j];
 			    	}
 			    }
+
+			    outer_residual = Math.pow(outer_residual,0.5);
+
+			    System.out.println("Outer iteration " + newt_iter + " with residual " +  outer_residual);    
+
 			    if(outer_residual < newton_tolerance) {
 			    	break;
 			    }
@@ -197,9 +201,14 @@ public class Richards2d {
 				    	for(int j = 0; j < NUM_CV_Y; j++) {			
 		                    fks[i][j]=theta1(psis[i][j]) - (theta2(psis_outer[i][j]) + dtheta2(psis_outer[i][j])*(psis[i][j]-psis_outer[i][j])) + mpsis[i][j]-rhss[i][j];
 		                    dis[i][j]=dtheta1(psis[i][j]) - dtheta2(psis_outer[i][j]);
-		                    inner_residual += Math.pow(Math.abs(fks[i][j]*fks[i][j]),1.0/2.0);
+		                    inner_residual += fks[i][j]*fks[i][j];
 				    	}
 				    }
+				
+				    inner_residual = Math.pow(inner_residual,0.5);
+
+			    	System.out.println("Inner iteration " + inner_iter + " with residual " +  inner_residual);    
+
 				    if(inner_residual < newton_tolerance) {
 				    	break;
 				    }
@@ -236,7 +245,7 @@ public class Richards2d {
 		double saturation;
 
 		saturation = (thetaf(psi) - theta_r) / (theta_s - theta_r); 
-		kappa = ks * Math.pow(saturation, 1/2 ) * Math.pow(1 - Math.pow(1 - Math.pow(saturation, 1/m), m), 2);
+		kappa = ks * Math.pow(saturation, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(saturation, 1.0/m), m), 2.0);
 		return kappa;
 	}
 
@@ -251,7 +260,7 @@ public class Richards2d {
 		double theta_f;
 
 		if(psi <= 0) {
-		    theta_f = theta_r + (theta_s - theta_r) / Math.pow(1 + Math.pow(Math.abs(alpha*psi), n), m);
+		    theta_f = theta_r + (theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m);
 		} else {
 		    theta_f = theta_s;
 		}
@@ -270,7 +279,7 @@ public class Richards2d {
 
 		if (psi <= 0) {
 			// Unsaturated case
-		    dtheta = alpha*n*m*(theta_s - theta_r) / Math.pow(1 + Math.pow(Math.abs(alpha*psi), n), m+1)*Math.pow(Math.abs(alpha*psi), n-1);
+		    dtheta = alpha*n*m*(theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m + 1.0)*Math.pow(Math.abs(alpha*psi), n - 1.0);
 		} else {
 		    dtheta = 0;
 		}
@@ -330,8 +339,6 @@ public class Richards2d {
 		} else {
 			theta1 = thetaf(psi_crit) + dtheta(psi_crit)*(psi - psi_crit);
 		}
-
-		theta1 = dtheta1(psi) - dtheta(psi);
 
 		return theta1;
 	}
@@ -423,14 +430,14 @@ public class Richards2d {
 	    	}
 	    }
 
-	    for(int i = 0; i < NUM_CV_X -1; i++) {
-	    	for(int j = 0; j < NUM_CV_Y -1; j++) {
+	    for(int i = 0; i < NUM_CV_X; i++) {
+	    	for(int j = 0; j < NUM_CV_Y; j++) {
 	        	// X FLUXES
 	    		if(i == 0) {
 		            k_p = 0.5*(kappas[i][j]+kappas[i+1][j]);
 		            k_m = 0.5*(kappas[i][j]+k_l);
 		            apsis[i][j] = apsis[i][j] - gridvarsq * ( k_p*(psis[i+1][j] - psis[i][j]) - 2*k_m*psis[i][j] );
-	        	} else if (i == NUM_CV_Y) {
+	        	} else if (i == NUM_CV_Y-1) {
 		            k_p = 0.5*(kappas[i][j] + k_r);
 		            k_m = 0.5*(kappas[i][j] + kappas[i-1][j]);
 		            apsis[i][j] = apsis[i][j] - gridvarsq *  ( 2*k_p*(-psis[i][j]) - k_m*(psis[i][j]-psis[i-1][j]) );
@@ -443,7 +450,7 @@ public class Richards2d {
 	        	if (j == 0) {
 		           k_p = 0.5*(kappas[i][j] + kappas[i][j+1]);
 		           apsis[i][j] = apsis[i][j] - gridvarsq *( k_p*(psis[i][j+1] - psis[i][j]) - 0 );
-		        } else if (j == NUM_CV_Y) {
+		        } else if (j == NUM_CV_Y-1) {
 		           k_m = 0.5*(kappas[i][j] + kappas[i][j-1]);
 		           apsis[i][j] = apsis[i][j] - gridvarsq*(- k_m*(psis[i][j]-psis[i][j-1]) );
 		        } else {
