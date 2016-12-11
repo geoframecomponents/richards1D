@@ -482,6 +482,7 @@ public class Richards2d {
 	private static void printArray(double[] arr) {
 		System.out.println(java.util.Arrays.toString(arr));
 	}
+	// Function overloading
 	private static void printArray(double[][] arr) {
 		System.out.println(java.util.Arrays.deepToString(arr));
 	}	

@@ -109,32 +109,37 @@ for nit=1:NMAX
         disp(sprintf('Outer iteration %d, outres=%e',iNewton, outres));    
         if(outres<tol)
             break %tolerance has been reached
-    end
+        end
 
-    psik = psi;             % save the value at the current outer iteration    
-    psi = max(psi,psic); % initial guess for the inner iteration
+        psik = psi;             % save the value at the current outer iteration    
+        psi = max(psi,psic); % initial guess for the inner iteration
 
-    for inner=1:100
-        for i=1:IMAX
-            fk(i)=Theta1(psi(i))-(Theta2(psik(i))+dTheta2(psik(i))*(psi(i)-psik(i)))-rhs(i);  %Tk is frozen
-            if(i==1)
-                fk(i)=fk(i)+b(i)*psi(i)+c(i)*psi(i+1);
-            elseif(i==IMAX)
-                fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i);
-            else
-                fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i)+c(i)*psi(i+1);
+        for inner=1:100
+            for i=1:IMAX
+                fk(i)=Theta1(psi(i))-(Theta2(psik(i))+dTheta2(psik(i))*(psi(i)-psik(i)))-rhs(i);  %Tk is frozen
+                if(i==1)
+                    fk(i)=fk(i)+b(i)*psi(i)+c(i)*psi(i+1);
+                elseif(i==IMAX)
+                    fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i);
+                else
+                    fk(i)=fk(i)+a(i)*psi(i-1)+b(i)*psi(i)+c(i)*psi(i+1);
+                end
+                
+                di(i)=dTheta1(psi(i))-dTheta2(psik(i));
             end
-            di(i)=dTheta1(psi(i))-dTheta2(psik(i));
-        end
-        inres=sqrt(sum(fk.*fk));
-        disp(sprintf(' -Inner iteration %d, inres= %e', inner,inres));
-        if(inres<tol)
-            break
-        end
-        dpsi = Thomas(a,b+di,c,fk); %inner Newton step
-        psi = psi(:)-dpsi(:);
-    end    
-end
+            inres=sqrt(sum(fk.*fk));
+            disp(sprintf(' -Inner iteration %d, inres= %e', inner,inres));
+            if(inres<tol)
+                break
+            end
+            b
+            di
+            b+di
+            
+            dpsi = Thomas(a,b+di,c,fk); %inner Newton step
+            psi = psi(:)-dpsi(:);
+        end    
+    end
     time = time+dt;     %advance time
 end
 

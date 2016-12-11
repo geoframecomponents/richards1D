@@ -80,7 +80,7 @@ public class Richards1d {
 		double[] 		c 					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fs					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fks					= new double[NUM_CONTROL_VOLUMES];
-		double[] 		deltas				= new double[NUM_CONTROL_VOLUMES];
+		double[] 		dis					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		rhss				= new double[NUM_CONTROL_VOLUMES];
 		double 			k_p					= 0.0;
 		double 			k_m					= 0.0;
@@ -98,14 +98,12 @@ public class Richards1d {
 		//// MAIN CYCLE ////
 		////////////////////
 		for(int niter = 0; niter < MAXITER; niter++) {
+
 		    System.out.println("Main cycle iteration:" + niter);		    
-		    if(time_initial + time_delta > time_end) {
-		        time_delta = time_end - time_initial;
-		    }
-		    // TODO
+
 		    // Not sure about what that means... Sort of Boundary conditions, but why that form? 
 		    if(time <= Math.pow(10,5)) {
-		        psi_r = -0.05 + 0.03 * Math.sin(2*Math.PI * time/Math.pow(10,5));
+		        psi_r = -0.05 + 0.03 * Math.sin(2 * Math.PI * time/Math.pow(10,5));
 		    } else if(time > Math.pow(10,5) && time <= 1.8 * Math.pow(10,5)) {
 		        psi_r = +0.1;
 		    }
@@ -121,6 +119,11 @@ public class Richards1d {
 			    kappas[i] = kappa(psis[i]);           
 			}
 
+		   	// "Your time has come"
+		   	if(time > time_end) {
+		   		break;
+		   	}
+
 			//// RIGHT HAND SIDE ////
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
@@ -135,7 +138,7 @@ public class Richards1d {
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
 
 		            k_p = 0.5*(kappas[i] + k_r);
-		            k_m = 0.5*(kappas[i] + k_l);
+		            k_m = 0.5*(kappas[i] + kappas[i-1]);
 		            a[i] = -k_m * gridvar;
 		            b[i] = gridvarsq * (k_m + 2*k_p);
 		            c[i] = 0;
@@ -163,22 +166,23 @@ public class Richards1d {
 		    //// OUTER CYCLE, linearizes one of q_{1}, q_{2} ////
 		    for(int i = 0; i < MAXITER_NEWT; i++) {
 
-		    	for(int j = 0; j < NUM_CONTROL_VOLUMES -1; j++) {
+		    	for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 
 		    		fs[j] = thetaf(psis[j]) - rhss[j];        
 			        if(j == 0) {
 			            fs[j] = fs[j] + b[j]*psis[j] + c[j]*psis[j+1];
 			        }
-			        else if(j == MAXITER -1) {
+			        else if(j == NUM_CONTROL_VOLUMES -1) {
 			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j];
 			        }
 			        else {
 			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j] + c[j]*psis[j+1];
 			        }
 			        outer_residual += Math.pow(Math.abs(fs[j]*fs[j]),1.0/2.0);
-			    	System.out.println("Outer iteration " + j + " with residual " +  outer_residual);    
 
 		    	}
+
+			    System.out.println("Outer iteration " + i + " with residual " +  outer_residual);    
 
     			if(outer_residual < newton_tolerance) {
     				break;
@@ -194,7 +198,7 @@ public class Richards1d {
 			    //// INNER CYCLE ////
 				for(int j = 0; j < MAXITER_NEWT; j++) {
 
-					for(int l=0; l < NUM_CONTROL_VOLUMES -1; l++) {
+					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 
 				        fks[l] = theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
 
@@ -207,39 +211,36 @@ public class Richards1d {
 			            else {
 			                fks[l] = fks[l] + a[l]*psis[l-1] + b[l]*psis[l] + c[l]*psis[l+1];
 			            }
-
-			            deltas[l] = dtheta1(psis[l]) - dtheta2(psis_outer[l]);
-				        inner_residual += Math.pow(Math.abs(fks[l]*fks[l]),1.0/2.0);
+			            dis[l] = dtheta1(psis[l]) - dtheta2(psis_outer[l]);
+				        inner_residual += Math.pow(fks[l]*fks[l],0.5);
 
 				    }
 
 			    	System.out.println("Inner iteration " + j + " with residual " +  inner_residual);    
+
 			        if(inner_residual < newton_tolerance) {
 			            break;
 			        }
 
 				    //// CONJGRAD ////
-				    for(int y = 0; y < b.length; y++) {
-				    	b[y] += deltas[y];
+				    for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
+				    	b[y] += dis[y];
 				    }
 			        dpsis = thomas(a,b,c,fks);
+
 				    //// PSIS UPDATE ////
 			        for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
 			        	psis[s] = psis[s] - dpsis[s];
 			        }
 
-				}
+				} //// INNER CYCLE END ////
+			} //// OUTER CYCLE END ////
 
-				// "The show must go on"
-			   	time += time_delta;
+		// "The show must go on"
+	   	time += time_delta;
 
-			   	// "Your time has come"
-			   	if(time > time_end) {
-			   		break;
-			   	}
-			}
-		}
-	} //// MAIN ENDED ////
+		} //// MAIN CYCLE END ////
+	} //// MAIN END ////
 
 	////////////////////
 	//// METHODS ////
@@ -257,7 +258,7 @@ public class Richards1d {
 		double saturation;
 
 		saturation = (thetaf(psi) - theta_r) / (theta_s - theta_r); 
-		kappa = ks * Math.pow(saturation, 1/2 ) * Math.pow(1 - Math.pow(1 - Math.pow(saturation, 1/m), m), 2);
+		kappa = ks * Math.pow(saturation, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(saturation, 1.0/m), m), 2.0);
 		return kappa;
 	}
 
@@ -272,7 +273,7 @@ public class Richards1d {
 		double theta_f;
 
 		if(psi <= 0) {
-		    theta_f = theta_r + (theta_s - theta_r) / Math.pow(1 + Math.pow(Math.abs(alpha*psi), n), m);
+		    theta_f = theta_r + (theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m);
 		} else {
 		    theta_f = theta_s;
 		}
@@ -291,7 +292,7 @@ public class Richards1d {
 
 		if (psi <= 0) {
 			// Unsaturated case
-		    dtheta = alpha*n*m*(theta_s - theta_r) / Math.pow(1 + Math.pow(Math.abs(alpha*psi), n), m+1)*Math.pow(Math.abs(alpha*psi), n-1);
+		    dtheta = alpha*n*m*(theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m + 1.0)*Math.pow(Math.abs(alpha*psi), n - 1.0);
 		} else {
 		    dtheta = 0;
 		}
@@ -352,8 +353,6 @@ public class Richards1d {
 			theta1 = thetaf(psi_crit) + dtheta(psi_crit)*(psi - psi_crit);
 		}
 
-		theta1 = dtheta1(psi) - dtheta(psi);
-
 		return theta1;
 	}
 
@@ -393,17 +392,16 @@ public class Richards1d {
 		c[0] = c[0] / b[0];
 		d[0] = d[0] / b[0];
 
-		for(int i = 0; i < DIM; i++) {
-			gamma = 1 / (b[i] - c[i]*a[i]);
+		for(int i = 1; i < DIM; i++) {
+			gamma = 1 / (b[i] - c[i-1]*a[i]);
 			c[i] = c[i]*gamma;
-			d[i] = (d[i] - a[i]*d[i])*gamma;
+			d[i] = (d[i] - a[i]*d[i-1])*gamma;
 		}
-
 
 		solution[DIM-1] = d[DIM-1];
 
-		for(int i = DIM-1; i > 0; i--) {
-			solution[i] = d[i] - c[i]*solution[i-1];
+		for(int i = DIM-2; i > -1; i--) {
+			solution[i] = d[i] - c[i]*solution[i+1];
 		}
 
 		return solution;
@@ -433,7 +431,10 @@ public class Richards1d {
 	    return sequence;  
 	}	
 
-	private static void printArray(double[] arr) {
+	private static void print(double[] arr) {
 		System.out.println(java.util.Arrays.toString(arr));
+	}
+	private static void print(double num) {
+		System.out.println(num);
 	}
 }
