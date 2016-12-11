@@ -7,10 +7,10 @@ import java.util.Arrays;
 public class Tests {
 	static double number	= 5.0;
 	static double exponent 	= 2.0;	
-	static 	double 	space_bottom		= 0.0;
-	static 	double 	space_top			= 2.0;
-	static 	int 	NUM_CONTROL_VOLUMES	= 100; 
-	static 	double 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; // delta
+	static double 	space_bottom		= 0.0;
+	static double 	space_top			= 2.0;
+	static int 	NUM_CONTROL_VOLUMES	= 100; 
+	static double 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; // delta
 
 	public static void main(String[] args) {
 		double exponent_doubled;
@@ -30,6 +30,7 @@ public class Tests {
 
 		print(seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES));
 		print(seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES).length);
+
 
 	}
 	private static void print(String arg) {

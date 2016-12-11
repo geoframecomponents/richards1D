@@ -33,7 +33,7 @@ public class Richards1d {
 	static	double 	n					= 1.31;         // For Van Genuchten
 	static	double 	m					= 1-1/n;        // For Van Genuchten
 	static	double 	alpha				= 1.9;          // For Van Genuchten
-	static	double 	psi_crit			= (-1/alpha)*Math.pow((n-1)/n,1/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+	static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 
 
 	// Space
@@ -53,8 +53,8 @@ public class Richards1d {
 	static	double 	gridvarsq			= time_delta / Math.pow(space_delta,2);		
 
 	// Cycle variables
-	static 	int 	MAXITER 			= 100000;
-	static  int 	MAXITER_NEWT 		= 100;
+	static 	int 	MAXITER 			= 1000;
+	static  int 	MAXITER_NEWT 		= 100000;
 	static	double 	newton_tolerance	= Math.pow(10,-12);
 
 
@@ -178,9 +178,9 @@ public class Richards1d {
 			        else {
 			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j] + c[j]*psis[j+1];
 			        }
-			        outer_residual += Math.pow(Math.abs(fs[j]*fs[j]),1.0/2.0);
-
+			        outer_residual += fs[j]*fs[j];
 		    	}
+		    	outer_residual = Math.pow(outer_residual,0.5);
 
 			    System.out.println("Outer iteration " + i + " with residual " +  outer_residual);    
 
@@ -212,9 +212,10 @@ public class Richards1d {
 			                fks[l] = fks[l] + a[l]*psis[l-1] + b[l]*psis[l] + c[l]*psis[l+1];
 			            }
 			            dis[l] = dtheta1(psis[l]) - dtheta2(psis_outer[l]);
-				        inner_residual += Math.pow(fks[l]*fks[l],0.5);
+				        inner_residual += fks[l]*fks[l];
 
 				    }
+				    inner_residual = Math.pow(inner_residual,0.5);
 
 			    	System.out.println("Inner iteration " + j + " with residual " +  inner_residual);    
 
@@ -240,6 +241,7 @@ public class Richards1d {
 	   	time += time_delta;
 
 		} //// MAIN CYCLE END ////
+		print(psis);
 	} //// MAIN END ////
 
 	////////////////////
