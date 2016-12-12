@@ -1,0 +1,21 @@
+\begin{thebibliography}{1}
+
+\bibitem{Casulli2010}
+Vincenzo Casulli \&~Paola Zanolli.
+\newblock A nested newton-type algorithm for finite volume methods solving
+  richards' equation in mixed form.
+\newblock {\em SIAM Journal on Scientific Computing}, 32:2255--2273, 2010.
+
+\bibitem{Genuchten1980}
+Martinus Th.~Van Genuchten.
+\newblock A closed-form equation for predicting the hydraulic conductivity of
+  unsaturated soils.
+\newblock {\em Soil Science Society of America Journal}, 44, 1980.
+
+\bibitem{Shewchuk1994}
+Jonathan~R Shewchuk.
+\newblock An introduction to the conjugate gradient method without the
+  agonizing pain.
+\newblock Technical report, Pittsburgh, PA, USA, 1994.
+
+\end{thebibliography}

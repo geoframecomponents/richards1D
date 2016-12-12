@@ -1,0 +1,15 @@
+import static oms3.SimBuilder.instance as OMS3
+
+OMS3.sim { 	  
+    build(target:"all")
+    
+    model() {
+        components {
+           "c" "example2.RExecute"
+        }
+        parameter {
+            // "componentname.@In_fieldname" -> object
+             "c.scriptName" "$oms_prj/data/script.R"
+        }
+    }
+}

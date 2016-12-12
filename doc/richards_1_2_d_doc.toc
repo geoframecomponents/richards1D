@@ -1,0 +1,15 @@
+\select@language {italian}
+\select@language {italian}
+\contentsline {section}{\numberline {1}Note}{1}{section.1}
+\contentsline {section}{\numberline {2}SUBROUTINES Reologia - Rheology}{2}{section.2}
+\contentsline {subsection}{\numberline {2.1}kappa}{2}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Thetaf}{2}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}dTheta}{3}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}dTheta1}{3}{subsection.2.4}
+\contentsline {subsection}{\numberline {2.5}dTheta2}{4}{subsection.2.5}
+\contentsline {subsection}{\numberline {2.6}Theta1}{4}{subsection.2.6}
+\contentsline {subsection}{\numberline {2.7}Theta2}{4}{subsection.2.7}
+\contentsline {subsection}{\numberline {2.8}V}{5}{subsection.2.8}
+\contentsline {subsection}{\numberline {2.9}dV}{5}{subsection.2.9}
+\contentsline {section}{\numberline {3}MODULE Gradiente coniugato - CGModule}{5}{section.3}
+\contentsline {section}{\numberline {4}Spunti di riflessione}{5}{section.4}

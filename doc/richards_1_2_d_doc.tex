@@ -1,0 +1,410 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[
+10pt, % Main document font size
+a4paper, % Paper type, use 'letterpaper' for US Letter paper
+oneside, % One page layout (no page indentation)
+%twoside, % Two page layout (page indentation for binding and different headers)
+headinclude,footinclude, % Extra spacing for the header and footer
+BCOR5mm, % Binding correction
+]{scrartcl}
+
+\input{structure.tex} % Include the structure.tex file which specified the document structure and layout
+
+\hyphenation{Java hy-phen-ation} % Specify custom hyphenation points in words with dashes where you would like hyphenation to occur, or alternatively, don't put any dashes in a word to stop hyphenation altogether
+
+\pgfmathdeclarefunction{gauss}{2}{%
+  \pgfmathparse{1/(#2*sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}%
+}
+\makeatletter
+    \pgfmathdeclarefunction{erf}{1}{%
+        \begingroup
+            \pgfmathparse{#1 > 0 ? 1 : -1}%
+            \edef\sign{\pgfmathresult}%
+            \pgfmathparse{abs(#1)}%
+            \edef\x{\pgfmathresult}%
+            \pgfmathparse{1/(1+0.3275911*\x)}%
+            \edef\t{\pgfmathresult}%
+            \pgfmathparse{%
+                1 - (((((1.061405429*\t -1.453152027)*\t) + 1.421413741)*\t 
+                -0.284496736)*\t + 0.254829592)*\t*exp(-(\x*\x))}%
+            \edef\y{\pgfmathresult}%
+            \pgfmathparse{(\sign)*\y}%
+            \pgfmath@smuggleone\pgfmathresult%
+        \endgroup
+    }
+\makeatother
+\pgfmathdeclarefunction{cdf}{2}{%
+  \pgfmathparse{0.5*(1+(erf((x-#1)/(#2*sqrt(2)))))}%
+}
+
+%----------------------------------------------------------------------------------------
+%	TITLE AND AUTHOR(S)
+%----------------------------------------------------------------------------------------
+
+\title{\normalfont\spacedallcaps{Documentazione codice Richards 1-2 D}} % The article title
+
+\author{\spacedlowsmallcaps{Riccardo Rigon*, Francesco Serafin* \& Aaron Iemma*}} % The article author(s) - author affiliations need to be specified in the AUTHOR AFFILIATIONS block
+
+\date{\today} % An optional date to appear under the author(s)
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+%----------------------------------------------------------------------------------------
+%	HEADERS
+%----------------------------------------------------------------------------------------
+
+\renewcommand{\sectionmark}[1]{\markright{\spacedlowsmallcaps{#1}}} % The header for all pages (oneside) or for even pages (twoside)
+\newcommand{\subroutines}{\noindent\textbf{\spacedlowsmallcaps{CHIAMATE AD ALTRE SUBROUTINE RILEVANTI}}}
+%\renewcommand{\subsectionmark}[1]{\markright{\thesubsection~#1}} % Uncomment when using the twoside option - this modifies the header on odd pages
+\lehead{\mbox{\llap{\small\thepage\kern1em\color{halfgray} \vline}\color{halfgray}\hspace{0.5em}\rightmark\hfil}} % The header style
+\makeatletter
+\newcommand*{\inlineequation}[2][]{%
+  \begingroup
+    % Put \refstepcounter at the beginning, because
+    % package `hyperref' sets the anchor here.
+    \refstepcounter{equation}%
+    \ifx\\#1\\%
+    \else
+      \label{#1}%
+    \fi
+    % prevent line breaks inside equation
+    \relpenalty=10000 %
+    \binoppenalty=10000 %
+    \ensuremath{%
+      % \displaystyle % larger fractions, ...
+      #2%
+    }%
+    ~\@eqnnum
+  \endgroup
+}
+\makeatother
+
+
+\titleformat{\subsection}{\relax}{\textsc{\MakeTextLowercase{\thesubsection}}}{1em}{\normalsize\bfseries}
+
+\pagestyle{scrheadings} % Enable the headers specified in this block
+
+%----------------------------------------------------------------------------------------
+%	TABLE OF CONTENTS & LISTS OF FIGURES AND TABLES
+%----------------------------------------------------------------------------------------
+
+\maketitle % Print the title/author/date block
+\setcounter{tocdepth}{2} % Set the depth of the table of contents to show sections and subsections only
+\tableofcontents % Print the table of contents
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\section*{Abstract} % This section will not appear in the table of contents due to the star (\section*)
+
+Si riporta di seguito documentazione del codice \texttt{Java} prodotto dall'implementazione
+di \cite{Casulli2010} all'interno del framework OMS3. 
+
+%----------------------------------------------------------------------------------------
+%	AUTHOR AFFILIATIONS
+%----------------------------------------------------------------------------------------
+
+{\let\thefootnote\relax\footnotetext{* \textit{Dipartimento di Ingegneria Civile ed Ambientale, Università degli Studi di Trento, Trento, Italy}}}
+\section{Note}
+\begin{itemize}\itemsep0pt
+	\item dato che i volumi di controllo (vedi \cite{Casulli2010} pp. 2257) devono avere facce di contorno normali alla linea che connette i centri di ogni volume adiacente (quantomeno per i centri che sono in "vista diretta" l'uno rispetto all'altro, \emph{e.g.}, la cui linea di connessione non interseca nessun altro volume tranne quelli a cui i punti appartengono), gli stessi volumi di controllo devono essere ottenuti tramite una scomposizione in un diagramma di Voronoi (in metrica euclidea) del dominio!
+	\item La conducibilità idraulica/permeablità, dato che \\\inlineequation[maxK]{\mathcal{K}_{ j}^{ n}=\mathcal{A}_{ j}max\left[K_{ i}(\psi_{ i}^{ n}),K_{\wp({ i},{ j})}(\psi_{\wp({ i},{ j})}^{ n})\right]}, "\emph{diffonde}" dalle celle adiacenti in cui è maggiore alle celle adiacenti in cui è minore, tendendo ad assumere gli stessi valori su tutto il campo.\\
+	Da \ref{maxK}, per una \emph{mesh} molto semplificata ove i numeri nelle celle rappresentano dei valori di $K$, ho ad esempio: \\
+	\\
+		\begin{figure}[!h]
+		\centering
+		\subfloat[Iter. 1]{
+			\begin{tikzpicture}
+				\draw[step=0.5cm,color=gray] (-1,-1) grid (0.5,0.5);
+					\node at (-0.75,+0.25) {1};
+					\node at (-0.25,+0.25) {4};
+					\node at (+0.25,+0.25) {2};
+					\node at (-0.75,-0.25) {2};
+					\node at (-0.25,-0.25) {1};
+					\node at (+0.25,-0.25) {3};
+					\node at (-0.75,-0.75) {1};
+					\node at (-0.25,-0.75) {3};
+					\node at (+0.25,-0.75) {2};
+				\end{tikzpicture}
+		}
+		\hspace{1cm}
+		\subfloat[Iter. 2]{		
+			\begin{tikzpicture}
+			\draw[step=0.5cm,color=gray] (-1,-1) grid (0.5,0.5);
+				\node at (-0.75,+0.25) {4};
+				\node at (-0.25,+0.25) {4};
+				\node at (+0.25,+0.25) {4};
+				\node at (-0.75,-0.25) {2};
+				\node at (-0.25,-0.25) {4};
+				\node at (+0.25,-0.25) {3};
+				\node at (-0.75,-0.75) {3};
+				\node at (-0.25,-0.75) {3};
+				\node at (+0.25,-0.75) {3};
+			\end{tikzpicture}
+		}
+		\hspace{1cm}
+		\subfloat[Iter. 3]{		
+			\begin{tikzpicture}
+			\draw[step=0.5cm,color=gray] (-1,-1) grid (0.5,0.5);
+				\node at (-0.75,+0.25) {4};
+				\node at (-0.25,+0.25) {4};
+				\node at (+0.25,+0.25) {4};
+				\node at (-0.75,-0.25) {4};
+				\node at (-0.25,-0.25) {4};
+				\node at (+0.25,-0.25) {4};
+				\node at (-0.75,-0.75) {3};
+				\node at (-0.25,-0.75) {4};
+				\node at (+0.25,-0.75) {3};
+			\end{tikzpicture}
+		}
+		\hspace{1cm}
+		\subfloat[Iter. 4]{		
+			\begin{tikzpicture}
+			\draw[step=0.5cm,color=gray] (-1,-1) grid (0.5,0.5);
+				\node at (-0.75,+0.25) {4};
+				\node at (-0.25,+0.25) {4};
+				\node at (+0.25,+0.25) {4};
+				\node at (-0.75,-0.25) {4};
+				\node at (-0.25,-0.25) {4};
+				\node at (+0.25,-0.25) {4};
+				\node at (-0.75,-0.75) {4};
+				\node at (-0.25,-0.75) {4};
+				\node at (+0.25,-0.75) {4};
+			\end{tikzpicture}	
+		}
+		\end{figure}						
+\end{itemize}
+
+\section{SUBROUTINES Reologia - Rheology}
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE KAPPA
+	%------------------------------------------------------------------------------------
+
+	\subsection{kappa}
+		La funzione esplicita la relazione costitutiva di Van Genuchten, chiamando la funzione
+		\texttt{Thetaf} \ref{sub:thetaf} per il calcolo del contenuto d'acqua $\theta$ in dipendenza dall'
+		altezza piezometrica $\psi$ (da notare quindi che $\theta(\psi)$).
+		A seconda che le condizioni siano di saturazione $\psi>0$ o meno $\psi\leq0$, la funzione procede
+		al calcolo della conducibilità idraulica $K$.
+		Come praticamente tutte le funzioni che concernono la reologia, questa opera diversamente a seconda
+		che ci si trovi
+		\begin{description}\itemsep0pt
+			\item[in saturazione], dove la K assume il valore della conducibilità idraulica a saturazione $K_{s}$;
+			\item[in zona insatura], dove la K, dipendente dall'altezza piezometrica $\psi$, viene computata 
+			tramite la funzione:
+			\begin{equation}
+				K(\psi) = K_{s}*\left[\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right]^{\frac{1}{2}}*\left\{1-\left[1-\left(\frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}\right)^{\frac{1}{m}}\right]^{m}\right\}^{2}
+			\label{eq:kappainsat}
+			\end{equation}
+		\end{description}
+
+		Per brevità, la saturazione effettiva nel codice viene chiamata $Se = \frac{\theta-\theta_{r}}{\theta_{s}-\theta_{r}}$,
+		rendendo la formula di cui sopra più compatta e leggibile:
+			\begin{equation}
+				K(\psi) = K_{s}*Se^{\frac{1}{2}}*\left[1-\left(1-Se^{\frac{1}{m}}\right)^{m}\right]^{2}
+			\label{eq:kappainsatse}
+			\end{equation} 
+		\dots con m parametro del terreno da calibrare.
+
+		%\lstinputlisting[language=Fortran, firstline=5, lastline=19]{../BASE_CODE/Rheology.f90}
+			\subroutines
+			%\lstinputlisting[language=Fortran, firstline=11, lastline=11]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+		 	calcola il $\theta$ (\texttt{th} nel codice) relativo ai parametri forniti in ingresso.		
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE THETAF
+	%------------------------------------------------------------------------------------
+
+	\subsection{Thetaf}
+	\label{sub:thetaf}
+		La funzione calcola il contenuto d'acqua in base alla data altezza piezometrica tramite la parametrizzazione di van Genuchten \cite{Genuchten1980}, provvedento:
+		\begin{description}\itemsep0pt
+			\item[in saturazione], ad assegnare a $\theta$ il $\theta_{s}$ a saturazione;
+			\item[nella zona insatura], a calcolare $\theta$ con l'equazione:
+			\begin{equation}
+				\theta(\psi) = \theta_{r} + \frac{\theta_{s}-\theta_{r}}{1-|\alpha\psi|^{n}}^{m}
+				\label{eq:thetainsat}
+			\end{equation}
+		\end{description}
+		\dots con il seguente significato dei simboli:
+		\begin{itemize}\itemsep0pt
+			\item $\theta_{r}$: contenuto d'acqua residuo (si veda la teoria sulle \texttt{SWRC}, \emph{Soil Water Retention Curves})
+			\item $\theta_{s}$: contenuto d'acqua a saturazione
+			\item $\alpha$ ($\geq0$), m e n parametri del terreno da calibrare, con:
+			\begin{description}\itemsep0pt
+				\item[$\bm{\alpha}$]: $>0$, relazionato all'inverso della pressione di suzione d'entrata dell'aria; 
+				\item[n]: una misura della distribuzione delle grandezze dei pori;
+				\item[m]: {$1-\frac{1}{n}$}
+			\end{description}
+		\end{itemize}			
+		%\lstinputlisting[language=Fortran, firstline=22, lastline=32]{../BASE_CODE/Rheology.f90}
+
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE DTHETA
+	%------------------------------------------------------------------------------------
+	\subsection{dTheta}
+		La funzione calcola la capacità specifica del volume di controllo, l'integrale della quale fornisce il 
+		contenuto d'acqua dello stesso volume.
+
+		In formule:
+		\begin{equation}
+			c(\psi) = \frac{\partial \theta}{\partial \psi} ; \theta(\psi) = \theta_{r} + \int_{-\infty}^{\psi}c(\psi)d\psi
+			\label{eq:speccap}
+		\end{equation}
+		La capacità è calcolata tramite la seguente equazione parametrica:
+		\begin{description}\itemsep0pt
+			\item[in saturazione] ($\psi > 0$)\newline $c(\psi) = 0$ - ovvero: "il volume dei vuoti residuo è nullo, quindi non è possibile
+			saturarlo ulteriormente!"
+			\item[nella zona insatura]
+			\begin{equation}
+				c(\psi) = \alpha\cdot n \cdot m \cdot \frac{\theta_{s} - \theta_{r}}{(1+|\alpha\psi|^{n})^{m+1}}|\alpha\psi|^{n-1}
+			\end{equation}
+		\end{description}
+		%\lstinputlisting[language=Fortran, firstline=59, lastline=69]{../BASE_CODE/Rheology.f90}
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE DTHETA1
+	%------------------------------------------------------------------------------------
+	\subsection{dTheta1}
+	\label{subs:theta1}
+		La funzione calcola la derivata del primo elemento della decomposizione di Jordan del contenuto d'acqua , quindi ottenendo la 
+		capacità specifica del primo elemento della decomposizione $p(\psi)=\frac{\partial\theta_{1}}{\partial\psi}$.
+
+		Nel dettaglio ho, dato che ho assunto (\cite{Casulli2010}, pp. 2258) che la capacità specifica abbia delle proprietà per cui
+		sia esprimibile come differenza di funzioni nonnegative, nondecrescenti e limitate (ovvero, $\exists \psi^{*} // c(\psi) > 0\, \forall\, \psi \in \!R \land ( \partial \theta/\partial\psi\,\geq0 \left[-\infty,\psi^{*}\right] \lor \partial \theta/\partial\psi<0\, \left[\psi^{*},+\infty\right]) $), che:
+		\begin{description}\itemsep0pt
+			\item [capacità specifica (jordan)]: $c(\psi)=p(\psi) - q(\psi)$
+			\item [per $\psi\leq\psi^{*}$] ho $p(\psi)=c(\psi)$ e $q(\psi)=0$
+			\item [per $\psi>\psi^{*}$] ho $p(\psi)=c(\psi^{*})$ e $q(\psi)=p(\psi)-c(\psi)$
+			\item [volumi d'acqua risultanti]: $\theta(\psi) = \theta_{1}(\psi) - \theta_{2}(\psi)$, con\newline
+				\begin{equation}
+					\theta_{1} = \theta_{r} + \int_{-\infty}^{\psi}p(\eta)d\eta
+					\label{eq:theta1expr}
+				\end{equation}
+				e 
+				\begin{equation}
+					\theta_{2} = \int_{-\infty}^{\psi}q(\eta)d\eta
+					\label{eq:theta2expr}
+				\end{equation}
+		\end{description}
+		Quindi, i volumi fluidi si possono esprimere come:
+		\begin{equation}
+			\begin{align}
+				\theta_{1}(\psi) = \theta(\psi), & \theta_{2}=0 && \psi\leq\psi^{*} \\ 
+				\theta_{1}(\psi) = \theta(\psi^{*}) + c(\psi^{*})(\psi-\psi^{*}), & \theta_{2}=\theta_{1}-\theta(\psi) && \psi>\psi^{*}
+			\end{align}
+		\end{equation}
+		\begin{figure}[!h]
+		\centering
+		\begin{tikzpicture}
+		  	\begin{axis}[ 
+				  no markers, domain=0:8, samples=100,
+				  axis lines*=left, xlabel=$\psi$, ylabel=$\textcolor{cyan!60!black}{c(\psi)} / \textcolor{red!60!black}{\theta(\psi)}$,
+				  every axis y label/.style={at=(current axis.above origin),anchor=south},
+				  every axis x label/.style={at=(current axis.right of origin),anchor=west},
+				  height=5cm, width=8cm,
+				  xtick={4},
+    			  xticklabels={$\psi^{*}$},				  
+    			  ytick={0.4},
+    			  yticklabels={$\frac{\partial c}{\partial\psi}=0$},				      			  
+				  enlargelimits=true, clip=false, axis on top
+		  	] 
+			\addplot [very thick,cyan!60!black] {gauss(4,1)};
+			\addplot [very thick,red!60!black] {cdf(4,1)};
+			\end{axis}
+		\end{tikzpicture}
+		\caption{Esempio di andamento (gaussiano) della \textcolor{cyan!60!black}{capacità specifica} decomponibile secondo Jordan. Si noti la positività della stessa
+		$\forall\, \mathbb{R} $, la non decrescenza di $\frac{\partial \theta}{\partial \psi}$ per $\psi\leq\psi^{*}$ e la decrescenza di $\frac{\partial \theta}{\partial \psi}$ per $\psi>\psi^{*}$. Per riferimento è plottata anche la \textcolor{red!60!black}{distribuzione cumulata della capacità specifica} (una curva sigmoide: notare la forse interessante similitudine con la forma delle curve di van Genuchten \cite{Genuchten1980}).}
+		\end{figure}
+
+		%\lstinputlisting[language=Fortran, firstline=71, lastline=80]{../BASE_CODE/Rheology.f90}
+	
+		\subroutines
+			%\lstinputlisting[language=Fortran, firstline=76, lastline=76]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			 calcola la $p$ ($\frac{\partial\theta_{1}}{\partial\psi}=p$) della decomposizione di Jordan in caso di $\psi\leq\psi^{*}$, passando $\psi$;
+			%\lstinputlisting[language=Fortran, firstline=78, lastline=78]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			 calcola la $p$ della decomposizione di Jordan in caso di $\psi>\psi^{*}$, passando $\psi^{*}$;			 
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE DTHETA2
+	%------------------------------------------------------------------------------------
+	\subsection{dTheta2}
+		La funzione calcola la derivata del secondo elemento della decomposizione di Jordan $q(\psi) = p(\psi) - c(\psi)$ della capacità specifica ($q=\frac{\partial \theta_{2}}{\partial \psi}$).
+		Si veda \ref{subs:theta1} per ulteriori dettagli.
+		%\lstinputlisting[language=Fortran, firstline=82, lastline=90]{../BASE_CODE/Rheology.f90} 
+		\subroutines
+			%\lstinputlisting[language=Fortran, firstline=86, lastline=86]{../BASE_CODE/Rheology.f90} La \emph{subroutine} provvede al calcolo
+			della $c(\psi)$
+			\newline
+			%\lstinputlisting[language=Fortran, firstline=87, lastline=87]{../BASE_CODE/Rheology.f90} La \emph{subroutine} provvede al calcolo
+			della $p(\psi)$
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE THETA1
+	%------------------------------------------------------------------------------------
+	\subsection{Theta1}
+	\label{sub:theta1}
+		La funzione calcola la frazione di contenuto d'acqua del volume di controllo associata all'integrale 
+		del primo elemento della decomposizione di Jordan per la capacità specifica. Per $\psi\leq\psi^{*}$, la funzione
+		procede a chiamare la procedura per il calcolo di $\theta(\psi)_{1}$ derivata dall'applicazione diretta della
+		parametrizzazione di van Genuchten \ref{sub:thetaf}, mentre oltre $\psi_{*}$ (punto in cui $\frac{\partial c(\psi)}{\partial \psi}$ è massima) somma a $\theta_1{\psi<\psi_{*}}$ un integrale alle differenze (secondo Riemann) della capacità specifica 
+		(\emhp{e.g.}, $\theta\approx\Delta\psi*\Delta c(\psi)$).  
+		%\lstinputlisting[language=Fortran, firstline=34, lastline=47]{../BASE_CODE/Rheology.f90}
+		\subroutines
+			%\lstinputlisting[language=Fortran, firstline=43, lastline=43]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			calcola il contenuto d'acqua secondo van Genuchten;
+			%\lstinputlisting[language=Fortran, firstline=44, lastline=44]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			calcola la capacità specifica $q(\psi)$.
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE THETA2
+	%------------------------------------------------------------------------------------
+	\subsection{Theta2}
+		La funzione calcola la frazione di contenuto d'acqua del volume di controllo associata all'integrale 
+		del secondo elemento della decomposizione di Jordan per la capacità specifica, come
+		differenza tra il contenuto d'acqua totale e $\int_{-\infty}^{\psi}p(\eta)d\eta = \theta_{1}$.
+		%\lstinputlisting[language=Fortran, firstline=49, lastline=57]{../BASE_CODE/Rheology.f90}
+		\subroutines
+			%\lstinputlisting[language=Fortran, firstline=53, lastline=53]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			calcola il contenuto d'acqua totale tramite la parametrizzazione di van Genuchten.
+			%\lstinputlisting[language=Fortran, firstline=54, lastline=54]{../BASE_CODE/Rheology.f90} La \emph{subroutine}
+			calcola l'integrale di $p(\psi)$.
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE V
+	%------------------------------------------------------------------------------------
+	\subsection{V}
+		%\lstinputlisting[language=Fortran, firstline=92, lastline=100]{../BASE_CODE/Rheology.f90}
+
+	%------------------------------------------------------------------------------------
+	% SUBROUTINE DV
+	%------------------------------------------------------------------------------------
+	\subsection{dV}
+		%\lstinputlisting[language=Fortran, firstline=102, lastline=110]{../BASE_CODE/Rheology.f90}
+
+\section{MODULE Gradiente coniugato - CGModule}
+	Per una introduzione al metodo del Gradiente Coniugato, si veda \cite{Shewchuk1994}.
+
+\section{Spunti di riflessione}
+\begin{itemize}\itemsep0pt
+	\item A rigore, l'equazione di Richards dipende dalla viscosità $\mu$ del fluido: in \cite{Casulli2010} sembra si supponga che il fluido sia sempre acqua a temperatura ambiente, e la sua viscosità è inglobata all'interno della K\dots Volendo, forse si potrebbe accoppiare a Richards il bilancio dell'energia considerando che $\mu=\mu(T)$\dots
+\end{itemize}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\renewcommand{\refname}{\spacedlowsmallcaps{Riferimenti}} % For modifying the bibliography heading
+
+\bibliographystyle{unsrt}
+\bibliography{sample.bib} % The file containing the bibliography
+
+%----------------------------------------------------------------------------------------
+
+
+\end{document}

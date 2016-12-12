@@ -1,0 +1,69 @@
+%----------------------------------------------------------------------------------------
+%	REQUIRED PACKAGES
+%----------------------------------------------------------------------------------------
+
+\usepackage[
+nochapters, % Turn off chapters since this is an article        
+beramono, % Use the Bera Mono font for monospaced text (\texttt)
+eulermath,% Use the Euler font for mathematics
+pdfspacing, % Makes use of pdftex’ letter spacing capabilities via the microtype package
+dottedtoc % Dotted lines leading to the page numbers in the table of contents
+]{classicthesis} % The layout is based on the Classic Thesis style
+
+\usepackage{arsclassica} % Modifies the Classic Thesis package
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+\usepackage{graphicx} % Required for including images
+\graphicspath{{img/}} % Set the default folder for images
+\usepackage{enumitem} % Required for manipulating the whitespace between and within lists
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+\usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
+\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
+\usepackage{varioref} % More descriptive referencing
+\usepackage[dvipsnames]{xcolor} % Colors and other amenities
+\usepackage{listings} % Code
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{bm}
+%----------------------------------------------------------------------------------------
+%	CODE STYLE
+%---------------------------------------------------------------------------------------
+
+\lstset{language=Java,
+  frame=single,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{BrickRed},
+  commentstyle=\color{gray!80!white},
+  morecomment=[l]{!\ },
+  breaklines=true
+}
+
+
+%----------------------------------------------------------------------------------------
+%	THEOREM STYLES
+%---------------------------------------------------------------------------------------
+
+\theoremstyle{definition} % Define theorem styles here based on the definition style (used for definitions and examples)
+\newtheorem{definition}{Definition}
+
+\theoremstyle{plain} % Define theorem styles here based on the plain style (used for theorems, lemmas, propositions)
+\newtheorem{theorem}{Theorem}
+
+\theoremstyle{remark} % Define theorem styles here based on the remark style (used for remarks and notes)
+
+%----------------------------------------------------------------------------------------
+%	HYPERLINKS
+%---------------------------------------------------------------------------------------
+
+\hypersetup{
+%draft, % Uncomment to remove all links (useful for printing in black and white)
+colorlinks=true, breaklinks=true, bookmarks=true,bookmarksnumbered,
+urlcolor=webbrown, linkcolor=RoyalBlue, citecolor=webgreen, % Link colors
+pdftitle={}, % PDF title
+pdfauthor={\textcopyright}, % PDF Author
+pdfsubject={}, % PDF Subject
+pdfkeywords={Casulli, Zanolli, Richards, 1d, 2d, Java, OMS3}, % PDF Keywords
+pdfcreator={pdfLaTeX}, % PDF Creator
+pdfproducer={LaTeX with hyperref and ClassicThesis} % PDF producer
+}

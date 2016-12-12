@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: fortran_doc.aux
+The style file: unsrt.bst
+Database file #1: sample.bib.bib
+Warning--empty institution in Shewchuk1994
+You've used 3 entries,
+            1791 wiz_defined-function locations,
+            467 strings with 4083 characters,
+and the built_in function-call counts, 504 in all, are:
+= -- 46
+> -- 12
+< -- 0
++ -- 6
+- -- 3
+* -- 26
+:= -- 94
+add.period$ -- 9
+call.type$ -- 3
+change.case$ -- 4
+chr.to.int$ -- 0
+cite$ -- 4
+duplicate$ -- 23
+empty$ -- 52
+format.name$ -- 3
+if$ -- 107
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 2
+newline$ -- 18
+num.names$ -- 3
+pop$ -- 4
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 8
+stack$ -- 0
+substring$ -- 27
+swap$ -- 2
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 1
+while$ -- 4
+width$ -- 4
+write$ -- 35
+(There was 1 warning)
