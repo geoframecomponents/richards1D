@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="oms3.proj.RIntegration" default="all" basedir=".">
-	<description>Builds, tests, and runs the project oms3.proj.RIntegration</description>
-	<import file=".oms/project.xml"/>
-</project>

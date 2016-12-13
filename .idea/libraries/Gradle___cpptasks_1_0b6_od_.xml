@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Gradle: :cpptasks-1.0b6-od:">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/cpptasks-1.0b6-od.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

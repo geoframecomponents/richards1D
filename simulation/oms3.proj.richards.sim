@@ -5,7 +5,7 @@ OMS3.sim {
     
     model() {
         components {
-           "c" "example2.RExecute"
+           "c" "renjintry.RExecute"
         }
         parameter {
             // "componentname.@In_fieldname" -> object
