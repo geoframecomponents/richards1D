@@ -1,4 +1,6 @@
 import org.junit.Test;
+import richards_classes.RichardsSolver;
+import richards_classes.Richards;
 
 public class RichardsTest {
 
