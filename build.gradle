@@ -18,7 +18,7 @@ if (project.hasProperty('projVersion')) {
 // name with versioning of the jar file
 jar {
     manifest {
-        attributes 'Implementation-Title' : 'Gradle Quickstart',
+        attributes 'Implementation-Title' : 'Richards project build',
                    'Implementation-Version': version
     }
 }
@@ -49,7 +49,7 @@ dependencies {
     compile name: 'jcommon-1.0.15'
     compile name: 'jfreechart-1.0.12'
     compile name: 'omsx-csip'
-    compile name: 'OMS/3.5.2/oms-all'
+    compile name: 'OMS/3.5.2/CONSOLE/lib/oms-all'
     compile name: 'renjin-script-engine-0.8.2165-jar-with-dependencies'
 
     testCompile group: 'junit', name: 'junit', version: '4.+'
