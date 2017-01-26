@@ -99,6 +99,7 @@ public class Richards1d {
 		////////////////////
 		//// MAIN CYCLE ////
 		////////////////////
+		System.out.println("modifica");
 		for(int niter = 0; niter < MAXITER; niter++) {
 
 		    System.out.println("Main cycle iteration:" + niter);		    
