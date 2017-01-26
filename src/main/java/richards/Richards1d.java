@@ -126,6 +126,7 @@ public class Richards1d {
 		   		break;
 		   	}
 
+		   	System.out.println("prova_mary");
 			//// RIGHT HAND SIDE ////
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
