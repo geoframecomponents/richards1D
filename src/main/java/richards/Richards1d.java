@@ -245,35 +245,15 @@ public class Richards1d {
 
 				} //// INNER CYCLE END ////
 			} //// OUTER CYCLE END ////
-		    //// Print value of psis  ////
-		    try {
-		        FileWriter fileout = new FileWriter(time+"PSI_values.txt");
-		        fileout.write("Psi value at time: "+time +"\n");
-		        fileout.write("Psi [m]	Coordinate [m]\n");
-		        for(int i=0;i < NUM_CONTROL_VOLUMES;i++)
-		          {
-		        	fileout.write(psis[i]+"		"+space_cv_centres[i]+"\n");
-		          }
-		              
-		        fileout.close(); // chiude il file
-		    	}
-		    /*try
-		     {
-		    	  FileOutputStream psis_file_name = new FileOutputStream(time+"PROVASTAMPAPSI.txt");
-		          PrintStream psi_print = new PrintStream(psis_file_name);
-		          psi_print.println("Psi value at time: "+time +"\n");
-		          psi_print.println("Psi [m]	Coordinate [m]\n");
-		          for(int i=0;i < NUM_CONTROL_VOLUMES;i++)
-		          {
-		                psi_print.println(psis[i]+"		"+space_cv_centres[i]);
-		          }
-		      }*/
-		      catch (IOException e)
-		      {
-		          System.out.println("Errore: " + e);
-		          System.exit(1);
-		      }
-		// "The show must go on"
+		    //// Print value of psis with PrintTXT class  ////
+		    
+		    PrintTXT print = new PrintTXT();
+			print.setValueFirstVector(psis);
+			print.setValueSecondVector(space_cv_centres);
+			
+			print.PrintTwoVectors("Psi_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
+		
+			// "The show must go on"
 	   	time += time_delta;
 
 		} //// MAIN CYCLE END ////
