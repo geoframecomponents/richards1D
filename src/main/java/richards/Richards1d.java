@@ -1,5 +1,5 @@
 package richards;
-
+import java.io.*;
 /*
  * GNU GPL v3 License
  *
@@ -35,20 +35,20 @@ public class Richards1d {
 	static	double 	n					= 1.31;         // For Van Genuchten
 	static	double 	m					= 1-1/n;        // For Van Genuchten
 	static	double 	alpha				= 1.9;          // For Van Genuchten
-	static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+	static	double 	psi_crit			= -0.1752;//(-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 
 
 	// Space
 	static 	double 	space_bottom		= 0.0;
 	static 	double 	space_top			= 2.0;
-	static 	int 	NUM_CONTROL_VOLUMES	= 100; 
+	static 	int 	NUM_CONTROL_VOLUMES	= 10; 
 	static 	double 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; 			// delta
 	static 	double[] space_cv_centres	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
 
 	// Time
 	static 	double 	time_end 			= 3*Math.pow(10,8);            
 	static 	double 	time_initial 		= 0.0;
-	static 	double 	time_delta 			= 1000000.0;
+	static 	double 	time_delta 			= 1000.0;
 
 	// Time and space
 	static	double 	gridvar				= time_delta / space_delta;
@@ -79,7 +79,9 @@ public class Richards1d {
 		double[] 		thetas				= new double[NUM_CONTROL_VOLUMES];
 		double[] 		a 					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		b 					= new double[NUM_CONTROL_VOLUMES];
+		double[]		bb					= new double[NUM_CONTROL_VOLUMES]; // This is the vector which element are those of the principal diagonal and it is used in the Thomas algorithm
 		double[] 		c 					= new double[NUM_CONTROL_VOLUMES];
+		double[]		cc 					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fs					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fks					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		dis					= new double[NUM_CONTROL_VOLUMES];
@@ -142,7 +144,7 @@ public class Richards1d {
 
 		            k_p = 0.5*(kappas[i] + k_r);
 		            k_m = 0.5*(kappas[i] + kappas[i-1]);
-		            a[i] = -k_m * gridvar;
+		            a[i] = -k_m * gridvarsq;
 		            b[i] = gridvarsq * (k_m + 2*k_p);
 		            c[i] = 0;
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m) + 2 * k_p * gridvarsq * psi_r; 
@@ -159,7 +161,6 @@ public class Richards1d {
 				}
 			}
 
-
 			// Initial guess of psis
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = Math.min(psis[i], psi_crit);
@@ -168,7 +169,8 @@ public class Richards1d {
 			//// NESTED NEWTON ////
 		    //// OUTER CYCLE, linearizes one of q_{1}, q_{2} ////
 		    for(int i = 0; i < MAXITER_NEWT; i++) {
-
+		    	// I have to assign 0 to outer_residual otherwise I will take into account of the previous error
+		    	outer_residual = 0.0;
 		    	for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 
 		    		fs[j] = thetaf(psis[j]) - rhss[j];        
@@ -200,7 +202,8 @@ public class Richards1d {
 
 			    //// INNER CYCLE ////
 				for(int j = 0; j < MAXITER_NEWT; j++) {
-
+					// I have to assign 0 to inner_residual otherwise I will take into account of the previous error
+					inner_residual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 
 				        fks[l] = theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
@@ -227,10 +230,13 @@ public class Richards1d {
 			        }
 
 				    //// CONJGRAD ////
+			        // Attention: b is the main dyagonal of the coefficient matrix it must not change!! The same for c
+			        bb = b.clone();
+			        cc = c.clone();
 				    for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
-				    	b[y] += dis[y];
+				    	bb[y] += dis[y];
 				    }
-			        dpsis = thomas(a,b,c,fks);
+			        dpsis = thomas(a,bb,cc,fks);
 
 				    //// PSIS UPDATE ////
 			        for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
@@ -239,7 +245,34 @@ public class Richards1d {
 
 				} //// INNER CYCLE END ////
 			} //// OUTER CYCLE END ////
-
+		    //// Print value of psis  ////
+		    try {
+		        FileWriter fileout = new FileWriter(time+"PSI_values.txt");
+		        fileout.write("Psi value at time: "+time +"\n");
+		        fileout.write("Psi [m]	Coordinate [m]\n");
+		        for(int i=0;i < NUM_CONTROL_VOLUMES;i++)
+		          {
+		        	fileout.write(psis[i]+"		"+space_cv_centres[i]+"\n");
+		          }
+		              
+		        fileout.close(); // chiude il file
+		    	}
+		    /*try
+		     {
+		    	  FileOutputStream psis_file_name = new FileOutputStream(time+"PROVASTAMPAPSI.txt");
+		          PrintStream psi_print = new PrintStream(psis_file_name);
+		          psi_print.println("Psi value at time: "+time +"\n");
+		          psi_print.println("Psi [m]	Coordinate [m]\n");
+		          for(int i=0;i < NUM_CONTROL_VOLUMES;i++)
+		          {
+		                psi_print.println(psis[i]+"		"+space_cv_centres[i]);
+		          }
+		      }*/
+		      catch (IOException e)
+		      {
+		          System.out.println("Errore: " + e);
+		          System.exit(1);
+		      }
 		// "The show must go on"
 	   	time += time_delta;
 
