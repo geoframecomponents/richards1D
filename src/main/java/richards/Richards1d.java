@@ -91,8 +91,9 @@ public class Richards1d {
 		double 			outer_residual		= 0.0;
 		double 			inner_residual		= 0.0;
 
-
-
+		Thomas lSS = new Thomas();
+		PrintTXT print = new PrintTXT();
+		
 		// Initial domain conditions
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			psis[i] = -space_cv_centres[i];
@@ -129,7 +130,11 @@ public class Richards1d {
 		   		break;
 		   	}
 
-			//// RIGHT HAND SIDE ////
+			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
+		   	 a lower diagonal
+		   	 b main diagonal
+		   	 c upper diagonal
+		   	 RIGHT HAND SIDE */
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
 
@@ -230,14 +235,17 @@ public class Richards1d {
 			        }
 
 				    //// CONJGRAD ////
-			        // Attention: b is the main dyagonal of the coefficient matrix it must not change!! The same for c
+			        // Attention: b is the main diagonal of the coefficient matrix it must not change!! The same for c
+			        
 			        bb = b.clone();
 			        cc = c.clone();
 				    for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
 				    	bb[y] += dis[y];
 				    }
-			        dpsis = thomas(a,bb,cc,fks);
-
+				    lSS.set(cc,bb,a,fks);
+				    dpsis = lSS.solver();
+				    //dpsis = thomas(a,bb,cc,fks);
+				    
 				    //// PSIS UPDATE ////
 			        for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
 			        	psis[s] = psis[s] - dpsis[s];
@@ -247,7 +255,6 @@ public class Richards1d {
 			} //// OUTER CYCLE END ////
 		    //// Print value of psis with PrintTXT class  ////
 		    
-		    PrintTXT print = new PrintTXT();
 			print.setValueFirstVector(psis);
 			print.setValueSecondVector(space_cv_centres);
 			
