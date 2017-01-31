@@ -1,5 +1,5 @@
 package richards;
-import java.io.*;
+
 /*
  * GNU GPL v3 License
  *
@@ -21,8 +21,9 @@ import java.io.*;
 
 
 // I want to try it with as little dependencies as possible, first
+//import java.io.*;
 import java.lang.Math;
-
+import richards_classes.*;
 public class Richards1d {
 	// "Static" keyword defines automatically a globally accessible variable
 	// Useful for soil parameters that does not change in time: we can assume them
@@ -35,8 +36,8 @@ public class Richards1d {
 	static	double 	n					= 1.31;         // For Van Genuchten
 	static	double 	m					= 1-1/n;        // For Van Genuchten
 	static	double 	alpha				= 1.9;          // For Van Genuchten
-	static	double 	psi_crit			= -0.1752;//(-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
-
+	static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+	
 
 	// Space
 	static 	double 	space_bottom		= 0.0;
@@ -77,10 +78,10 @@ public class Richards1d {
 		double 			k_l					= 0.0;
 		double[] 		kappas				= new double[NUM_CONTROL_VOLUMES];
 		double[] 		thetas				= new double[NUM_CONTROL_VOLUMES];
-		double[] 		a 					= new double[NUM_CONTROL_VOLUMES];
-		double[] 		b 					= new double[NUM_CONTROL_VOLUMES];
+		double[] 		lowerDiagonal		= new double[NUM_CONTROL_VOLUMES];
+		double[] 		mainDiagonal		= new double[NUM_CONTROL_VOLUMES];
 		double[]		bb					= new double[NUM_CONTROL_VOLUMES]; // This is the vector which element are those of the principal diagonal and it is used in the Thomas algorithm
-		double[] 		c 					= new double[NUM_CONTROL_VOLUMES];
+		double[] 		upperDiagonal		= new double[NUM_CONTROL_VOLUMES];
 		double[]		cc 					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fs					= new double[NUM_CONTROL_VOLUMES];
 		double[] 		fks					= new double[NUM_CONTROL_VOLUMES];
@@ -91,8 +92,10 @@ public class Richards1d {
 		double 			outer_residual		= 0.0;
 		double 			inner_residual		= 0.0;
 
-		Thomas lSS = new Thomas();
+		Thomas thomasAlg = new Thomas();
 		PrintTXT print = new PrintTXT();
+		SoilParametrization soilPar = new VanGenuchten(n,alpha,theta_r,theta_s,ks);
+		JordanDecomposition jordanDecomposition = new JordanDecomposition(soilPar);
 		
 		// Initial domain conditions
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
@@ -118,12 +121,16 @@ public class Richards1d {
 		    }
 
 			//// KAPPAS ////
-		    k_r = kappa(psi_r); 
-		    k_l = kappa(psi_l);
+		    //k_r = kappa(psi_r); 
+		    //k_l = kappa(psi_l);
+		    k_r = soilPar.hydraulicConductivity(psi_r);
+		    k_l = soilPar.hydraulicConductivity(psi_l);
 		    for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			    thetas[i] = thetaf(psis[i]);
-			    kappas[i] = kappa(psis[i]);           
-			}
+			    //thetas[i] = thetaf(psis[i]);
+			    //kappas[i] = kappa(psis[i]);           
+		    	thetas[i] = soilPar.waterContent(psis[i]);
+		    	kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+		    }
 
 		   	// "Your time has come"
 		   	if(time > time_end) {
@@ -140,27 +147,27 @@ public class Richards1d {
 
 		            k_p = 0.5*(kappas[i] + kappas[i+1]);
 		            k_m = 0.5*(kappas[i] + k_l);
-		            a[i] = 0;
-		            b[i] = gridvarsq * (2 * k_m + k_p);
-		            c[i] = -k_p * gridvarsq;
+		            lowerDiagonal[i] = 0;
+		            mainDiagonal[i] = gridvarsq * (2 * k_m + k_p);
+		            upperDiagonal[i] = -k_p * gridvarsq;
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m) + 2 * k_m * gridvarsq * psi_l; 
 
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
 
 		            k_p = 0.5*(kappas[i] + k_r);
 		            k_m = 0.5*(kappas[i] + kappas[i-1]);
-		            a[i] = -k_m * gridvarsq;
-		            b[i] = gridvarsq * (k_m + 2*k_p);
-		            c[i] = 0;
+		            lowerDiagonal[i] = -k_m * gridvarsq;
+		            mainDiagonal[i] = gridvarsq * (k_m + 2*k_p);
+		            upperDiagonal[i] = 0;
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m) + 2 * k_p * gridvarsq * psi_r; 
 
 				} else {
 
 		            k_p = 0.5*(kappas[i] + kappas[i+1]);
 		            k_m = 0.5*(kappas[i] + kappas[i-1]);
-		            a[i] = -k_m * gridvarsq;
-		            b[i] = gridvarsq * (k_m + k_p);
-		            c[i] = -k_p * gridvarsq;
+		            lowerDiagonal[i] = -k_m * gridvarsq;
+		            mainDiagonal[i] = gridvarsq * (k_m + k_p);
+		            upperDiagonal[i] = -k_p * gridvarsq;
 		            rhss[i] = thetas[i] + gridvar * (k_p-k_m); 
      
 				}
@@ -178,15 +185,16 @@ public class Richards1d {
 		    	outer_residual = 0.0;
 		    	for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 
-		    		fs[j] = thetaf(psis[j]) - rhss[j];        
+		    		//fs[j] = thetaf(psis[j]) - rhss[j];
+		    		fs[j] = soilPar.waterContent(psis[j]) - rhss[j];
 			        if(j == 0) {
-			            fs[j] = fs[j] + b[j]*psis[j] + c[j]*psis[j+1];
+			            fs[j] = fs[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 			        }
 			        else if(j == NUM_CONTROL_VOLUMES -1) {
-			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j];
+			            fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
 			        }
 			        else {
-			            fs[j] = fs[j] + a[j]*psis[j-1] + b[j]*psis[j] + c[j]*psis[j+1];
+			            fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 			        }
 			        outer_residual += fs[j]*fs[j];
 		    	}
@@ -211,18 +219,18 @@ public class Richards1d {
 					inner_residual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 
-				        fks[l] = theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
-
+				        //fks[l] = theta1(psis[l]) - (theta2(psis_outer[l]) + dtheta2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
+						fks[l] = jordanDecomposition.waterContent1(psis[l]) - (jordanDecomposition.waterContent2(psis_outer[l]) + jordanDecomposition.dWaterContent2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
 			            if(l == 0) {
-			                fks[l] = fks[l] + b[l]*psis[l] + c[l]*psis[l+1];
+			                fks[l] = fks[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 			            }
 			            else if(l == NUM_CONTROL_VOLUMES -1) {
-			                fks[l] = fks[l] + a[l]*psis[l-1] + b[l]*psis[l];
+			                fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
 			            }
 			            else {
-			                fks[l] = fks[l] + a[l]*psis[l-1] + b[l]*psis[l] + c[l]*psis[l+1];
+			                fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 			            }
-			            dis[l] = dtheta1(psis[l]) - dtheta2(psis_outer[l]);
+			            dis[l] = jordanDecomposition.dWaterContent1(psis[l]) - jordanDecomposition.dWaterContent2(psis_outer[l]);
 				        inner_residual += fks[l]*fks[l];
 
 				    }
@@ -235,16 +243,16 @@ public class Richards1d {
 			        }
 
 				    //// CONJGRAD ////
-			        // Attention: b is the main diagonal of the coefficient matrix it must not change!! The same for c
+			        // Attention: the main diagonal of the coefficient matrix must not change!! The same for the upper diagonal
 			        
-			        bb = b.clone();
-			        cc = c.clone();
+			        bb = mainDiagonal.clone();
+			        cc = upperDiagonal.clone();
 				    for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
 				    	bb[y] += dis[y];
 				    }
-				    lSS.set(cc,bb,a,fks);
-				    dpsis = lSS.solver();
-				    //dpsis = thomas(a,bb,cc,fks);
+				    thomasAlg.set(cc,bb,lowerDiagonal,fks);
+				    dpsis = thomasAlg.solver();
+				    //dpsis = thomas(lowerDiagonal,bb,cc,fks);
 				    
 				    //// PSIS UPDATE ////
 			        for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
@@ -258,13 +266,13 @@ public class Richards1d {
 			print.setValueFirstVector(psis);
 			print.setValueSecondVector(space_cv_centres);
 			
-			print.PrintTwoVectors("Psi_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
+			print.PrintTwoVectors("PsiTestJoradan_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
 		
 			// "The show must go on"
 	   	time += time_delta;
 
 		} //// MAIN CYCLE END ////
-		print(psis);
+		//print(psis);
 	} //// MAIN END ////
 
 	////////////////////

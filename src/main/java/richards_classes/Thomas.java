@@ -2,7 +2,7 @@
  *  @author Niccolò
  */
 
-package richards;
+package richards_classes;
 
 /**
  * In the case where the matrix A is tridiagonal, i.e. with the special structure there is a very fast and efficient special case of the Gauß-algorithm, called the Thomas-algorithm.
@@ -12,7 +12,7 @@ package richards;
  * (Numerical Methods for Free Surface Hydrodynamics Solution of linear algebraic equation systems, Dumbser, M., Università degli studi di Trento)
  */
 
-class Thomas {
+public class Thomas {
 	
 	double[] mainDiagonal;
 	double[] upperDiagonal;

@@ -1,12 +1,13 @@
 /**
  * 
  */
-package richards;
+package richards_classes;
 import java.io.*;
+
 /**
  * @author Niccolò
  *	This class allows to print a .txt file with one or two or three vectors
- *	Calling methods Print* you can pass the name of the file, the header and the name of variables
+ *	Calling methods Print you can pass the name of the file, the header and the name of variables
  */
 public class PrintTXT {
 	// Vectors to print
