@@ -36,7 +36,7 @@ public class Richards1d {
 	static	double 	n					= 1.31;         // For Van Genuchten
 	static	double 	m					= 1-1/n;        // For Van Genuchten
 	static	double 	alpha				= 1.9;          // For Van Genuchten
-	static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
+	//static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 	
 
 	// Space
@@ -47,7 +47,7 @@ public class Richards1d {
 	static 	double[] space_cv_centres	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
 
 	// Time
-	static 	double 	time_end 			= 3*Math.pow(10,8);            
+	static 	double 	time_end 			= 10000;//3*Math.pow(10,8);            
 	static 	double 	time_initial 		= 0.0;
 	static 	double 	time_delta 			= 1000.0;
 
@@ -105,7 +105,7 @@ public class Richards1d {
 		////////////////////
 		//// MAIN CYCLE ////
 		////////////////////
-		System.out.println("modifica");
+		//System.out.println("modifica");
 		for(int niter = 0; niter < MAXITER; niter++) {
 
 		    System.out.println("Main cycle iteration:" + niter);		    
@@ -131,7 +131,8 @@ public class Richards1d {
 		    	thetas[i] = soilPar.waterContent(psis[i]);
 		    	kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 		    }
-
+		    print.setValueFirstVector(thetas);
+			print.PrintOneVector("thetaTestJoradan_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
 		   	// "Your time has come"
 		   	if(time > time_end) {
 		   		break;
@@ -175,7 +176,7 @@ public class Richards1d {
 
 			// Initial guess of psis
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-				psis[i] = Math.min(psis[i], psi_crit);
+				psis[i] = Math.min(psis[i], soilPar.getPsiStar());
 			}
 
 			//// NESTED NEWTON ////
@@ -210,7 +211,7 @@ public class Richards1d {
 
 				// Initial guess of psis
 				for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-					psis[j] = Math.max(psis[j], psi_crit);
+					psis[j] = Math.max(psis[j], soilPar.getPsiStar());
 				}
 
 			    //// INNER CYCLE ////
@@ -267,7 +268,8 @@ public class Richards1d {
 			print.setValueSecondVector(space_cv_centres);
 			
 			print.PrintTwoVectors("PsiTestJoradan_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
-		
+			print.setValueFirstVector(dpsis);
+			print.PrintTwoVectors("dPsiTestJoradan_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
 			// "The show must go on"
 	   	time += time_delta;
 
@@ -279,167 +281,7 @@ public class Richards1d {
 	//// METHODS ////
 	////////////////////
 
-	/**
-	 * Returns a K, given the soil parameters
-	 *
-	 * @param  psi  	 
-	 * @return 			a real number representing the control volume's K
-	 */	
-	public static double kappa(double psi) {
 
-		double kappa;
-		double saturation;
-
-		saturation = (thetaf(psi) - theta_r) / (theta_s - theta_r); 
-		kappa = ks * Math.pow(saturation, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(saturation, 1.0/m), m), 2.0);
-		return kappa;
-	}
-
-	/**
-	 * Returns the thetaf term
-	 *
-	 * @param  psi  	 
-	 * @return 			a real number representing the \theta_{f}
-	 */	
-	public static double thetaf(double psi) {
-
-		double theta_f;
-
-		if(psi <= 0) {
-		    theta_f = theta_r + (theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m);
-		} else {
-		    theta_f = theta_s;
-		}
-		return theta_f;
-	}
-
-	/**
-	 * Returns the dtheta term
-	 *
-	 * @param  psi   
-	 * @return 			a real number representing the $\delta(\theta)$
-	 */	
-	public static double dtheta(double psi) {
-
-		double dtheta;
-
-		if (psi <= 0) {
-			// Unsaturated case
-		    dtheta = alpha*n*m*(theta_s - theta_r) / Math.pow(1.0 + Math.pow(Math.abs(alpha*psi), n), m + 1.0)*Math.pow(Math.abs(alpha*psi), n - 1.0);
-		} else {
-		    dtheta = 0;
-		}
-		return dtheta;
-	}
-
-	/**
-	 * Returns the dtheta1 term
-	 *
-	 * @param  psi   
-	 * @return 			a real number representing the $\delta(\theta)1$
-	 */	
-	public static double dtheta1(double psi) {
-
-		double dtheta1;
-		
-		if (psi <= psi_crit) {
-		    // left of critical value, take the original derivative
-		    dtheta1 = dtheta(psi);
-		}
-		else {
-		    // on the right of the critical value, keep the maximum derivative
-		    dtheta1 = dtheta(psi_crit);
-		}
-
-		return dtheta1;
-
-	}
-
-	/**
-	 * Returns the dtheta2 term
-	 *
-	 * @param  psi   
-	 * @return 			a real number representing the $\delta(\theta)2$
-	 */	
-	public static double dtheta2(double psi) {
-
-		double dtheta2;
-		
-		dtheta2 = dtheta1(psi) - dtheta(psi);
-
-		return dtheta2;
-	}
-
-	/**
-	 * Returns the $\theta_{1}$ term
-	 *
-	 * @param  psi   
-	 * @return 			a real number representing the $\theta_{1}$
-	 */	
-	public static double theta1(double psi) {
-
-		double theta1;
-		
-		if(psi <= psi_crit) {
-			theta1 = thetaf(psi);
-		} else {
-			theta1 = thetaf(psi_crit) + dtheta(psi_crit)*(psi - psi_crit);
-		}
-
-		return theta1;
-	}
-
-
-	/**
-	 * Returns the $\theta_{2}$ term
-	 *
-	 * @param  psi   
-	 * @return 			a real number representing the $\theta_{2}$
-	 */	
-	public static double theta2(double psi) {
-
-		double theta2;
-		
-		theta2 = theta1(psi) - thetaf(psi);
-
-		return theta2;	
-	}
-
-
-	/**
-	 * Linear system solver with Thomas method
-	 *
-	 * @param  a   
-	 * @param  b   
-	 * @param  c   
-	 * @param  d   
-	 * @return solution the vector of solutions
-	 */	
-
-	public static double[] thomas(double[] a, double[] b, double[] c, double[] d) {
-
-		int DIM = d.length;
-		double gamma = 0.0;
-		double[] solution = new double[DIM];
-
-		c[0] = c[0] / b[0];
-		d[0] = d[0] / b[0];
-
-		for(int i = 1; i < DIM; i++) {
-			gamma = 1 / (b[i] - c[i-1]*a[i]);
-			c[i] = c[i]*gamma;
-			d[i] = (d[i] - a[i]*d[i-1])*gamma;
-		}
-
-		solution[DIM-1] = d[DIM-1];
-
-		for(int i = DIM-2; i > -1; i--) {
-			solution[i] = d[i] - c[i]*solution[i+1];
-		}
-
-		return solution;
-
-	}
 
 	// UTILITY METHODS
 
