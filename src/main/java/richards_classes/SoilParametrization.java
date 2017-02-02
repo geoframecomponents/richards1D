@@ -11,6 +11,10 @@ public abstract class SoilParametrization {
 	protected double saturationDegree; // hydraulic conductivity at saturation
 	protected double kappa; // hydraulic conductivity
 	
+	public double getPsiStar(){
+		return this.psiStar;
+	}
+	
 	public abstract double waterContent(double suction);
 	
 	public abstract double dWaterContent(double suction);
