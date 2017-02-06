@@ -29,39 +29,64 @@ public class Richards1d {
 	// Useful for soil parameters that does not change in time: we can assume them
 	// to be the same for the entire program cycle, thus making them accessible
 	// to functions without having to pass them as arguments (improves readability)
-	static  int 	days				= 24*3600;
-	static	double 	ks 					= 0.062/days;  	// [meter/second]
-	static	double 	theta_s				= 0.41;         // Saturated water content
-	static	double 	theta_r				= 0.095;        // Residual water content
-	static	double 	n					= 1.31;         // For Van Genuchten
-	static	double 	m					= 1-1/n;        // For Van Genuchten
-	static	double 	alpha				= 1.9;          // For Van Genuchten
-	//static	double 	psi_crit			= (-1.0/alpha)*Math.pow((n-1.0)/n,1.0/n);  // Where \frac{\partial\psi(\theta)}{\theta}=0
 	
+	static  int 	days;
+	static	double 	ks;         	// [meter/second]
+	static	double 	theta_s;        // Saturated water content
+	static	double 	theta_r;        // Residual water content
+	static	double 	n;              // For Van Genuchten
+	static	double 	m;              // For Van Genuchten
+	static	double 	alpha;          // For Van Genuchten
 
 	// Space
-	static 	double 	space_bottom		= 0.0;
-	static 	double 	space_top			= 2.0;
-	static 	int 	NUM_CONTROL_VOLUMES	= 10; 
-	static 	double 	space_delta			= (space_top - space_bottom) / NUM_CONTROL_VOLUMES; 			// delta
-	static 	double[] space_cv_centres	= seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
+	static 	double 	space_bottom;
+	static 	double 	space_top;
+	static 	int 	NUM_CONTROL_VOLUMES; 
+	static 	double 	space_delta; 			
+	static 	double[] space_cv_centres;
 
 	// Time
-	static 	double 	time_end 			= 10000;//3*Math.pow(10,8);            
-	static 	double 	time_initial 		= 0.0;
-	static 	double 	time_delta 			= 1000.0;
+	static 	double 	time_end;            
+	static 	double 	time_initial;
+	static 	double 	time_delta;
 
 	// Time and space
-	static	double 	gridvar				= time_delta / space_delta;
-	static	double 	gridvarsq			= time_delta / Math.pow(space_delta,2);		
+	static	double 	gridvar;
+	static	double 	gridvarsq;		
 
 	// Cycle variables
-	static 	int 	MAXITER 			= 1000;
-	static  int 	MAXITER_NEWT 		= 100000;
-	static	double 	newton_tolerance	= Math.pow(10,-12);
+	static 	int 	MAXITER;
+	static  int 	MAXITER_NEWT;
+	static	double 	newton_tolerance;
+	
+	public Richards1d(int days, double ks, double theta_s, double theta_r, double n, double alpha, double space_bottom, double space_top, int NUM_CONTROL_VOLUMES, double space_delta, double[] space_cv_centres, double time_end, double time_initial, double time_delta, double gridvar, double gridvarsq, int MAXITER, int MAXITER_NEWT, double newton_tolerance){
+		this.days = days;
+		this.ks = ks;         	
+		this.theta_s = theta_s;       
+		this.theta_r = theta_r;       
+		this.n = n;             
+		this.m = 1-1/this.n;             
+		this.alpha = alpha;          
 
+		this.space_bottom = space_bottom;
+		this.space_top = space_top;
+		this.NUM_CONTROL_VOLUMES = NUM_CONTROL_VOLUMES; 
+		this.space_delta = space_delta; 			
+		this.space_cv_centres = space_cv_centres;
 
-	public static void main(String[] args) {
+		this.time_end = time_end;            
+		this.time_initial = time_initial;
+		this.time_delta = time_delta;
+
+		this.gridvar = gridvar;
+		this.gridvarsq = gridvarsq;		
+
+		this.MAXITER = MAXITER;
+		this.MAXITER_NEWT = MAXITER_NEWT;
+		this.newton_tolerance = newton_tolerance;
+	}
+
+	public static void solve() { 
 
 		// Model parameters - SI UNITS
 		double 			psi_r				= 0.0;			// Right boundary condition for pressure	
@@ -105,7 +130,6 @@ public class Richards1d {
 		////////////////////
 		//// MAIN CYCLE ////
 		////////////////////
-		//System.out.println("modifica");
 		for(int niter = 0; niter < MAXITER; niter++) {
 
 		    System.out.println("Main cycle iteration:" + niter);		    
@@ -121,18 +145,12 @@ public class Richards1d {
 		    }
 
 			//// KAPPAS ////
-		    //k_r = kappa(psi_r); 
-		    //k_l = kappa(psi_l);
 		    k_r = soilPar.hydraulicConductivity(psi_r);
 		    k_l = soilPar.hydraulicConductivity(psi_l);
-		    for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			    //thetas[i] = thetaf(psis[i]);
-			    //kappas[i] = kappa(psis[i]);           
+		    for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {      
 		    	thetas[i] = soilPar.waterContent(psis[i]);
 		    	kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 		    }
-		    print.setValueFirstVector(thetas);
-			print.PrintOneVector("thetaTestJoradan_"+time+"_s.txt", "Psi values at time: "+time+" seconds", "Psi[m] Depth[m]");
 		   	// "Your time has come"
 		   	if(time > time_end) {
 		   		break;
@@ -186,7 +204,7 @@ public class Richards1d {
 		    	outer_residual = 0.0;
 		    	for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 
-		    		//fs[j] = thetaf(psis[j]) - rhss[j];
+		    
 		    		fs[j] = soilPar.waterContent(psis[j]) - rhss[j];
 			        if(j == 0) {
 			            fs[j] = fs[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
@@ -298,13 +316,13 @@ public class Richards1d {
 	 * @param  points  	an integer, the number of equally spaced points in the sequence 
 	 * @return 			a vector of equally spaced real numbers
 	 */	
-	public static double[] seq(double min, double max, int points) {  
-	    double[] sequence = new double[points];  
-	    for (int i = 0; i < points; i++){  
-	        sequence[i] = min + i * (max - min) / (points - 1);  
-	    }  
-	    return sequence;  
-	}	
+	//public static double[] seq(double min, double max, int points) {  
+	  //  double[] sequence = new double[points];  
+	   // for (int i = 0; i < points; i++){  
+	   //     sequence[i] = min + i * (max - min) / (points - 1);  
+	   // }  
+	   // return sequence;  
+//	}	
 
 	private static void print(double[] arr) {
 		System.out.println(java.util.Arrays.toString(arr));
