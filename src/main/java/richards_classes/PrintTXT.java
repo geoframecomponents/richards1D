@@ -5,7 +5,7 @@ package richards_classes;
 import java.io.*;
 
 /**
- * @author Niccolò
+ * @author Niccolo'
  *	This class allows to print a .txt file with one or two or three vectors
  *	Calling methods Print you can pass the name of the file, the header and the name of variables
  */

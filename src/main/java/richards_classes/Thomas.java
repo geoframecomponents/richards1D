@@ -1,15 +1,15 @@
 /**
- *  @author NiccolÚ
+ *  @author Niccolo'
  */
 
 package richards_classes;
 
 /**
- * In the case where the matrix A is tridiagonal, i.e. with the special structure there is a very fast and efficient special case of the Gauﬂ-algorithm, called the Thomas-algorithm.
- * Since it is a variation of the Gauﬂ-algorithm, the Thomas algorithm is a direct method to solve general
- * linear tridiagonal systems. As the original Gauﬂ-algorithm, it proceeds in two stages, one forward
+ * In the case where the matrix A is tridiagonal, i.e. with the special structure there is a very fast and efficient special case of the Gauss-algorithm, called the Thomas-algorithm.
+ * Since it is a variation of the Gauss-algorithm, the Thomas algorithm is a direct method to solve general
+ * linear tridiagonal systems. As the original Gauss-algorithm, it proceeds in two stages, one forward
  * elimination and one back-substitution.
- * (Numerical Methods for Free Surface Hydrodynamics Solution of linear algebraic equation systems, Dumbser, M., Universit‡ degli studi di Trento)
+ * (Numerical Methods for Free Surface Hydrodynamics Solution of linear algebraic equation systems, Dumbser, M., University of Trento)
  */
 
 public class Thomas {

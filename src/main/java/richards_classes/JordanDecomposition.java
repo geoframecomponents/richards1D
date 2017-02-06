@@ -5,7 +5,7 @@ package richards_classes;
  * expressed as the difference of two nonnegative, nondecreasing, and bounded functions
  * (the Jordan decomposition [8]), say p(suction) and q(suction), so that c(suction) = p(suction)-q(suction) >= 0
  * and 0 <= q(suction) <= p(suction) for all suction values.
- * Look at: A NESTED NEWTON-TYPE ALGORITHM FOR FINITE VOLUME METHODS SOLVING RICHARDS’ EQUATION IN MIXED FORM, Casulli V., 2010
+ * Look at: A NESTED NEWTON-TYPE ALGORITHM FOR FINITE VOLUME METHODS SOLVING RICHARDS EQUATION IN MIXED FORM, Casulli V., 2010
  *  
  * Here:
  * p(suction) is called dTheta1 and is computed by dWaterContent1
