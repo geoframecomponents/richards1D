@@ -30,34 +30,34 @@ public class Richards1d {
 	// to be the same for the entire program cycle, thus making them accessible
 	// to functions without having to pass them as arguments (improves readability)
 	
-	static  int 	days;
-	static	double 	ks;         	// [meter/second]
-	static	double 	theta_s;        // Saturated water content
-	static	double 	theta_r;        // Residual water content
-	static	double 	n;              // For Van Genuchten
-	static	double 	m;              // For Van Genuchten
-	static	double 	alpha;          // For Van Genuchten
+	private  int 	days;
+	private	double 	ks;         	// [meter/second]
+	private	double 	theta_s;        // Saturated water content
+	private	double 	theta_r;        // Residual water content
+	private	double 	n;              // For Van Genuchten
+	private	double 	m;              // For Van Genuchten
+	private	double 	alpha;          // For Van Genuchten
 
 	// Space
-	static 	double 	space_bottom;
-	static 	double 	space_top;
-	static 	int 	NUM_CONTROL_VOLUMES; 
-	static 	double 	space_delta; 			
-	static 	double[] space_cv_centres;
+	private 	double 	space_bottom;
+	private 	double 	space_top;
+	private 	int 	NUM_CONTROL_VOLUMES;
+	private 	double 	space_delta;
+	private 	double[] space_cv_centres;
 
 	// Time
-	static 	double 	time_end;            
-	static 	double 	time_initial;
-	static 	double 	time_delta;
+	private 	double 	time_end;
+	private 	double 	time_initial;
+	private 	double 	time_delta;
 
 	// Time and space
-	static	double 	gridvar;
-	static	double 	gridvarsq;		
+	private	double 	gridvar;
+	private	double 	gridvarsq;
 
 	// Cycle variables
-	static 	int 	MAXITER;
-	static  int 	MAXITER_NEWT;
-	static	double 	newton_tolerance;
+	private 	int 	MAXITER;
+	private  int 	MAXITER_NEWT;
+	private	double 	newton_tolerance;
 	
 	public Richards1d(int days, double ks, double theta_s, double theta_r, double n, double alpha, double space_bottom, double space_top, int NUM_CONTROL_VOLUMES, double space_delta, double[] space_cv_centres, double time_end, double time_initial, double time_delta, double gridvar, double gridvarsq, int MAXITER, int MAXITER_NEWT, double newton_tolerance){
 		this.days = days;
@@ -86,7 +86,7 @@ public class Richards1d {
 		this.newton_tolerance = newton_tolerance;
 	}
 
-	public static void solve() { 
+	public void solve() {
 
 		// Model parameters - SI UNITS
 		double 			psi_r				= 0.0;			// Right boundary condition for pressure	
@@ -302,27 +302,6 @@ public class Richards1d {
 
 
 	// UTILITY METHODS
-
-	/**
-	 * Returns a vector (array of doubles) of equally spaced numbers between a given 
-	 * lower and upper bound
-	 * <p>
-	 * The lower and upper bounds need not be in growing order: in 
-	 * case min>max, the method generates a sequence of decreasing 
-	 * real numbers
-	 *
-	 * @param  max  	a real number, the value of the lower bound of the sequence
-	 * @param  max  	a real number, the value of the upper bound of the sequence
-	 * @param  points  	an integer, the number of equally spaced points in the sequence 
-	 * @return 			a vector of equally spaced real numbers
-	 */	
-	//public static double[] seq(double min, double max, int points) {  
-	  //  double[] sequence = new double[points];  
-	   // for (int i = 0; i < points; i++){  
-	   //     sequence[i] = min + i * (max - min) / (points - 1);  
-	   // }  
-	   // return sequence;  
-//	}	
 
 	private static void print(double[] arr) {
 		System.out.println(java.util.Arrays.toString(arr));
