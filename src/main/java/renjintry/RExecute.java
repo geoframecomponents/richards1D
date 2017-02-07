@@ -26,8 +26,6 @@ import oms3.annotations.*;
 // Others
 import static java.lang.Math.*;
 
-@Status(Status.CERTIFIED)
-
 @Author(
 	name="Aaron Iemma",
 	org="DICAM - Departement of Environmental and Civil Engineering - Trento, UNITN",
@@ -43,10 +41,10 @@ public class RExecute {
 	 * @param script name
 	 * @see script output
 	 */
-    @In public String scriptName;
+    @In private String scriptName;
 
     @Execute
-    public void execute() throws Exception {
+    public void execute(String scriptName) throws Exception {
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine renjin = manager.getEngineByName("Renjin");
         // check if the engine has loaded correctly:
@@ -54,7 +52,7 @@ public class RExecute {
             throw new RuntimeException("Renjin Script Engine not found on the classpath.");
         }
 
-		renjin.eval(new java.io.FileReader(scriptName));          	
+		renjin.eval(new java.io.FileReader(this.scriptName));          	
     }
 }
 

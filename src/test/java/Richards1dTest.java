@@ -9,7 +9,7 @@ public class Richards1dTest {
 	private double 	ks 					= 0.062/days;  	// [meter/second]
 	private double 	theta_s				= 0.41;         // Saturated water content
 	private double 	theta_r				= 0.095;        // Residual water content
-	private double 	n					= 1.31;         // For Van Genuchten double 	m					= 1-1/n;        // For Van Genuchten
+	private double 	n					= 1.31;         // For Van Genuchten double 
 	private double 	alpha				= 1.9;          // For Van Genuchten
 
 	// Space
@@ -20,7 +20,7 @@ public class Richards1dTest {
 	private double[] space_cv_centres	= DomainDiscretization.seq(space_bottom + space_delta / 2,space_top - space_delta / 2,NUM_CONTROL_VOLUMES); // Centres of the "control volumes"
 
 	// Time
-	private double 	time_end 			= 10000;//3*Math.pow(10,8);
+	private double 	time_end 			= 10000;
 	private double 	time_initial 		= 0.0;
 	private double 	time_delta 			= 1000.0;
 

@@ -1,15 +1,30 @@
 import static oms3.SimBuilder.instance as OMS3
+import richards_classes.DomainDiscretization as DomainDiscretization;		
 
-OMS3.sim { 	  
-    build(target:"all")
-    
+
+OMS3.sim { 	  		
     model() {
         components {
-           "c" "renjintry.RExecute"
+           "richie" "richards.Richards1d_OMS"
         }
         parameter {
-            // "componentname.@In_fieldname" -> object
-             "c.scriptName" "$oms_prj/data/script.R"
+			"richie.days"					24*3600
+			"richie.theta_s"				0.41
+			"richie.theta_r"				0.095
+			"richie.n"						1.31
+			"richie.alpha"					1.9
+
+			"richie.space_bottom" 			0.0;
+			"richie.space_top"				2.0;
+			"richie.NUM_CONTROL_VOLUMES"	10;
+
+			"richie.time_end"				10000;
+			"richie.time_initial"			0.0;
+			"richie.time_delta"				1000.0;
+
+
+			"richie.MAXITER" 				1000;
+			"richie.MAXITER_NEWT"			100000;
         }
     }
 }
