@@ -18,18 +18,23 @@ psic    = -1/alpha*((n-1)/n)^(1/n);  %critical value of psi where the maximum of
 %Domain
 xL = 0;                 %bottom
 xR = 2;                 %surface
-IMAX = 100;             %number of control volumes
+IMAX = 10;             %number of control volumes
 dx = (xR-xL)/IMAX;      %mesh spacing
 x = linspace(xL+dx/2,xR-dx/2,IMAX);
-tend = 3e8;             %set the final simulation time
+tend = 10000;             %set the final simulation time
 time = 0;               %initial time
 %set the initial condition (the right temperature-than it start freezing from the left)
 for i=1:IMAX
     psi(i) = -x(i);      % hydrostatic pressure   
 end
-NMAX=100000;
+NMAX=1000;
+NEWTMAX=100000;
+
+filename = "psis_out.txt";
+fid = fopen(filename, "w");
+
 for nit=1:NMAX
-    dt = 100000;   %BTCS is unconditionalli stable (choose what you want)
+    dt = 1000;   %BTCS is unconditionalli stable (choose what you want)
     if(time+dt>tend)
         dt=tend-time;
     end
@@ -91,7 +96,7 @@ for nit=1:NMAX
     tol = 1e-12;
     % initial guess
     psi = min(psi,psic);
-    for iNewton=1:100 %outer Newton iterations
+    for iNewton=1:NEWTMAX %outer Newton iterations
         %The task of the outer iterations is ONLY to linearize one of the
         %two nonlinear functions q1 or q2  (� il ciclo in k sul quaderno)
         for i=1:IMAX
@@ -140,10 +145,11 @@ for nit=1:NMAX
             psi = psi(:)-dpsi(:);
         end    
     end
+    fprintf(fid,'%f ', psi);
+    fprintf(fid,'\n');    
     time = time+dt;     %advance time
 end
-
-
+fclose(fid);
 
 
 
