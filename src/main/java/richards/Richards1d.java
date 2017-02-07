@@ -299,14 +299,4 @@ public class Richards1d {
 	//// METHODS ////
 	////////////////////
 
-
-
-	// UTILITY METHODS
-
-	private static void print(double[] arr) {
-		System.out.println(java.util.Arrays.toString(arr));
-	}
-	private static void print(double num) {
-		System.out.println(num);
-	}
 }
