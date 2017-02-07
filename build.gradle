@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'eclipse'
 test.scanForTestClasses = false
 compileJava.options.fork = true
 // compileJava.options.forkOptions.executable = /usr/bin/javac
