@@ -2,6 +2,9 @@
 import org.junit.Test;
 
 
+import it.blogspot.geoframe.machineEpsilon.MachineEpsilon;
+
+
 import richards.Richards1d;
 import richards_classes.*;
 public class Richards1dTest {
@@ -32,7 +35,7 @@ public class Richards1dTest {
 	// Cycle variables
 	private int 	MAXITER 			= 1000;
 	private int 	MAXITER_NEWT 		= 100000;
-	private double 	newton_tolerance	= Math.pow(10,-12);
+	private double 	newton_tolerance	= MachineEpsilon.doublePrecision();
 	
 	@Test
 	public void testTest(){ 
