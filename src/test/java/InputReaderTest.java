@@ -1,4 +1,6 @@
-import richards_utils.*;
+import richards_utils.Expr;
+import richards_utils.TextIO;
+
 import org.junit.Test;
 
 public class InputReaderTest {
