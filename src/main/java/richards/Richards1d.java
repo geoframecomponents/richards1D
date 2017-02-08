@@ -203,9 +203,7 @@ public class Richards1d {
 		    	// I have to assign 0 to outer_residual otherwise I will take into account of the previous error
 		    	outer_residual = 0.0;
 		    	for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-
-		    
-		    		fs[j] = soilPar.waterContent(psis[j]) - rhss[j];
+		    		fs[j] = jordanDecomposition.waterContent1(psis[j]) - rhss[j];
 			        if(j == 0) {
 			            fs[j] = fs[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 			        }
