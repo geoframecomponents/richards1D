@@ -1,6 +1,3 @@
-/**
- * 
- */
 package richards_classes;
 import java.io.*;
 
