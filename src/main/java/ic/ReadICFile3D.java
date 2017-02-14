@@ -1,7 +1,7 @@
 package ic;
 
 public class ReadICFile3D implements ReadICFromFile {
-	public void read() {
+	public void read(String filepath) {
 		
 	}
 

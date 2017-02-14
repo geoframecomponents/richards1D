@@ -24,8 +24,6 @@ import javax.script.*;
 // OMS3 packages
 import oms3.annotations.*;
 // Others
-import static java.lang.Math.*;
-
 @Author(
 	name="Aaron Iemma",
 	org="DICAM - Departement of Environmental and Civil Engineering - Trento, UNITN",

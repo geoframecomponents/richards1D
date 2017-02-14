@@ -24,6 +24,10 @@ package richards;
 //import java.io.*;
 import java.lang.Math;
 import richards_classes.*;
+
+import oms3.annotations.*;
+
+
 public class Richards1d {
 	// "Static" keyword defines automatically a globally accessible variable
 	// Useful for soil parameters that does not change in time: we can assume them

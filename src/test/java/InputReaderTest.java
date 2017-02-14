@@ -1,15 +1,24 @@
 import richards_utils.Expr;
 import richards_utils.TextIO;
-
+import oms3.annotations.*;
 import org.junit.Test;
+import ic.*;
+
+@Author(
+		name="Aaron Iemma",
+		org="DICAM - Departement of Environmental and Civil Engineering - Trento, UNITN",
+		contact="iemma.ron -at- gmail.com"
+	)
+	@Description("Testing the reading of IC and boundary for the RIchards1D problem")
+	@Keywords("R,Renjin")
 
 public class InputReaderTest {
-	private static boolean interactive = true;
-	private static String predefinedFunc = "sin(x)^2+4";
+	@In public boolean interactive = true;
+	@In public String givenfunction = "sin(x)^2+4";
 	private static int[] values = {1,2,3,4};
 	
 	@Test
-	public void test(){
+	public void testfunctionparsing(){
 	    String line;
 	    Expr function = null;
 	    double val;
@@ -31,7 +40,7 @@ public class InputReaderTest {
 				System.out.println(e.getMessage());
 			}
 		} else {
-			function = new Expr(predefinedFunc);			
+			function = new Expr(givenfunction);			
 		}
 		
 		for(int i=0;i<values.length;i++) {
@@ -39,5 +48,10 @@ public class InputReaderTest {
 			System.out.println(val);
 		}				
 		
-	} 
+	}
+	
+	@Test
+	public void testICReading() {
+		
+	}
 }

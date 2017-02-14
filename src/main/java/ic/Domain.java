@@ -5,6 +5,7 @@ public abstract class Domain {
 	ReadDomainFromUser readdomainfromuser;
 	ReadICFromFile readicfromfile;
 	ReadICFromUser readicfromuser;
+	String filepath;
 	
 	public Domain() {
 		
@@ -20,8 +21,8 @@ public abstract class Domain {
 	public void performReadDomainUser() {
 		readdomainfromuser.read();
 	}
-	public void performReadICFile() {
-		readicfromfile.read();
+	public void performReadICFile(String filepath) {
+		readicfromfile.read(filepath);
 	}
 	public void performReadICUser() {
 		readicfromuser.read();
