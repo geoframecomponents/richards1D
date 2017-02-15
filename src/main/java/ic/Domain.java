@@ -15,8 +15,8 @@ public abstract class Domain {
 		
 	}
 	
-	public void performReadDomainFile() {
-		readdomainfromfile.read();
+	public void performReadDomainFile(String domainfile) {
+		readdomainfromfile.read(domainfile);
 	}
 	public void performReadDomainUser() {
 		readdomainfromuser.read();

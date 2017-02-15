@@ -54,7 +54,7 @@ public class InputReaderTest {
 	public void testICReading() {
 		Domain1D mydomain = new Domain1D();
 
-		mydomain.readicfromfile.read("/home/cifciaf/Desktop/testRead/ictest");
+		mydomain.performReadDomainFile("/home/cifciaf/Desktop/testRead/ictest");
 		mydomain.readicfromfile.parse();
 		mydomain.readicfromfile.show();		
 	}
