@@ -4,7 +4,7 @@ import richards_utils.TextIO;
 
 public class ReadIC1D implements ReadIC {
 	public String filepath;
-	public double[] IC;
+	public double[] ic = null;
 	
 	public void read(String filepath, boolean func) {
 		
@@ -34,18 +34,22 @@ public class ReadIC1D implements ReadIC {
 	    	centres.add(TextIO.getlnDouble());  
 	    }
 	    double[] arr = centres.stream().mapToDouble(Double::doubleValue).toArray(); // method reference!
-	    this.IC = arr;
+	    this.ic = arr;
 	}
 	
 	public void show() {
 		try{
-			for(int i=0;i<IC.length;i++) {
-				System.out.println(IC[i]);
+			for(int i=0;i<ic.length;i++) {
+				System.out.println(ic[i]);
 			}
 		}
 		catch (NullPointerException e) {
 			System.out.println("You must parse() the given file first!");
 			System.exit(1);  			
 		}		
+	}
+	
+	public double[] get() {
+		return ic;
 	}
 }

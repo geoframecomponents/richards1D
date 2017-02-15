@@ -8,7 +8,8 @@ import richards_utils.TextIO;
 
 public class ReadDomain1D implements ReadDomain {
 	public String filePathOrFunction;
-	public double[] domain;
+	private double[] domain = null;
+	private int domainLength;
 	
 	public void read(String filePath) {
 		
@@ -50,4 +51,8 @@ public class ReadDomain1D implements ReadDomain {
 			System.exit(1);  			
 		}		
 	}
+	public double[] get(){
+		return domain;			
+	}
+	
 }

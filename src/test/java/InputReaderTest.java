@@ -56,5 +56,6 @@ public class InputReaderTest {
 
 		mydomain.performReadDomain("/home/cifciaf/Desktop/testRead/domaintest");
 		mydomain.performReadIC("/home/cifciaf/Desktop/testRead/ictest",false);
+
 	}
 }
