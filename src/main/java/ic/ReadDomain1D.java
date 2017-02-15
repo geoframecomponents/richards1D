@@ -1,31 +1,31 @@
 package ic;
 import java.util.ArrayList;
+
 import java.util.List;
 
+import richards_utils.Expr;
 import richards_utils.TextIO;
 
 public class ReadDomain1D implements ReadDomain {
-	public String filepath;
+	public String filePathOrFunction;
 	public double[] domain;
 	
-	public void read(String filepath, boolean func) {
+	public void read(String filePath) {
 		
-		this.filepath = filepath;
-		
-		try{
-			TextIO.readFile(filepath);
-		}
-		catch (IllegalArgumentException e) {
-			System.out.println("Can't open file " + filepath + " for reading!");
-			System.exit(1);  
-		}		
+		this.filePathOrFunction = filePath;
+			try{
+				TextIO.readFile(filePath);
+			} catch (IllegalArgumentException e) {
+				System.out.println("Can't open file " + filePath + " for reading!");
+				System.exit(1);  
+			}
 	}
 	
-	public void parse(boolean func) {
+	public void parse() {
 		List<Double> centres = new ArrayList<Double>();
 
 		try{
-			TextIO.readFile(filepath);
+			TextIO.readFile(filePathOrFunction);
 		}
 		catch (IllegalArgumentException e) {
 			System.out.println("You must set a file into stream with read() before parsing it!");

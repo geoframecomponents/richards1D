@@ -5,9 +5,9 @@ public abstract class Domain {
 	public ReadIC readic;
 	String filepath;
 	
-	public void performReadDomain(String filePathOrFunction, boolean func) {
-		readdomain.read(filePathOrFunction, func);
-		readdomain.parse(func);
+	public void performReadDomain(String filePath) {
+		readdomain.read(filePath);
+		readdomain.parse();
 		readdomain.show();
 	}
 	public void performReadIC(String filePathOrFunction, boolean func) {
