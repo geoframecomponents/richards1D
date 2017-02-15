@@ -51,11 +51,10 @@ public class InputReaderTest {
 	}
 	
 	@Test
-	public void testICReading() {
+	public void testReading() {
 		Domain1D mydomain = new Domain1D();
 
-		mydomain.performReadDomainFile("/home/cifciaf/Desktop/testRead/ictest");
-		mydomain.readicfromfile.parse();
-		mydomain.readicfromfile.show();		
+		mydomain.performReadDomain("/home/cifciaf/Desktop/testRead/domaintest",false);
+		mydomain.performReadIC("/home/cifciaf/Desktop/testRead/ictest",false);
 	}
 }

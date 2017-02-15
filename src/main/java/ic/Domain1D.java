@@ -2,14 +2,11 @@ package ic;
 
 public class Domain1D extends Domain{
 	public Domain1D() {
-		readdomainfromfile = new ReadDomainFile1D();
-		readdomainfromuser = new ReadDomainUser1D();
-		readicfromfile = new ReadICFile1D();
-		readicfromuser = new ReadICUser1D();
-		
+		readdomain = new ReadDomain1D();
+		readic = new ReadIC1D();	
 	}
 	
 	public void display() {
-		System.out.println("Works?");
+		System.out.println("This is from Domain1D, extension of Domain class");
 	}
 }

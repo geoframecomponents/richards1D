@@ -1,31 +1,19 @@
 package ic;
 
 public abstract class Domain {
-	ReadDomainFromFile readdomainfromfile;
-	ReadDomainFromUser readdomainfromuser;
-	public ReadICFromFile readicfromfile;
-	ReadICFromUser readicfromuser;
+	public ReadDomain readdomain;
+	public ReadIC readic;
 	String filepath;
 	
-	public Domain() {
-		
+	public void performReadDomain(String filePathOrFunction, boolean func) {
+		readdomain.read(filePathOrFunction, func);
+		readdomain.parse(func);
+		readdomain.show();
 	}
-	
-	public void DisplayDomain() {
-		
-	}
-	
-	public void performReadDomainFile(String domainfile) {
-		readdomainfromfile.read(domainfile);
-	}
-	public void performReadDomainUser() {
-		readdomainfromuser.read();
-	}
-	public void performReadICFile(String filepath) {
-		readicfromfile.read(filepath);
-	}
-	public void performReadICUser() {
-		readicfromuser.read();
+	public void performReadIC(String filePathOrFunction, boolean func) {
+		readic.read(filePathOrFunction, func);
+		readic.parse(func);
+		readic.show();
 	}
 
 }
