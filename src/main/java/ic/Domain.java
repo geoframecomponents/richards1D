@@ -3,7 +3,7 @@ package ic;
 public abstract class Domain {
 	ReadDomainFromFile readdomainfromfile;
 	ReadDomainFromUser readdomainfromuser;
-	ReadICFromFile readicfromfile;
+	public ReadICFromFile readicfromfile;
 	ReadICFromUser readicfromuser;
 	String filepath;
 	

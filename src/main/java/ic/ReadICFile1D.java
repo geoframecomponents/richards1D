@@ -19,7 +19,7 @@ public class ReadICFile1D implements ReadICFromFile {
 		}		
 	}
 	
-	public double[] parse() {
+	public void parse() {
 		List<Double> centres = new ArrayList<Double>();
 
 		try{
@@ -31,13 +31,21 @@ public class ReadICFile1D implements ReadICFromFile {
 		}
 		
 		while ( ! TextIO.eof() ) {
-	    	centres.add(TextIO.getDouble());  
+	    	centres.add(TextIO.getlnDouble());  
 	    }
 	    double[] arr = centres.stream().mapToDouble(Double::doubleValue).toArray(); // method reference!
-	    return arr;
+	    this.IC = arr;
 	}
 	
 	public void show() {
-		
+		try{
+			for(int i=0;i<IC.length;i++) {
+				System.out.println(IC[i]);
+			}
+		}
+		catch (NullPointerException e) {
+			System.out.println("You must parse() the given file first!");
+			System.exit(1);  			
+		}		
 	}
 }
