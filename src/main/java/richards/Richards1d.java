@@ -138,7 +138,6 @@ public class Richards1d {
 
 		    System.out.println("Main cycle iteration:" + niter);		    
 
-		    // Not sure about what that means... Sort of Boundary conditions, but why that form? 
 		    if(time <= Math.pow(10,5)) {
 		        psi_r = -0.05 + 0.03 * Math.sin(2 * Math.PI * time/Math.pow(10,5));
 		    } else if(time > Math.pow(10,5) && time <= 1.8 * Math.pow(10,5)) {
