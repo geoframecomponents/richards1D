@@ -15,7 +15,7 @@ import richards.Richards1d;
 @Keywords("Richards,1D")
 
 
-public class Richards1d_OMS {
+public class Richards1dOMS {
 	
 	@In public int days					;
 	private double ks 					= 0.062/days;  	// [meter/second]

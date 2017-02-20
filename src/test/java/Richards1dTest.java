@@ -18,6 +18,8 @@ public class Richards1dTest {
 	// Space
 	public String icpath 				= "ictest";
 	private ReadIC1D ic 						= new ReadIC1D();
+
+	// This might be deleted: retained for backwards compatibility
 	private double 	space_bottom		= 0.0;
 	private double 	space_top			= 2.0;
 	private int 	NUM_CONTROL_VOLUMES	= 10;
