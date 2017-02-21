@@ -1,15 +1,19 @@
-package ic;
+package ic_domain;
 import java.util.*;
 
 
 import richards_utils.Expr;
 import richards_utils.TextIO;
 
-public class ReadIC1D implements ReadIC {
-	public String filePathOrFunction;
-	private Expr fun = null;
-	public double[] domain = null;
-	public double[] ic = null;
+public class IC1D implements IC {
+	public String filePathOrFunction	= null;
+	public double[] domain				= null;
+	private Expr fun 					= null;
+	public double[] ic 					= null;
+	
+	public void domainSet(double[] domain) {
+		this.domain = domain;
+	}
 	
 	public void read(String filePathOrFunction, boolean func) {
 		
@@ -34,7 +38,7 @@ public class ReadIC1D implements ReadIC {
 		}
 	}
 	
-	public void parse(boolean func) {
+	public void parse(boolean func) {		
 		if(func) {
 			try{
 				for(int i=0;i<domain.length;i++) {
@@ -62,7 +66,14 @@ public class ReadIC1D implements ReadIC {
 		    for(int i=0;i<centres.size();i++) {
 		    	arr[i] = centres.get(i);
 		    }
-		    this.ic = arr;
+		    
+		    if(this.ic.length==this.domain.length) {
+			    this.ic = arr;		    	
+		    } else {
+				System.out.println("IC and domain files are not of equal length!");
+				System.exit(1);  		    	
+		    }
+		    
 		}    
 	}
 	
@@ -79,6 +90,7 @@ public class ReadIC1D implements ReadIC {
 	}
 	
 	public double[] get() {
+		
 		return ic;
 	}
 	

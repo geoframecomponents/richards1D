@@ -1,4 +1,4 @@
-package ic;
+package ic_domain;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -6,14 +6,14 @@ import java.util.List;
 import richards_utils.Expr;
 import richards_utils.TextIO;
 
-public class ReadDomain1D implements ReadDomain {
-	public String filePathOrFunction;
+public class Domain1D implements Domain {
+	public String filePath;
 	private double[] domain = null;
 	private int domainLength;
 	
 	public void read(String filePath) {
 		
-		this.filePathOrFunction = filePath;
+		this.filePath = filePath;
 			try{
 				TextIO.readFile(filePath);
 			} catch (IllegalArgumentException e) {
@@ -26,7 +26,7 @@ public class ReadDomain1D implements ReadDomain {
 		List<Double> centres = new ArrayList<Double>();
 
 		try{
-			TextIO.readFile(filePathOrFunction);
+			TextIO.readFile(filePath);
 		}
 		catch (IllegalArgumentException e) {
 			System.out.println("You must set a file into stream with read() before parsing it!");
@@ -36,7 +36,11 @@ public class ReadDomain1D implements ReadDomain {
 		while ( ! TextIO.eof() ) {
 	    	centres.add(TextIO.getlnDouble());  
 	    }
-	    double[] arr = centres.stream().mapToDouble(Double::doubleValue).toArray(); // method reference!
+
+		double[] arr = new double[centres.size()];
+	    for(int i=0;i<centres.size();i++) {
+	    	arr[i] = centres.get(i);
+	    }
 	    this.domain = arr;
 	}
 	
@@ -51,7 +55,9 @@ public class ReadDomain1D implements ReadDomain {
 			System.exit(1);  			
 		}		
 	}
+	
 	public double[] get(){
+		parse();
 		return domain;			
 	}
 	

@@ -60,10 +60,12 @@ public class Richards1d {
 
 	// Cycle variables
 	private 	int 	MAXITER;
-	private  int 	MAXITER_NEWT;
-	private	double 	newton_tolerance;
-	
-	public Richards1d(int days, double ks, double theta_s, double theta_r, double n, double alpha, double space_bottom, double space_top, int NUM_CONTROL_VOLUMES, double space_delta, double[] space_cv_centres, double time_end, double time_initial, double time_delta, double gridvar, double gridvarsq, int MAXITER, int MAXITER_NEWT, double newton_tolerance){
+	private  	int 	MAXITER_NEWT;
+	private		double 	newton_tolerance;
+
+	private 	double[] psis;
+
+	public Richards1d(int days, double ks, double theta_s, double theta_r, double n, double alpha, double space_bottom, double space_top, int NUM_CONTROL_VOLUMES, double space_delta, double[] space_cv_centres, double time_end, double time_initial, double time_delta, double gridvar, double gridvarsq, int MAXITER, int MAXITER_NEWT, double newton_tolerance, double[] psis){
 		this.days = days;
 		this.ks = ks;         	
 		this.theta_s = theta_s;       
@@ -88,6 +90,7 @@ public class Richards1d {
 		this.MAXITER = MAXITER;
 		this.MAXITER_NEWT = MAXITER_NEWT;
 		this.newton_tolerance = newton_tolerance;
+		this.psis = psis;
 	}
 
 	public void solve() {
@@ -100,7 +103,6 @@ public class Richards1d {
 		int 			time 				= 0;
 
 		// Working variables
-		double[] 		psis 				= new double[NUM_CONTROL_VOLUMES];	
 		double[] 		dpsis 				= new double[NUM_CONTROL_VOLUMES];	
 		double[] 		psis_outer			= new double[NUM_CONTROL_VOLUMES];	// Used for saving \psi of the outer iteration to be plugged inside the inner iteration
 		double 			k_r					= 0.0;								
@@ -125,11 +127,7 @@ public class Richards1d {
 		PrintTXT print = new PrintTXT();
 		SoilParametrization soilPar = new VanGenuchten(n,alpha,theta_r,theta_s,ks);
 		JordanDecomposition jordanDecomposition = new JordanDecomposition(soilPar);
-		
-		// Initial domain conditions
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			psis[i] = -space_cv_centres[i];
-		}
+	
 
 		////////////////////
 		//// MAIN CYCLE ////

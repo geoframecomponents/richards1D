@@ -1,10 +1,10 @@
 
 import org.junit.Test;
 
+import ic_domain.*;
 import it.blogspot.geoframe.machineEpsilon.MachineEpsilon;
 import richards.Richards1d;
 import richards_classes.*;
-import ic.*;
 
 public class Richards1dTest {
 
@@ -16,8 +16,8 @@ public class Richards1dTest {
 	private double 	alpha				= 1.9;          // For Van Genuchten
 
 	// Space
-	public String icpath 				= "ictest";
-	private ReadIC1D ic 						= new ReadIC1D();
+	public String domaincentrespath		= "domaintest";
+	private Domain1D domain 			= new Domain1D();
 
 	// This might be deleted: retained for backwards compatibility
 	private double 	space_bottom		= 0.0;
@@ -41,19 +41,36 @@ public class Richards1dTest {
 	private int 	MAXITER_NEWT 		= 100000;
 	private double 	newton_tolerance	= MachineEpsilon.doublePrecision();
 	
+	private String icfunction 			= "-x";
+	private IC1D ic					= new IC1D();
+
+	public double[] psis;
+
 	@Test
 	public void testTest(){ 
+
+		// Initial domain conditions
+		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			psis[i] = -space_cv_centres[i];
+		}
+		
 		
 		// Read 1D domain from file
-		ic.read(icpath,false);
-		ic.parse(false);
-		space_cv_centres = ic.get();
+		domain.read(domaincentrespath);
+		domain.parse();
+		space_cv_centres = domain.get();
 		space_delta = space_cv_centres[2] - space_cv_centres[1];
 		NUM_CONTROL_VOLUMES = space_cv_centres.length;
 		space_bottom = space_cv_centres[0];
 		space_top = space_cv_centres[space_cv_centres.length];
-
-		Richards1d richards1d = new Richards1d(days, ks, theta_s, theta_r, n, alpha, space_bottom, space_top, NUM_CONTROL_VOLUMES, space_delta, space_cv_centres, time_end, time_initial, time_delta, gridvar, gridvarsq, MAXITER, MAXITER_NEWT, newton_tolerance);
+		
+		// Sets initial condition 
+		ic.domainSet(space_cv_centres);
+		ic.read(icfunction, true);
+		ic.parse(true);
+		psis = ic.get();
+		
+		Richards1d richards1d = new Richards1d(days, ks, theta_s, theta_r, n, alpha, space_bottom, space_top, NUM_CONTROL_VOLUMES, space_delta, space_cv_centres, time_end, time_initial, time_delta, gridvar, gridvarsq, MAXITER, MAXITER_NEWT, newton_tolerance, psis);
 		
 		richards1d.solve();
 	}
