@@ -1,27 +1,25 @@
 language: java
 jdk:
-- oraclejdk8
+    - oraclejdk8
 before_cache:
-- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+    - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+    - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - "$HOME/.gradle/caches/"
-  - "$HOME/.gradle/wrapper/"
+      - "$HOME/.gradle/caches/"
+      - "$HOME/.gradle/wrapper/"
 before_deploy:
-- export GRADLE_BUILD_DIR="build/libs"
-- export TAG=$(git describe --abbrev=0 --tags)
-- export MOD_TAG=${TAG#"v"}
-- export RELEASE_PKG_FILE="${GRADLE_BUILD_DIR}/richards1D-${MOD_TAG}.jar"
-- echo "deploying $RELEASE_PKG_FILE to GitHub releases"
-- gradle -PprojVersion=$MOD_TAG build
+    - export GRADLE_BUILD_DIR="build/libs"
+    - export TAG=$(git describe --abbrev=0 --tags)
+    - export MOD_TAG=${TAG#"v"}
+    - export RELEASE_PKG_FILE="${GRADLE_BUILD_DIR}/TravisLesson-${MOD_TAG}.jar"
+    - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
+    - gradle -PprojVersion=$MOD_TAG build
 deploy:
   provider: releases
-  api_key:
-    secure: aPeQc0m5dRpeLfkDaSuTcmQRFGCY26J3uj0QUzWYx2ogezJT3iqnqM9QmrRTkjS90t7vCsv3e0LtdQgLw4rToHQAd648koSR2Vz1onDFS/d5sB1WHTLQg3k3zBgX9AXrN+yizI3FvrS60DNeW70PLm0+6sLWHRldATQ/GCt5TpTKARgIr443MbA+atQlq5dF9aHgRibGnb+Jx40o/PJSDjriYuhmUCKaj06CKNZFQEuj/cTELc9MnVI9s49GBpzJp8Iu5R6jR3FDdDGPGlPvPrs/w+rJK1roxmW3w9uySo31dheXkfK+0qRbC0DaV1MD3ShhdkUaBmJ+R0O9smx3AMphlznsZpsP+gkCMViTk4O3x4BSNP7Yis/yA+tqlRhxtWBbe4gwcERkz3ODA3OLAc5/f2i+THwBHFi3p0unKk/fa39MeQygYNdwc/vlKeJft2ys6855GEkRe0f1f8ROXMy+fgOFWRobXv9f8IU3bUdTlfAvnxmxoSaMC4oKmdm+6UnOGEYxFTC+6k3Xw1tEp/ngI9P8GJgv3LU6SBWUZl1Q0xwnVloTkwVUU3AagHyFJ0X5FLRvHw0OU+lfTCha7b8p27Y2vR7pXYtGLDMTw0z44dP2gr4Poxuer/k9Ji8BHEpSsShG/Os/S3rrLEG980HtBYa1P+PmVPG84GVBrDk=
   file: "${RELEASE_PKG_FILE}"
   skip_cleanup: true
   on:
     tags: true
     all_branches: true
-    repo: geoframecomponents/richards1D
+    repo: niccolotubini/TravisLesson
