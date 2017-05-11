@@ -1,7 +1,7 @@
 #PER PLOTTARE I RISULTATI DI RICHARDS 1D risolto con nesed newton method
 # vedi articolo di Casulli per il confronto della soluzione
 
-setwd('C:/Users/Nico/workspace1/OMSRichards1D/resources/output')
+setwd('')
 
 #readVector<-read.table('Psi initial condition.txt', skip=3, sep = "", dec=".")
 #space = readVector[1:nrow(readVector),2]
