@@ -25,7 +25,7 @@ import oms3.annotations.*;
 
 import richards_classes.*;
 
-@Description("Solve the Richards equation for the 1D domain .")
+@Description("Solve the Richards equation for the 1D domain with Dirichlet boundary conditions .")
 @Documentation("")
 @Author(name = "Aaron Iemma, Niccolò Tubini, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
 @Keywords("Hydrology, Richards, Infiltration")
@@ -34,7 +34,7 @@ import richards_classes.*;
 //@Name("shortradbal")
 //@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Richards1DSolver {
+public class Richards1DSolverDirichlet {
 	@Description("The hydraulic conductivity at saturation")
 	@In 
 	@Unit ("m/s")
