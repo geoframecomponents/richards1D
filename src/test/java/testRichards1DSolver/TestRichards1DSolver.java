@@ -78,7 +78,7 @@ public class TestRichards1DSolver {
 		R1DSolver.tTimestep = 1000; // !! timeStepMinutes*60
 		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
-		R1DSolver.dir = "resources/Output";
+		R1DSolver.dir = "resources/Output/";
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
