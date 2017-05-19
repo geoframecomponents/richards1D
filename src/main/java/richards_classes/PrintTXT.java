@@ -72,7 +72,7 @@ public class PrintTXT {
 		      fileout.write(this.variable +"\n");
 		      for(int i=0;i<v1.length;i++)
 		      {
-		    	  	fileout.write(v1[i] + " " + v2[i] +"\n");
+		    	  	fileout.write(v1[i] + "," + v2[i] +"\n");
 		    	  	
 		      }
 		            
@@ -98,7 +98,7 @@ public class PrintTXT {
 		      fileout.write(this.variable +"\n");
 		      for(int i=0;i<v1.length;i++)
 		      {
-		    	  	fileout.write(v1[i] + " " + v2[i] + " " + v3[i] +"\n");
+		    	  	fileout.write(v1[i] + "," + v2[i] + "," + v3[i] +"\n");
 		    	
 		      }
 		            
