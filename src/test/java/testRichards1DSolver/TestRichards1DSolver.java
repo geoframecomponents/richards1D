@@ -18,20 +18,15 @@
  */
 
 package testRichards1DSolver;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.*;
 
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
-import Richards1DSolver.Richards1DSolver;
+import Richards1DSolver.*;
 
 import org.junit.Test;
 
@@ -47,37 +42,40 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "1991-09-18 00:00" ;
-		String endDate = "1992-07-14 00:00";
+		String endDate = "1992-09-18 00:00";
 		int timeStepMinutes = 60*24;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/TopBoundaryCondition.csv";
-		String pathBottomBC ="resources/Input/BottomBoundaryCondition.csv";
-		String pathIC = "resources/Input/InitialCondition.txt";
+		String pathTopBC ="resources/Input/D_TopBoundaryConditionREAL.csv";
+		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
+		String pathIC = "resources/Input/InitialConditionTEST.txt";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
-		double[] iC = ReadAndStoreDouble(pathIC);
+		double[] iC = ReadAndStoreIC(pathIC);
+		double[] depth = ReadAndStoreDepth(pathIC);
 
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		R1DSolver.ks = 0.0000007 ;
-		R1DSolver.thetaS =0.41 ;
-		R1DSolver.thetaR = 0.095;
-		R1DSolver.n = 1.31;
-		R1DSolver.alpha =1.9 ;
+		R1DSolver.ks = 0.0000743;
+		R1DSolver.thetaS =0.375 ;
+		R1DSolver.thetaR = 0.058;
+		R1DSolver.n = 3.177;
+		R1DSolver.alpha =3.52 ;
 		R1DSolver.lambda =1.9 ;
 		R1DSolver.psiE = 1.9;
 		R1DSolver.rMedian =1.9 ;
 		R1DSolver.sigma =1.9 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
+		R1DSolver.topBCType = "Top Dirichlet";
+		R1DSolver.bottomBCType = "Bottom Free Drainage";
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.spaceTop = 0.0;
-		R1DSolver.tTimestep = 1000; // !! timeStepMinutes*60
-		R1DSolver.newtonTolerance = Math.pow(10,-12);
+		R1DSolver.tTimestep = timeStepMinutes*60;
+		R1DSolver.newtonTolerance = Math.pow(10,-3);
 		R1DSolver.iC = iC;
+		R1DSolver.depth = depth;
 		R1DSolver.dir = "resources/Output";
 		while( topBCReader.doProcess  ) {
 
@@ -112,7 +110,7 @@ public class TestRichards1DSolver {
 		reader.initProcess();
 		return reader;
 	}
-
+	/* Per la lettura della condizione iniziale con la vecchia formattazione
 	private double[] ReadAndStoreDouble(String filePath) {
 
 		double[] readVector;
@@ -139,4 +137,50 @@ public class TestRichards1DSolver {
 		return readVector;
 
 	}
+	*/
+	private double[] ReadAndStoreIC(String filePath) throws IOException{
+		List<Double> l1 = new ArrayList<>();
+		List<Double> l2 = new ArrayList<>();
+		double[] readVector;
+		
+		Scanner s = new Scanner(new FileReader(filePath));
+
+		while (s.hasNext()) {
+		    l1.add(s.nextDouble());
+		    l2.add(s.nextDouble());
+		}
+
+		s.close();
+		
+		readVector = new double[l1.size()];
+		
+		for(int i = 0;i < l1.size();i++){
+			readVector[i] = l2.get(i);
+		}
+		return readVector;
+
+	}
+	private double[] ReadAndStoreDepth(String filePath) throws IOException{
+		List<Double> l1 = new ArrayList<>();
+		List<Double> l2 = new ArrayList<>();
+		double[] readVector;
+		
+		Scanner s = new Scanner(new FileReader(filePath));
+
+		while (s.hasNext()) {
+		    l1.add(s.nextDouble());
+		    l2.add(s.nextDouble());
+		}
+
+		s.close();
+		
+		readVector = new double[l1.size()];
+		
+		for(int i = 0;i < l1.size();i++){
+			readVector[i] = l1.get(i);
+		}
+		return readVector;
+
+	}
+	
 }
