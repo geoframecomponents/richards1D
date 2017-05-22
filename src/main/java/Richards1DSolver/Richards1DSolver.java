@@ -253,7 +253,6 @@ public class Richards1DSolver {
 	double[] zeta;
 
 	double time=0;
-	double[] topFlux;
 	
 	Thomas thomasAlg;
 
@@ -303,7 +302,6 @@ public class Richards1DSolver {
 			gridvar       = new double[NUM_CONTROL_VOLUMES];
 			gridvarsq     = new double[NUM_CONTROL_VOLUMES];
 			
-			topFlux       = new double[1461];
 			thomasAlg = new Thomas();
 			print = new PrintTXT();
 
@@ -337,7 +335,7 @@ public class Richards1DSolver {
 
 		topBC = 0.0;
 		if(inTopBC != null)
-			topBC = inTopBC.get(1)[0];///1000;
+			topBC = inTopBC.get(1)[0]/1000;
 
 		bottomBC = 0.0;
 		if(inBottomBC != null)
@@ -376,12 +374,10 @@ public class Richards1DSolver {
 
 				kP = 0.5*(kappas[i] + k_t);
 				kM = 0.5*(kappas[i] + kappas[i-1]);
-				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]); //-kM * gridvarsq;
-				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]);//* (kM + 2*kP);
+				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]); 
+				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]);
 				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]);
-				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM,  gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]); //gridvar * (kP-kM) + 2 * kP * gridvarsq * psiTop; 
-				
-				//topFlux[step] = kP*(topBC-psis[i])/gridvar[i];
+				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM,  gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]); 
 				
 			} else {
 
@@ -495,8 +491,6 @@ public class Richards1DSolver {
 		print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m],Psi[m] ");
 		step++;
 		
-		//print.setValueFirstVector(topFlux);
-		//print.PrintOneVector(dir,"TopFlux.csv", "Flux at the top", "Flux");
 	} //// MAIN CYCLE END ////
 		
 }  /// CLOSE Richards1d ///
