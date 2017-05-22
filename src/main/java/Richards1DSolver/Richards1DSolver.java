@@ -156,7 +156,13 @@ public class Richards1DSolver {
 	@Description("Path of output folder")
 	@In
 	public String dir;
-
+	
+	@Description("Control parameter for nested Newton algorithm:"
+				 +"0 --> simple Newton method"
+				 +"1 --> nested Newton method")
+	@In
+	public int nestedNewton; 
+	
 	@Description("Time step over mesh space")
 	double[] gridvar;
 
@@ -164,7 +170,7 @@ public class Richards1DSolver {
 	double[] gridvarsq;
 
 	@Description("Maximun number of Newton iterations")
-	final int MAXITER_NEWT = 100000;
+	final int MAXITER_NEWT = 50;
 
 	@Description("Top boundary condition according with topBCType")
 	@Unit ("")
@@ -247,6 +253,7 @@ public class Richards1DSolver {
 	double[] zeta;
 
 	double time=0;
+	double[] topFlux;
 	
 	Thomas thomasAlg;
 
@@ -295,6 +302,8 @@ public class Richards1DSolver {
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
 			gridvar       = new double[NUM_CONTROL_VOLUMES];
 			gridvarsq     = new double[NUM_CONTROL_VOLUMES];
+			
+			topFlux       = new double[1461];
 			thomasAlg = new Thomas();
 			print = new PrintTXT();
 
@@ -328,7 +337,7 @@ public class Richards1DSolver {
 
 		topBC = 0.0;
 		if(inTopBC != null)
-			topBC = inTopBC.get(1)[0]/1000;
+			topBC = inTopBC.get(1)[0];///1000;
 
 		bottomBC = 0.0;
 		if(inBottomBC != null)
@@ -343,7 +352,7 @@ public class Richards1DSolver {
 		}
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(thetas);
-		print.PrintTwoVectors(dir, "Theta_"+step+".csv", "Theta values at time: "+inCurrentDate, "Depth[m] Theta[-] ");
+		print.PrintTwoVectors(dir, "Theta_"+step+".csv", "Theta values at time: "+inCurrentDate, "Depth[m],Theta[-] ");
 		/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal
 				   	 b main diagonal
@@ -353,7 +362,11 @@ public class Richards1DSolver {
 			if( i == 0 ) {
 
 				kP = 0.5*(kappas[i] + kappas[i+1]);
+				if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+					kM = kappas[i];
+				} else {
 				kM = 0.5*(kappas[i] + k_b);
+				}
 				lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, gridvarsq[i+1], gridvarsq[i], gridvar[i+1], gridvar[i]);
 				mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, gridvarsq[i+1], gridvarsq[i], gridvar[i+1], gridvar[i]);
 				upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, gridvarsq[i+1], gridvarsq[i], gridvar[i+1], gridvar[i]);//-kP * gridvarsq;
@@ -367,7 +380,9 @@ public class Richards1DSolver {
 				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]);//* (kM + 2*kP);
 				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM, gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]);
 				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM,  gridvarsq[i], gridvarsq[i-1], gridvar[i], gridvar[i-1]); //gridvar * (kP-kM) + 2 * kP * gridvarsq * psiTop; 
-
+				
+				//topFlux[step] = kP*(topBC-psis[i])/gridvar[i];
+				
 			} else {
 
 				kP = 0.5*(kappas[i] + kappas[i+1]);
@@ -400,14 +415,28 @@ public class Richards1DSolver {
 				}else {
 					fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 				}
+				dis[j] = soilPar.dWaterContent(psis[j]);
 				outerResidual += fs[j]*fs[j];
 			}
 			outerResidual = Math.pow(outerResidual,0.5);  
-
+			//System.out.println("Outer iteration " + i + " with residual " +  outerResidual);
 			if(outerResidual < newtonTolerance) {
 				break;
 			}
+			if(nestedNewton == 0){
+				bb = mainDiagonal.clone();
+				cc = upperDiagonal.clone();
+				for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
+					bb[y] += dis[y];
+				}
+				thomasAlg.set(cc,bb,lowerDiagonal,fs);
+				dpsis = thomasAlg.solver();
 
+				//// PSIS UPDATE ////
+				for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
+					psis[s] = psis[s] - dpsis[s];
+				}
+			}else{
 			psis_outer = psis.clone();
 
 			// Initial guess of psis
@@ -433,7 +462,7 @@ public class Richards1DSolver {
 				}
 				innerResidual = Math.pow(innerResidual,0.5);
 
-				//System.out.println("Inner iteration " + j + " with residual " +  innerResidual);    
+				//System.out.println("	Inner iteration " + j + " with residual " +  innerResidual);    
 
 				if(innerResidual < newtonTolerance) {
 					break;
@@ -454,7 +483,7 @@ public class Richards1DSolver {
 				for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
 					psis[s] = psis[s] - dpsis[s];
 				}
-
+			}
 			} //// INNER CYCLE END ////
 		} //// OUTER CYCLE END ////
 
@@ -463,11 +492,13 @@ public class Richards1DSolver {
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
 		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m] Psi[m] ");
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m] Psi[m] ");
+		print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m],Psi[m] ");
 		step++;
 		
+		//print.setValueFirstVector(topFlux);
+		//print.PrintOneVector(dir,"TopFlux.csv", "Flux at the top", "Flux");
 	} //// MAIN CYCLE END ////
-
+		
 }  /// CLOSE Richards1d ///
 
 
