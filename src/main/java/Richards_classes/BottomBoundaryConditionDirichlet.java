@@ -2,42 +2,40 @@ package richards_classes;
 
 public class BottomBoundaryConditionDirichlet extends BoundaryCondition {
 
-	public double upperDiagonal(double bC, double kP, double kM, double gridvarsqP, double gridvarsqM, double gridvarP, double gridvarM) {
+	public double upperDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
-		this.gridvarP = gridvarP;
-		this.gridvarM = gridvarM;
-		this.gridvarsqP = gridvarsqP;
-		this.gridvarsqM = gridvarsqM;
-		this.term = -this.kP * this.gridvarsqP;
-
-		return term;
-	}
-	
-	public double mainDiagonal(double bC, double kP, double kM, double gridvarsqP, double gridvarsqM, double gridvarP, double gridvarM) {
-		this.bC = bC;
-		this.kP = kP;
-		this.kM = kM;
-		this.gridvarP = gridvarP;
-		this.gridvarM = gridvarM;
-		this.gridvarsqP = gridvarsqP;
-		this.gridvarsqM = gridvarsqM;
+		this.spaceDeltaP = spaceDeltaP;
+		this.spaceDeltaM = spaceDeltaM;
+		this.tTimestep = tTimestep;
 		
-		this.term = this.gridvarsqM * 2 * this.kM + this.gridvarsqP*this.kP;
+		this.term =-this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP;
+		
+		return term;
+	}
+	
+	public double mainDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep) {
+		this.bC = bC;
+		this.kP = kP;
+		this.kM = kM;
+		this.spaceDeltaP = spaceDeltaP;
+		this.spaceDeltaM = spaceDeltaM;
+		this.tTimestep = tTimestep;
+		
+		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM* this.kM + this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*this.kP;
 
 		return term;
 
 	}
 	
-	public double lowerDiagonal(double bC, double kP, double kM, double gridvarsqP, double gridvarsqM, double gridvarP, double gridvarM) {
+	public double lowerDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
-		this.gridvarP = gridvarP;
-		this.gridvarM = gridvarM;
-		this.gridvarsqP = gridvarsqP;
-		this.gridvarsqM = gridvarsqM;
+		this.spaceDeltaP = spaceDeltaP;
+		this.spaceDeltaM = spaceDeltaM;
+		this.tTimestep = tTimestep;
 		
 		this.term = 0;
 
@@ -45,16 +43,15 @@ public class BottomBoundaryConditionDirichlet extends BoundaryCondition {
 
 	}
 
-	public double rightHandSide(double bC, double kP, double kM, double gridvarsqP, double gridvarsqM, double gridvarP, double gridvarM) {
+	public double rightHandSide(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
-		this.gridvarP = gridvarP;
-		this.gridvarM = gridvarM;
-		this.gridvarsqP = gridvarsqP;
-		this.gridvarsqM = gridvarsqM;
+		this.spaceDeltaP = spaceDeltaP;
+		this.spaceDeltaM = spaceDeltaM;
+		this.tTimestep = tTimestep;
 		
-		this.term = this.gridvarP * this.kP -  this.gridvarM*this.kM + 2 * this.kM * this.gridvarsqM * this.bC;
+		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)* this.kP - this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*this.kM + this.kM * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM * this.bC;
 
 		return term;
 
