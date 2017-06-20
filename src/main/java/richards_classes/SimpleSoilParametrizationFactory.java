@@ -13,6 +13,9 @@ public class SimpleSoilParametrizationFactory {
 		else if(type.equalsIgnoreCase("Kosugi")){
 			soilPar = new KosugiUnimodal(rMedian,sigma,theta_r,theta_s,ks);
 		}
+		else if(type.equalsIgnoreCase("Gardner")){
+			soilPar = new Gardner(alpha,theta_r,theta_s,ks);
+		}
 		return soilPar;
 		}
 }
