@@ -41,14 +41,14 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "2017-02-25 00:00" ;
-		String endDate = "2017-05-20 00:00";
-		int timeStepMinutes = 5;
+		String startDate = "1991-09-18 00:00" ;
+		String endDate = "1991-10-30 00:00";
+		int timeStepMinutes = 60*24;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Trento.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
-		String pathBottomBC ="resources/Input/TrentoBottom.csv";
+		String pathTopBC ="resources/Input/G_Top50.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
+		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
@@ -59,25 +59,27 @@ public class TestRichards1DSolver {
 
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		R1DSolver.ks = 1.5167/10000;//0.062/(3600*24);6.26/1000;//
-		R1DSolver.thetaS =0.4686;//0.41;0.3685;//
-		R1DSolver.thetaR = 0.1060;//0.095;0.0286;//
-		R1DSolver.n = 1.3954;//1.312.2390;//
-		R1DSolver.alpha = 0.0104/0.01;//1.9;0.0280/0.01;//
-		R1DSolver.lambda =1.9 ;
-		R1DSolver.psiE = 1.9;
+		R1DSolver.ks = 4.86/1000000;//0.062/(3600*24);6.26/1000;//
+		R1DSolver.thetaS =0.469;//0.41;0.3685;//
+		R1DSolver.thetaR = 0.0;//0.095;0.0286;//
+		R1DSolver.n = 1.1;//1.312.2390;//
+		R1DSolver.alpha = 1.56;//1.9;0.0280/0.01;//
+		R1DSolver.lambda =1.5 ;
+		R1DSolver.psiE = -1/(0.0286/0.01);
 		R1DSolver.rMedian =1.9 ;
 		R1DSolver.sigma =1.9 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Neumann";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
+		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.tTimestep = timeStepMinutes*60;
-		R1DSolver.newtonTolerance = Math.pow(10,-6);
+		R1DSolver.tTimestep =3600;
+		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		R1DSolver.dir = "resources/Output";
-		R1DSolver.nestedNewton = 0;
+		//R1DSolver.dir = "resources/Output";
+		R1DSolver.dir = "C:/Users/Nico/Desktop/Output";
+		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
