@@ -120,6 +120,11 @@ public class Richards1DSolver {
 	@Unit ("m")
 	public double[] iC;
 
+	@Description("Slope of the soil")
+	@In 
+	@Unit ("°")
+	public double delta;
+	
 	@Description("Depth at which the initial condition is defined")
 	@In 
 	@Unit ("m")
@@ -253,8 +258,8 @@ public class Richards1DSolver {
 	double[] zeta;
 
 	double time=0;
-	
-	
+
+
 	Thomas thomasAlg;
 
 	PrintTXT print;
@@ -300,7 +305,7 @@ public class Richards1DSolver {
 			innerResidual = 0.0;
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES+1];
-			
+
 			//gridvar       = new double[NUM_CONTROL_VOLUMES];
 			//gridvarsq     = new double[NUM_CONTROL_VOLUMES];
 
@@ -309,12 +314,16 @@ public class Richards1DSolver {
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
-
 			jordanDecomposition = new JordanDecomposition(soilPar);
+
 			SimpleBoundaryConditionFactory boundCondFactory = new SimpleBoundaryConditionFactory();
 			topBoundaryCondition = boundCondFactory.createBoundaryCondition(topBCType);		
 			bottomBoundaryCondition = boundCondFactory.createBoundaryCondition(bottomBCType);	
 			// Initial domain conditions
+			/* da rivedere: forse è meglio mettere z=0 alla superficie anzichè alla base della colonna di suolo
+			*  oltre a rivedere la definizione della variabile spaceDelta è da rivedere anche il file della condizione iniziale
+			*  in cui la profondità deve essere data come negativa
+			*/
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = iC[i];
 				zeta[i] = spaceBottom-depth[i];
@@ -328,12 +337,14 @@ public class Richards1DSolver {
 					spaceDelta[i] = zeta[i]-zeta[i-1];
 				}
 			}
+			// conversion from degree to radiant
+			delta = delta*Math.PI/180;
 			/*for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				gridvar[i] = tTimestep / spaceDelta[i];
 				gridvarsq[i] = tTimestep / Math.pow(spaceDelta[i],2);	
 			}*/
 		} // chiudi step==0
-		
+
 		time = time + tTimestep;
 
 		topBC = 0.0;
@@ -347,7 +358,7 @@ public class Richards1DSolver {
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
-		
+
 		// Compute hydraulic conductivity and water content
 		k_t = soilPar.hydraulicConductivity(topBC);
 		k_b = soilPar.hydraulicConductivity(bottomBC);
@@ -372,31 +383,31 @@ public class Richards1DSolver {
 				} else {
 					kM = 0.5*(kappas[i] + k_b);
 				}
-				lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep);
-				mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep);
-				upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep);
-				rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep);
+				lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
 
 			} else if(i == NUM_CONTROL_VOLUMES -1) {
-				
+
 				if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
 					kP = kappas[i];
 				} else {
 					kP = 0.5*(kappas[i] + k_t);
 				}
 				kM = 0.5*(kappas[i] + kappas[i-1]);
-				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep); 
-				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep);
-				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], tTimestep);
-				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep); 
+				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta); 
+				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta); 
 
 			} else {
 
 				kP = 0.5*(kappas[i] + kappas[i+1]);
 				kM = 0.5*(kappas[i] + kappas[i-1]);
-				lowerDiagonal[i] = -kM * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i];
-				mainDiagonal[i] = tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i] * kM + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*kP;
-				upperDiagonal[i] = -kP * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*(1/spaceDelta[i+1]);
+				lowerDiagonal[i] = -kM * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(2, Math.cos(delta));
+				mainDiagonal[i] = tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(2, Math.cos(delta)) * kM + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(2, Math.cos(delta))*kP;
+				upperDiagonal[i] = -kP * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(2, Math.cos(delta));
 				rhss[i] = thetas[i] + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM; 
 
 			}
