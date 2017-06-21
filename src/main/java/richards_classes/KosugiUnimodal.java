@@ -1,11 +1,12 @@
 package richards_classes;
 
+import org.apache.commons.math3.special.Erf;
+
 public class KosugiUnimodal extends SoilParametrization {
 	private double rMedian; // radius median of pore-size distribution
 	private double sigma;   // standard deviation of pore-size distribution
 	private double psiMedian; // suction value related to rMedian by Young-Laplace equation
-	private Erf errorFunction = new Erf();
-	
+
 	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
@@ -43,7 +44,7 @@ public class KosugiUnimodal extends SoilParametrization {
 	public double waterContent(double suction){
 				
 		if(suction <= 0) {
-		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-errorFunction.erf(Math.log(suction/this.psiMedian)*2*this.sigma) ) ;
+		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian)*2*this.sigma) ) ;
 		} else {
 		    this.theta = this.thetaS;
 		}
@@ -75,7 +76,7 @@ public class KosugiUnimodal extends SoilParametrization {
 		final double gamma = 2; // Mualem model (Kosugi, 2002)
  		final double eta = 1;   // Mualem model (Kosugi, 2002)
 		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR); 
-		this.kappa = Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*(1-errorFunction.erf( Math.pow((1-errorFunction.erf(this.saturationDegree)),-1) + eta*this.sigma ) ) ),gamma );
+		this.kappa = Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*(1-Erf.erf( Math.pow((1-Erf.erf(this.saturationDegree)),-1) + eta*this.sigma ) ) ),gamma );
 		
 		return this.kappa;
 	}
