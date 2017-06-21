@@ -33,7 +33,7 @@ import org.junit.Test;
 /**
  * Test the {@link TestRichards1DSolver} module.
  * 
- * @author Niccolò Tubini 
+ * @author Niccolo' Tubini
  */
 public class TestRichards1DSolver {
 
