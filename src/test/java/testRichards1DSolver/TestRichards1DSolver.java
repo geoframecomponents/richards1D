@@ -47,7 +47,7 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/G_Top50.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
+		String pathTopBC ="resources/Input/D_Top50.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
 		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 
