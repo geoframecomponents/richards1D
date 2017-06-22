@@ -6,7 +6,7 @@ public class KosugiUnimodal extends SoilParametrization {
 	private double rMedian; // radius median of pore-size distribution
 	private double sigma;   // standard deviation of pore-size distribution
 	private double psiMedian; // suction value related to rMedian by Young-Laplace equation
-		
+
 	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 

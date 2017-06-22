@@ -18,10 +18,7 @@
  */
 
 package testRichards1DSolver;
-import java.io.*;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
@@ -29,11 +26,12 @@ import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import Richards1DSolver.*;
 
 import org.junit.Test;
+import richards_classes.ReadCsvTwoColumns;
 
 /**
  * Test the {@link TestRichards1DSolver} module.
  * 
- * @author Niccolò Tubini 
+ * @author Niccolo' Tubini, Francesco Serafin
  */
 public class TestRichards1DSolver {
 
@@ -47,15 +45,18 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/G_Top50.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
+		String pathTopBC ="resources/Input/D_Top50.csv";//"resources/Input/D_TopBoundaryConditionREAL.csv";
 		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
-		double[] iC = ReadAndStoreIC(pathIC);
-		double[] depth = ReadAndStoreDepth(pathIC);
+		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
+		readIC.setFilePath(pathIC);
+		readIC.process();
+		double[] iC = readIC.getSuction();
+		double[] depth = readIC.getDepth();
 
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
@@ -77,8 +78,7 @@ public class TestRichards1DSolver {
 		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		//R1DSolver.dir = "resources/Output";
-		R1DSolver.dir = "C:/Users/Nico/Desktop/Output";
+		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
@@ -141,54 +141,4 @@ public class TestRichards1DSolver {
 
 	}
 	*/
-	private double[] ReadAndStoreIC(String filePath) throws IOException{
-		
-		List<Double> l1 = new ArrayList<>();
-		List<Double> l2 = new ArrayList<>();
-		double[] readVector;
-		
-		BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-		String eachLine = "";
-		while ((eachLine = fileReader.readLine()) != null) {
-            String[] values = eachLine.split(",");
-            l1.add(Double.parseDouble(values[0]));
-		    l2.add(Double.parseDouble(values[1]));
-		}
-
-		fileReader.close();
-        
-		readVector = new double[l1.size()];
-					
-		for(int i = 0;i < l1.size();i++){
-			readVector[i] = l2.get(i);
-		}
-		return readVector;
-
-	}
-	private double[] ReadAndStoreDepth(String filePath) throws IOException{
-		
-		List<Double> l1 = new ArrayList<>();
-		List<Double> l2 = new ArrayList<>();
-		double[] readVector;
-		
-		BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-		String eachLine = "";
-		while ((eachLine = fileReader.readLine()) != null) {
-            String[] values = eachLine.split(",");
-            l1.add(Double.parseDouble(values[0]));
-		    l2.add(Double.parseDouble(values[1]));
-		}
-
-		fileReader.close();
-        
-		readVector = new double[l1.size()];
-					
-		for(int i = 0;i < l1.size();i++){
-			readVector[i] = l1.get(i);
-		}
-		return readVector;
-
-
-	}
-	
 }

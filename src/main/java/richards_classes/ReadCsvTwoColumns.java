@@ -4,6 +4,11 @@ import oms3.annotations.*;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Read csv two columns
+ *
+ * @author Niccolo' Tubini, Francesco Serafin
+ */
 public class ReadCsvTwoColumns {
 	@Description("Path of the input file")
 	@In
@@ -41,5 +46,18 @@ public class ReadCsvTwoColumns {
 		}
 
 	}
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+
+	public double[] getDepth() {
+		return depth;
+	}
+
+	public double[] getSuction() {
+		return suctionIC;
+	}
+
 }
 
