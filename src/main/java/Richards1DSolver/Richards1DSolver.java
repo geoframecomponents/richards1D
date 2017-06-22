@@ -23,11 +23,13 @@ import java.util.HashMap;
 
 import oms3.annotations.*;
 
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import richards_classes.*;
 
 @Description("Solve the Richards equation for the 1D domain.")
 @Documentation("")
-@Author(name = "Aaron Iemma, Niccolò Tubini, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
+@Author(name = "Aaron Iemma, Niccolo' Tubini, Francesco Serafin, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
 @Keywords("Hydrology, Richards, Infiltration")
 @Bibliography("Casulli (2010)")
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
@@ -276,7 +278,9 @@ public class Richards1DSolver {
 
 		System.out.println("RICHARDS 1D "+inCurrentDate);
 
+		iC = iC.getClass().cast(checkIC(depth, iC, depth));
 		if(step==0){
+
 			NUM_CONTROL_VOLUMES = iC.length;
 			//spaceDelta= Math.abs((spaceTop - spaceBottom) / NUM_CONTROL_VOLUMES); 			
 			//space_cv_centres= DomainDiscretization.seq(spaceBottom + spaceDelta / 2,spaceTop - spaceDelta / 2,NUM_CONTROL_VOLUMES);
@@ -524,6 +528,38 @@ public class Richards1DSolver {
 
 	} //// MAIN CYCLE END ////
 
+	private Object checkIC(double[] from_depth, Object iC, double[] to_depth) {
+		if (iC instanceof Double || iC instanceof Float) {
+			return iC;
+		} else if (iC instanceof double[]){
+		    return checkIClength(from_depth, (double []) iC, to_depth);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private Object checkIClength(double[] from_depth, double[] iC, double[] to_depth) {
+		if (to_depth.length == iC.length) {
+			return iC;
+		} else if ((to_depth.length + 1) == iC.length) {
+			return linearInterp(from_depth, iC, to_depth);
+		} else {
+			String msg = "Cannot process " + iC.length + " values of IC";
+			msg += " for " + to_depth.length + " vertices";
+			throw new IndexOutOfBoundsException(msg);
+		}
+	}
+
+	private double[] linearInterp(double[] x, double[] y, double[] xi) {
+       LinearInterpolator li = new LinearInterpolator(); // or other interpolator
+       PolynomialSplineFunction psf = li.interpolate(x, y);
+
+       double[] yi = new double[xi.length];
+       for (int i = 0; i < xi.length; i++) {
+           yi[i] = psf.value(xi[i]);
+       }
+       return yi;
+    }
 }  /// CLOSE Richards1d ///
 
 
