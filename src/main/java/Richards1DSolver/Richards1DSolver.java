@@ -168,12 +168,6 @@ public class Richards1DSolver {
 	@In
 	public int nestedNewton; 
 
-	@Description("Time step over mesh space")
-	double[] gridvar;
-
-	@Description("Time step over the square of mesh space")
-	double[] gridvarsq;
-
 	@Description("Maximun number of Newton iterations")
 	final int MAXITER_NEWT = 50;
 
@@ -188,10 +182,6 @@ public class Richards1DSolver {
 	@Description("Psi values")
 	@Unit ("m")
 	double[] psis;
-
-	double[] dpsis;
-
-	double[] psis_outer;
 
 	@Description("Hydraulic conductivity at the top of the soil column")
 	@Unit ("m/s")
@@ -221,21 +211,6 @@ public class Richards1DSolver {
 	@Unit ("?")
 	double[] upperDiagonal;
 
-	@Description("This is the vector which element are those of the principal diagonal and it is used in the Thomas algorithm")
-	double[] bb; 
-
-	@Description("This is the vector which element are those of the upper diagonal and it is used in the Thomas algorithm")
-	double[] cc;
-
-	@Description("Vector of residuals of the inner iteration")
-	double[] fs;
-
-	@Description("Vector of residuals of the inner iteration")
-	double[] fks;
-
-	@Description("Correction of the solution after the Newton iterations")
-	double[] dis;
-
 	@Description("Right hand side vector of the scalar equation to solve")
 	@Unit ("-")
 	double[] rhss;
@@ -259,14 +234,11 @@ public class Richards1DSolver {
 
 	double time=0;
 
-
-	Thomas thomasAlg;
-
+	NestedNewton nestedNewtonAlg;
+	
 	PrintTXT print;
 
 	SoilParametrization soilPar;
-
-	JordanDecomposition jordanDecomposition;
 
 	BoundaryCondition topBoundaryCondition;
 	BoundaryCondition bottomBoundaryCondition;
@@ -278,43 +250,27 @@ public class Richards1DSolver {
 
 		if(step==0){
 			NUM_CONTROL_VOLUMES = iC.length;
-			//spaceDelta= Math.abs((spaceTop - spaceBottom) / NUM_CONTROL_VOLUMES); 			
-			//space_cv_centres= DomainDiscretization.seq(spaceBottom + spaceDelta / 2,spaceTop - spaceDelta / 2,NUM_CONTROL_VOLUMES);
-			//gridvar=tTimestep / spaceDelta;
-			//gridvarsq=tTimestep / Math.pow(spaceDelta,2);		
 
-			psis 		  = new double[NUM_CONTROL_VOLUMES];	
-			dpsis 		  = new double[NUM_CONTROL_VOLUMES];	
-			psis_outer    = new double[NUM_CONTROL_VOLUMES];	
+			psis 		  = new double[NUM_CONTROL_VOLUMES];		
 			k_t			  = 0.0;								
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
 			thetas 		  = new double[NUM_CONTROL_VOLUMES];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
-			bb            = new double[NUM_CONTROL_VOLUMES]; 
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
-			cc 			  = new double[NUM_CONTROL_VOLUMES];
-			fs			  = new double[NUM_CONTROL_VOLUMES];
-			fks			  = new double[NUM_CONTROL_VOLUMES];
-			dis			  = new double[NUM_CONTROL_VOLUMES];
 			rhss 		  = new double[NUM_CONTROL_VOLUMES];
 			kP 		      = 0.0;
 			kM	          = 0.0;
-			outerResidual = 0.0;
-			innerResidual = 0.0;
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES+1];
 
-			//gridvar       = new double[NUM_CONTROL_VOLUMES];
-			//gridvarsq     = new double[NUM_CONTROL_VOLUMES];
-
-			thomasAlg = new Thomas();
 			print = new PrintTXT();
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
-			jordanDecomposition = new JordanDecomposition(soilPar);
+			
+			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, soilPar);
 
 			SimpleBoundaryConditionFactory boundCondFactory = new SimpleBoundaryConditionFactory();
 			topBoundaryCondition = boundCondFactory.createBoundaryCondition(topBCType);		
@@ -337,12 +293,10 @@ public class Richards1DSolver {
 					spaceDelta[i] = zeta[i]-zeta[i-1];
 				}
 			}
-			// conversion from degree to radiant
+			
+			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
-			/*for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-				gridvar[i] = tTimestep / spaceDelta[i];
-				gridvarsq[i] = tTimestep / Math.pow(spaceDelta[i],2);	
-			}*/
+
 		} // chiudi step==0
 
 		time = time + tTimestep;
@@ -366,9 +320,7 @@ public class Richards1DSolver {
 			thetas[i] = soilPar.waterContent(psis[i]);
 			kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 		}
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(thetas);
-		//print.PrintTwoVectors(dir, "Theta_"+step+".csv", "Theta values at time: "+inCurrentDate, "Depth[m],Theta[-] ");
+		
 		/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal
 				   	 b main diagonal
@@ -412,103 +364,14 @@ public class Richards1DSolver {
 
 			}
 		}
+		
+		//// NESTED NEWTON ALGORITHM ////
+		nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
+		psis = nestedNewtonAlg.solver();
 
-		// Initial guess of psis
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			psis[i] = Math.min(psis[i], soilPar.getPsiStar());
-		}
-
-		//// NESTED NEWTON ////
-		//// OUTER CYCLE, linearizes one of q_{1}, q_{2} ////
-		for(int i = 0; i < MAXITER_NEWT; i++) {
-			// I have to assign 0 to outerResidual otherwise I will take into account of the previous error
-			outerResidual = 0.0;
-			for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-				fs[j] = soilPar.waterContent(psis[j]) - rhss[j];
-				//fs[j] = jordanDecomposition.waterContent1(psis[j]) - rhss[j];
-				if(j == 0) {
-					fs[j] = fs[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
-				}else if(j == NUM_CONTROL_VOLUMES -1) {
-					fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
-				}else {
-					fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
-				}
-				dis[j] = soilPar.dWaterContent(psis[j]);
-				outerResidual += fs[j]*fs[j];
-			}
-			outerResidual = Math.pow(outerResidual,0.5);  
-			System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
-			if(outerResidual < newtonTolerance) {
-				break;
-			}
-			if(nestedNewton == 0){
-				bb = mainDiagonal.clone();
-				cc = upperDiagonal.clone();
-				for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
-					bb[y] += dis[y];
-				}
-				thomasAlg.set(cc,bb,lowerDiagonal,fs);
-				dpsis = thomasAlg.solver();
-
-				//// PSIS UPDATE ////
-				for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
-					psis[s] = psis[s] - dpsis[s];
-				}
-			}else{
-				psis_outer = psis.clone();
-
-				// Initial guess of psis
-				for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-					psis[j] = Math.max(psis[j], soilPar.getPsiStar());
-				}
-
-				//// INNER CYCLE ////
-				for(int j = 0; j < MAXITER_NEWT; j++) {
-					// I have to assign 0 to innerResidual otherwise I will take into account of the previous error
-					innerResidual = 0.0; 
-					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
-						fks[l] = jordanDecomposition.waterContent1(psis[l]) - (jordanDecomposition.waterContent2(psis_outer[l]) + jordanDecomposition.dWaterContent2(psis_outer[l])*(psis[l] - psis_outer[l])) - rhss[l];
-						if(l == 0) {
-							fks[l] = fks[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
-						}else if(l == NUM_CONTROL_VOLUMES -1) {
-							fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
-						}else {
-							fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
-						}
-						dis[l] = jordanDecomposition.dWaterContent1(psis[l]) - jordanDecomposition.dWaterContent2(psis_outer[l]);
-						innerResidual += fks[l]*fks[l];
-					}
-					innerResidual = Math.pow(innerResidual,0.5);
-
-					System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
-
-					if(innerResidual < newtonTolerance) {
-						break;
-					}
-
-					//// THOMAS ////
-					// Attention: the main diagonal of the coefficient matrix must not change!! The same for the upper diagonal
-
-					bb = mainDiagonal.clone();
-					cc = upperDiagonal.clone();
-					for(int y = 0; y < NUM_CONTROL_VOLUMES; y++) {
-						bb[y] += dis[y];
-					}
-					thomasAlg.set(cc,bb,lowerDiagonal,fks);
-					dpsis = thomasAlg.solver();
-
-					//// PSIS UPDATE ////
-					for(int s = 0; s < NUM_CONTROL_VOLUMES; s++) {
-						psis[s] = psis[s] - dpsis[s];
-					}
-				}
-			} //// INNER CYCLE END ////
-		} //// OUTER CYCLE END ////
-
-		//// PRINT  ////
+		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
-		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m] Psi[m] ");
 		print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m],Psi[m] ");
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
@@ -517,8 +380,6 @@ public class Richards1DSolver {
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(thetas);
 		print.PrintTwoVectors(dir, "Theta_"+step+".csv", "Theta values at time: "+inCurrentDate, "Depth[m],Theta[-] ");
-
-
 
 		step++;
 
