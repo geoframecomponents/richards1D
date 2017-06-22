@@ -5,4 +5,5 @@
 /.settings/
 /bin/
 /build/
+/resources/Output/*.csv
 octave-workspace
