@@ -278,8 +278,9 @@ public class Richards1DSolver {
 
 		System.out.println("RICHARDS 1D "+inCurrentDate);
 
-		iC = iC.getClass().cast(checkIC(depth, iC, depth));
 		if(step==0){
+
+			iC = iC.getClass().cast(checkIC(depth, iC, depth));
 
 			NUM_CONTROL_VOLUMES = iC.length;
 			//spaceDelta= Math.abs((spaceTop - spaceBottom) / NUM_CONTROL_VOLUMES); 			
