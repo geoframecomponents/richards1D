@@ -17,7 +17,7 @@ public class Thomas {
 	double[] mainDiagonal;
 	double[] upperDiagonal;
 	double[] lowerDiagonal;
-	double[] rHS;
+	double[] rhss;
 	double[] solution;
 	int DIM;
 	
@@ -26,16 +26,16 @@ public class Thomas {
 	
 	/**
 	 * 
-	 * @param upperDiagonal upper diagonal of the coefficient matrix A of the linear system, it is a vector of length N
-	 * @param mainDiagonal main diagonal of the coefficient matrix A of the linear system, it is a vector of length N
-	 * @param lowerDiagonal lower diagonal of the coefficient matrix A of the linear system, it is a vector of length N
-	 * @param rHS right hand side term of the linear system, it is a vector of length N
+	 * @param upperDiagonal upper diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
+	 * @param mainDiagonal main diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
+	 * @param lowerDiagonal lower diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
+	 * @param rhss right hand side term of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
 	 */
-	public void set(double[] upperDiagonal, double[] mainDiagonal, double[] lowerDiagonal, double[] rHS){
+	public void set(double[] upperDiagonal, double[] mainDiagonal, double[] lowerDiagonal, double[] rhss){
 			this.upperDiagonal = upperDiagonal;
 			this.mainDiagonal = mainDiagonal;
 			this.lowerDiagonal = lowerDiagonal;
-			this.rHS = rHS;
+			this.rhss = rhss;
 			
 			this.DIM = this.mainDiagonal.length;
 			this.solution = new double[this.DIM];
@@ -43,31 +43,31 @@ public class Thomas {
 	
 	
 	/**
-	 * The method solver computes the solution of the linear system with the thomas algorithm
+	 * The method solver computes the solution of the linear system with the Thomas algorithm
 	 */
 	public double[] solver(){
 				
 		double gamma = 0.0;
-		if(this.mainDiagonal.length!= this.upperDiagonal.length | this.mainDiagonal.length!= this.lowerDiagonal.length | this.mainDiagonal.length!= this.rHS.length){
+		if(this.mainDiagonal.length!= this.upperDiagonal.length | this.mainDiagonal.length!= this.lowerDiagonal.length | this.mainDiagonal.length!= this.rhss.length){
 			throw new IllegalArgumentException( "System size error! |n"
 					+ "Check the length of diagonal vectors and the right hand side term of the system ");
 		}
 		
 
 		this.upperDiagonal[0] = this.upperDiagonal[0]/this.mainDiagonal[0];
-		this.rHS[0] = this.rHS[0]/this.mainDiagonal[0];
+		this.rhss[0] = this.rhss[0]/this.mainDiagonal[0];
 		
 
 		for(int i = 1; i < this.DIM; i++) {
 			gamma = 1 / (this.mainDiagonal[i] - this.upperDiagonal[i-1]*this.lowerDiagonal[i]);
 			this.upperDiagonal[i] = this.upperDiagonal[i]*gamma;
-			this.rHS[i] = (this.rHS[i] - this.lowerDiagonal[i]*this.rHS[i-1])*gamma;
+			this.rhss[i] = (this.rhss[i] - this.lowerDiagonal[i]*this.rhss[i-1])*gamma;
 		}
 
-		this.solution[this.DIM-1] = this.rHS[this.DIM-1];
+		this.solution[this.DIM-1] = this.rhss[this.DIM-1];
 
 		for(int i=this.DIM-2; i > -1; i--) {
-			this.solution[i] = this.rHS[i] - this.upperDiagonal[i]*this.solution[i+1];
+			this.solution[i] = this.rhss[i] - this.upperDiagonal[i]*this.solution[i+1];
 		}
 		
 		return this.solution;
