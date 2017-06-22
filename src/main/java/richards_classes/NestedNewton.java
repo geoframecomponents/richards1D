@@ -1,5 +1,5 @@
 /**
- *  @author Niccolò
+ *  @author Niccolo' Tubini
  */
 
 package richards_classes;
