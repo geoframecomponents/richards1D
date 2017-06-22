@@ -22,4 +22,4 @@ deploy:
   on:
     tags: true
     all_branches: true
-    repo: niccolotubini/TravisLesson
+    repo: geoframecomponents/richards1d
