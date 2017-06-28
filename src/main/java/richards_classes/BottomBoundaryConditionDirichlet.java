@@ -11,7 +11,7 @@ public class BottomBoundaryConditionDirichlet extends BoundaryCondition {
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term =-this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(2, Math.cos(this.delta));
+		this.term =-this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2);
 		
 		return term;
 	}
@@ -25,7 +25,7 @@ public class BottomBoundaryConditionDirichlet extends BoundaryCondition {
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM*1/Math.pow(2, Math.cos(this.delta))* this.kM + this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(2, Math.cos(this.delta))*this.kP;
+		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM*1/Math.pow(Math.cos(this.delta),2)* this.kM + this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2)*this.kP;
 
 		return term;
 
@@ -55,7 +55,7 @@ public class BottomBoundaryConditionDirichlet extends BoundaryCondition {
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)* this.kP - this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*this.kM + this.kM * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM*1/Math.pow(2, Math.cos(this.delta))* this.bC;
+		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)* this.kP - this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*this.kM + this.kM * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaM*1/Math.pow(Math.cos(this.delta),2)* this.bC;
 
 		return term;
 
