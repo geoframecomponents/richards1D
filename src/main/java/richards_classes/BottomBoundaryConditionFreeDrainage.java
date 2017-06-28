@@ -11,7 +11,7 @@ public class BottomBoundaryConditionFreeDrainage extends BoundaryCondition {
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = -this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(2, Math.cos(this.delta));
+		this.term = -this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2);
 		
 		return term;
 	}
@@ -25,7 +25,7 @@ public class BottomBoundaryConditionFreeDrainage extends BoundaryCondition {
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(2, Math.cos(this.delta))* this.kP ;
+		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2)* this.kP ;
 		
 		return term;
 
