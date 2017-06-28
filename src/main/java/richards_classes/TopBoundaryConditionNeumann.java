@@ -25,7 +25,7 @@ public class TopBoundaryConditionNeumann extends BoundaryCondition{
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = this.tTimestep/(this.spaceDeltaM/2+this.spaceDeltaP)*1/this.spaceDeltaM*1/Math.pow(2, Math.cos(this.delta))*this.kM;
+		this.term = this.tTimestep/(this.spaceDeltaM/2+this.spaceDeltaP)*1/this.spaceDeltaM*1/Math.pow(Math.cos(this.delta),2)*this.kM;
 
 		return term;
 
@@ -40,7 +40,7 @@ public class TopBoundaryConditionNeumann extends BoundaryCondition{
 		this.tTimestep = tTimestep;
 		this.delta = delta;
 		
-		this.term = -this.kM * this.tTimestep/(this.spaceDeltaM/2+this.spaceDeltaP)*1/this.spaceDeltaM*1/Math.pow(2, Math.cos(this.delta));
+		this.term = -this.kM * this.tTimestep/(this.spaceDeltaM/2+this.spaceDeltaP)*1/this.spaceDeltaM*1/Math.pow(Math.cos(this.delta),2);
 
 		return term;
 
