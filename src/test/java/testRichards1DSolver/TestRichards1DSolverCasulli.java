@@ -29,7 +29,7 @@ import org.junit.Test;
 import richards_classes.ReadCsvTwoColumns;
 
 /**
- * Test the {@link TestRichards1DSolver} module with the numerical experiment shown in Casulli's and Zanolli's paper 2010.
+ * This test plays Casulli's experiment 1 (Casulli and Zanolli, 2010).
  * 
  * @author Niccolo' Tubini, Francesco Serafin
  */
@@ -44,10 +44,15 @@ public class TestRichards1DSolverCasulli {
 		int timeStepMinutes = 60*24;
 		String fId = "ID";
 
-
+		/**
+		 * The top boundary condition is a Dirichlet type.
+		 * Casulli's top boundary values for psi are given in meters.
+		 * The psi values in Casulli_TopBoundaryCondition are expressed in kilometers 
+		 * since in the Richards' solver the top boundary condition (topBC) is divided by 1000
+		 */
 		String pathTopBC ="resources/Input/Casulli_TopBoundaryCondition.csv";
 		String pathBottomBC ="resources/Input/Casulli_BottomBoundaryCondition.csv";
-		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
+		String pathIC = "resources/Input/Casulli_InitialConditionHydrostatic.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -60,33 +65,32 @@ public class TestRichards1DSolverCasulli {
 
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		R1DSolver.ks = 0.062/86400;
-		R1DSolver.thetaS = 0.410;
+		R1DSolver.ks = 0.062/(3600*24);
+		R1DSolver.thetaS =0.41;
 		R1DSolver.thetaR = 0.095;
 		R1DSolver.n = 1.31;
 		R1DSolver.alpha = 1.9;
-		/**
-		 * In this experiment Van Genuchten's model is used
-		 */
-		R1DSolver.lambda = -999;
+		R1DSolver.lambda =-999 ;
 		R1DSolver.psiE = -999;
-		R1DSolver.rMedian = -999;
-		R1DSolver.sigma = -999;
+		R1DSolver.rMedian = -999 ;
+		R1DSolver.sigma = -999 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Dirichlet";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
 		/**
-		 * The time step is 1000 seconds and it is not consistent with the time series of the boundary condition
-		 * The time series is necessary for the jgrasstool
+		 * The time step is not consistent with the time series.
+		 * The time step in Casulli's experiment is 1000 seconds.
+		 * The time series is necessary for the jgrass-tools
 		 */
-		R1DSolver.tTimestep = 1000; 
-		R1DSolver.newtonTolerance = Math.pow(10,-10);
+		R1DSolver.tTimestep =1000;
+		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		R1DSolver.dir = "resources/Output";
-		R1DSolver.nestedNewton = 1;
+		//R1DSolver.dir = "resources/Output";
+		R1DSolver.dir = "C:/Users/Nico/Desktop/Output master";
+		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
