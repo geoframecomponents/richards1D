@@ -47,7 +47,7 @@ public class TestRichards1DSolverCasulli {
 		/**
 		 * The top boundary condition is a Dirichlet type.
 		 * Casulli's top boundary values for psi are given in meters.
-		 * The psi values in Casulli_TopBoundaryCondition are expressed in kilometers 
+		 * The psi values in Casulli_TopBoundaryCondition are expressed in millimeters 
 		 * since in the Richards' solver the top boundary condition (topBC) is divided by 1000
 		 */
 		String pathTopBC ="resources/Input/Casulli_TopBoundaryCondition.csv";
@@ -88,8 +88,7 @@ public class TestRichards1DSolverCasulli {
 		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		//R1DSolver.dir = "resources/Output";
-		R1DSolver.dir = "C:/Users/Nico/Desktop/Output master";
+		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
