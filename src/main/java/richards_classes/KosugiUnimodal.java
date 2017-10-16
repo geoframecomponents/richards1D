@@ -1,12 +1,38 @@
+/*
+ * GNU GPL v3 License
+ *
+ * Copyright 2017 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package richards_classes;
+
+/**
+ * Kosugi's two-parameter lognormal distribution SWRC model
+ * @author Niccolò Tubini
+ */
 
 import org.apache.commons.math3.special.Erf;
 
 public class KosugiUnimodal extends SoilParametrization {
+	
 	private double rMedian; // radius median of pore-size distribution
 	private double sigma;   // standard deviation of pore-size distribution
 	private double psiMedian; // suction value related to rMedian by Young-Laplace equation
 
+	
+	
 	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
@@ -37,6 +63,8 @@ public class KosugiUnimodal extends SoilParametrization {
 		this.psiMedian = -1.49*Math.pow(10, -5)/this.rMedian;
 	}
 	
+	
+	
 	/**
 	 * @param suction 
 	 * @return theta water content at suction value
@@ -44,13 +72,15 @@ public class KosugiUnimodal extends SoilParametrization {
 	public double waterContent(double suction){
 				
 		if(suction <= 0) {
-		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian)*2*this.sigma) ) ;
+		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian)/(this.sigma*Math.pow(2,0.5))) ) ; // ho medificato la parte relativa al sigma dentro il logaritmo
 		} else {
 		    this.theta = this.thetaS;
 		}
 
 		return this.theta;
 	}
+	
+	
 	
 	/**
 	 * @param suction
@@ -66,6 +96,8 @@ public class KosugiUnimodal extends SoilParametrization {
 		
 		return this.dTheta;
 	}
+	
+	
 	
 	/**
 	 * @param suction
