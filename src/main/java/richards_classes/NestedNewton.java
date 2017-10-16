@@ -1,11 +1,27 @@
-/**
- *  @author Niccolo' Tubini
+/*
+ * GNU GPL v3 License
+ *
+ * Copyright 2017 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package richards_classes;
 /**
  * This class carries out the Nested-Newton algorithm
  * (A NESTED NEWTON-TYPE ALGORITHM FOR FINITE VOLUME METHODS SOLVING RICHARDS' EQUATION IN MIXED FORM, Casulli V., Zanolli P., Journal Scientific Computing, 2010)
+ *  @author Niccolo' Tubini
  */
 
 public class NestedNewton {
@@ -33,7 +49,6 @@ public class NestedNewton {
 	double[] psis_outer;
 	
 	SoilParametrization soilPar;
-	
 	Thomas thomasAlg = new Thomas();
 	JordanDecomposition jordanDecomposition;
 	
@@ -61,6 +76,8 @@ public class NestedNewton {
 		psis_outer	  = new double[this.NUM_CONTROL_VOLUMES];
 	}
 	
+	
+	
 	/**
 	 * @param psis vector contains the suction values, it is a vector of length NUM_CONTROL_VOLUMES
 	 * @param upperDiagonal upper diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
@@ -75,6 +92,8 @@ public class NestedNewton {
 		this.lowerDiagonal = lowerDiagonal;
 		this.rhss = rhss;
 	}
+	
+	
 	
 	public double[] solver(){
 

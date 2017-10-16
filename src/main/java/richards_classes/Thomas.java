@@ -1,5 +1,20 @@
-/**
- *  @author Niccolò
+/*
+ * GNU GPL v3 License
+ *
+ * Copyright 2017 
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package richards_classes;
@@ -10,6 +25,8 @@ package richards_classes;
  * linear tridiagonal systems. As the original Gauß-algorithm, it proceeds in two stages, one forward
  * elimination and one back-substitution.
  * (Numerical Methods for Free Surface Hydrodynamics Solution of linear algebraic equation systems, Dumbser, M., Università degli studi di Trento)
+ * 
+ * @author Niccolò
  */
 
 public class Thomas {
@@ -40,6 +57,7 @@ public class Thomas {
 			this.DIM = this.mainDiagonal.length;
 			this.solution = new double[this.DIM];
 	}
+	
 	
 	
 	/**
@@ -74,6 +92,7 @@ public class Thomas {
 
 	}
 
+	
 	
 	/**
 	 * This method prints the solution on the screen
