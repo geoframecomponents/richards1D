@@ -45,9 +45,9 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Casulli_TopBoundaryCondition.csv";
-		String pathBottomBC ="resources/Input/Casulli_BottomBoundaryCondition.csv";
-		String pathIC = "resources/Input/Casulli_InitialConditionHydrostatic.csv";
+		String pathTopBC ="resources/Input/D_Top0.csv";
+		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
+		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -67,19 +67,19 @@ public class TestRichards1DSolver {
 		R1DSolver.alpha = 1.9;
 		R1DSolver.lambda =1.5 ;
 		R1DSolver.psiE = -1/(0.0286/0.01);
-		R1DSolver.rMedian =1.9 ;
-		R1DSolver.sigma =1.9 ;
+		R1DSolver.rMedian =0.0000020781 ;
+		R1DSolver.sigma =0.6 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Dirichlet";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.tTimestep =1000;
+		R1DSolver.tTimestep =1;
 		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		R1DSolver.dir = "resources/Output";
-		R1DSolver.nestedNewton =1;
+		R1DSolver.dir = "C:/Users/Nico/Desktop/Output master";
+		R1DSolver.nestedNewton =0;
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
