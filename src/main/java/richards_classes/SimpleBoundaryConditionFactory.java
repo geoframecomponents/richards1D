@@ -46,6 +46,9 @@ public class SimpleBoundaryConditionFactory {
 		else if(type.equalsIgnoreCase("Bottom Dirichlet") || type.equalsIgnoreCase("BottomDirichlet")){
 			boundaryCondition = new BottomBoundaryConditionDirichlet();
 		}
+		else if(type.equalsIgnoreCase("Bottom Impervious") || type.equalsIgnoreCase("BottomImpervious")){
+			boundaryCondition = new BottomBoundaryConditionImpervious();
+		}
 
 		return boundaryCondition;
 		}
