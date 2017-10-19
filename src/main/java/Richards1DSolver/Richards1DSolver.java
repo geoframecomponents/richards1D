@@ -149,10 +149,11 @@ public class Richards1DSolver {
 	@Unit ("m")
 	public HashMap<Integer, double[]> inBottomBC;
 
-	@Description("It is possibile to chose between 2 different kind "
+	@Description("It is possibile to chose among 3 different kind "
 			+ "of boundary condition at the bottom of the domain: "
 			+ "- Dirichlet boundary condition --> Bottom Dirichlet"
-			+ "- Neumann boundary condition --> Bottom Neumann")
+			+ "- Neumann boundary condition --> Bottom Neumann"
+			+ "- Impervious boundary condition --> Bottom Impervious")
 	@In 
 	public String bottomBCType;
 
@@ -327,9 +328,9 @@ public class Richards1DSolver {
 		}
 		
 		/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
-				   	 a lower diagonal
-				   	 b main diagonal
-				   	 c upper diagonal
+				   	 a lower diagonal psi_(i+1)
+				   	 b main diagonal  psi_i
+				   	 c upper diagonal psi_(i-1)
 				   	 RIGHT HAND SIDE */
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
