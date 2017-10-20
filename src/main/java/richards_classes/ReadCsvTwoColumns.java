@@ -17,9 +17,9 @@ public class ReadCsvTwoColumns {
 	@Description("Depth")
 	@Out
 	public double[] depth;
-	@Description("Suction")
+	@Description("Variable: generic term to describe either initial condition for psi or the source/sink term")
 	@Out
-	public double[] suctionIC;
+	public double[] variable;
 	
 	@Execute
 	public void process() throws IOException {
@@ -38,11 +38,11 @@ public class ReadCsvTwoColumns {
 		fileReader.close();
         
 		depth = new double[l1.size()];
-		suctionIC = new double[l2.size()];
+		variable = new double[l2.size()];
 		
 		for(int i = 0;i < l1.size();i++){
 			depth[i] = l1.get(i);
-			suctionIC[i] = l2.get(i);
+			variable[i] = l2.get(i);
 		}
 
 	}
@@ -55,8 +55,8 @@ public class ReadCsvTwoColumns {
 		return depth;
 	}
 
-	public double[] getSuction() {
-		return suctionIC;
+	public double[] getVariable() {
+		return variable;
 	}
 
 }
