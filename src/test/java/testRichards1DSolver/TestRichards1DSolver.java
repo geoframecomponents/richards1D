@@ -78,7 +78,7 @@ public class TestRichards1DSolver {
 		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
-		R1DSolver.dir = "C:/Users/Nico/Desktop/Output master";
+		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =0;
 		while( topBCReader.doProcess  ) {
 
