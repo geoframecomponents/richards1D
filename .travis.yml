@@ -1,4 +1,6 @@
 language: java
+sudo: required
+script: bundle exec rspec
 dist: precise
 jdk:
     - oraclejdk8
