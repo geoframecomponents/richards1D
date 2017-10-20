@@ -45,9 +45,9 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/D_Top0.csv";
-		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
-		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
+		String pathTopBC ="resources/Input/Casulli_TopBoundaryCondition.csv";
+		String pathBottomBC ="resources/Input/Casulli_BottomBoundaryCondition.csv";
+		String pathIC = "resources/Input/Casulli_InitialConditionHydrostatic.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
