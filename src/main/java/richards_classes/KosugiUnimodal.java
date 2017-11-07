@@ -104,11 +104,11 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @return kappa hydraulic conductivity at suction value
 	 */
 	public double hydraulicConductivity(double suction){
-		final double l = 1;     // (Kosugi, 2002)
-		final double gamma = 2; // Mualem model (Kosugi, 2002)
- 		final double eta = 1;   // Mualem model (Kosugi, 2002)
+		final double l = 0.5;   // (Kosugi, 1996)
+		final double gamma = 2; // Mualem model (Kosugi, 1996)
+ 		final double eta = 1;   // Mualem model (Kosugi, 1996)
 		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR); 
-		this.kappa = Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*(1-Erf.erf( Math.pow((1-Erf.erf(this.saturationDegree)),-1) + eta*this.sigma ) ) ),gamma );
+		this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*Erf.erfc( Erf.erfcInv(2*this.saturationDegree) + eta*this.sigma/Math.sqrt(2)  ) ),gamma );
 		
 		return this.kappa;
 	}
