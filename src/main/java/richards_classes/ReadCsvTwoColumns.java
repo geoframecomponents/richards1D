@@ -28,9 +28,10 @@ public class ReadCsvTwoColumns {
 		List<Double> l2 = new ArrayList<>();
 		
 		BufferedReader fileReader = new BufferedReader(new FileReader(filePath));
-		String eachLine = "";
-		while ((eachLine = fileReader.readLine()) != null) {
-            String[] values = eachLine.split(",");
+		fileReader.readLine(); // this will read the first line
+		String line1=null;    // set the first line null, hence it will start from the second line
+		while ((line1 = fileReader.readLine()) != null) {
+            String[] values = line1.split(",");
             l1.add(Double.parseDouble(values[0]));
 		    l2.add(Double.parseDouble(values[1]));
 		}
@@ -44,8 +45,9 @@ public class ReadCsvTwoColumns {
 			depth[i] = l1.get(i);
 			suctionIC[i] = l2.get(i);
 		}
-
+		
 	}
+
 
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
@@ -60,4 +62,3 @@ public class ReadCsvTwoColumns {
 	}
 
 }
-
