@@ -378,14 +378,14 @@ public class Richards1DSolver {
 		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", "Psi values at time: "+inCurrentDate, "Depth[m],Psi[m] ");
+		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
 			thetas[i] = soilPar.waterContent(psis[i]);
 		}
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(thetas);
-		print.PrintTwoVectors(dir, "Theta_"+step+".csv", "Theta values at time: "+inCurrentDate, "Depth[m],Theta[-] ");
+		print.PrintTwoVectors(dir, "Theta_"+step+".csv", inCurrentDate, "Depth[m],Theta[-] ");
 
 		step++;
 
