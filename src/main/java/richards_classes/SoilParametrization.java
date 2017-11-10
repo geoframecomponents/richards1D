@@ -70,4 +70,26 @@ public abstract class SoilParametrization {
 	 */
 	public abstract double hydraulicConductivity(double suction);
 	
+	
+	/**
+	 * This method creates a data set to plot the hydraulic properties of the soil
+	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
+	 */
+	public double[][] hydraulicModelCurves(){
+		
+		double[][] result  = new double[200][5];
+
+		for(int i=0; i<result.length; i++){
+			result[i][0] = (double)(-i);
+			result[i][1] = (double)(i)/200;
+		}
+				
+		for(int i=0; i<result.length; i++){
+			result[i][2] = waterContent(result[i][0]);
+			result[i][3] = dWaterContent(result[i][0]);
+			result[i][4] = hydraulicConductivity(result[i][0]);
+		}
+		
+	return result;
+	} 
 }
