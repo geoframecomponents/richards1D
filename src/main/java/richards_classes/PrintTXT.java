@@ -15,6 +15,9 @@ public class PrintTXT {
 	private double v2[];
 	private double v3[];
 	
+	// Matrix to print
+	private double matrix[][];
+	
 	// File name, header, name of variables
 	public String name;
 	public String header;
@@ -32,7 +35,9 @@ public class PrintTXT {
 		this.v1 = a;
 	}
 	
-	
+	public void setValueMatrix(double a[][]){
+		this.matrix = a;
+	}
 	
 	public void PrintOneVector(String dir, String name, String header, String variable){
 		this.name = name;
@@ -109,5 +114,38 @@ public class PrintTXT {
 		          System.out.println("Errore: " + e);
 		          System.exit(1);
 		      }
+	}
+	
+	
+	public void PrintMatrix(String dir, String name, String header, String variable){
+		this.name = name;
+		this.header = header;
+		this.variable = variable;
+		int j;
+		try
+	    {
+	      FileWriter writer = new FileWriter(new File(dir, name));  
+	      writer.write(this.header+"\n");
+	      writer.write(this.variable+"\n");
+	      //writer.flush();
+	         for(int i = 0; i < matrix.length; i++)
+	         {
+	            for (j=0; j<4; j++)
+	             {
+	                 writer.append(String.valueOf(matrix[i][j]));
+	                 writer.append(',');
+	             }
+	               writer.append(String.valueOf(matrix[i][j])+"\n");
+	               //writer.append('\n');
+	              // writer.flush();
+	         }
+	         writer.close();
+	      }        
+	    catch(Exception e)
+	    {
+	    	//System.out.println("Errore: " + e);
+	        //System.exit(1);
+	        e.printStackTrace();
+	    }
 	}
 }
