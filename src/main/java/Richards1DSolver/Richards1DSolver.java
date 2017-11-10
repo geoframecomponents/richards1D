@@ -245,7 +245,10 @@ public class Richards1DSolver {
 
 	BoundaryCondition topBoundaryCondition;
 	BoundaryCondition bottomBoundaryCondition;
-
+	
+	
+	double[][] hydraulicParametrization;
+	
 	@Execute
 	public void solve() {
 
@@ -302,7 +305,12 @@ public class Richards1DSolver {
 			
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
-
+			
+			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
+			hydraulicParametrization = soilPar.hydraulicModelCurves();
+			print.setValueMatrix(hydraulicParametrization);
+			print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
+			
 		} // chiudi step==0
 
 		time = time + tTimestep;
@@ -386,7 +394,7 @@ public class Richards1DSolver {
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(thetas);
 		print.PrintTwoVectors(dir, "Theta_"+step+".csv", inCurrentDate, "Depth[m],Theta[-] ");
-
+		
 		step++;
 
 	} //// MAIN CYCLE END ////
