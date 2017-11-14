@@ -121,6 +121,11 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("m")
 	public double[] iC;
+	
+	@Description("Source/sink value")
+	@In 
+	@Unit ("s^(-1)")
+	public double[] sourceSink;
 
 	@Description("Slope of the soil")
 	@In 
@@ -257,10 +262,11 @@ public class Richards1DSolver {
 		if(step==0){
 
 			iC = iC.getClass().cast(checkIC(depth, iC, depth));
-
+			sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
+			
 			NUM_CONTROL_VOLUMES = iC.length;
 
-			psis 		  = new double[NUM_CONTROL_VOLUMES];		
+			psis 		  = new double[NUM_CONTROL_VOLUMES];
 			k_t			  = 0.0;								
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
@@ -313,6 +319,7 @@ public class Richards1DSolver {
 			
 		} // chiudi step==0
 
+		
 		time = time + tTimestep;
 
 		topBC = 0.0;
@@ -352,7 +359,7 @@ public class Richards1DSolver {
 				lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
 				mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
 				upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
+				rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);// + tTimestep*sourceSink[i];
 
 			} else if(i == NUM_CONTROL_VOLUMES -1) {
 
@@ -365,7 +372,7 @@ public class Richards1DSolver {
 				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta); 
 				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
 				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta); 
+				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);// + tTimestep*sourceSink[i]; 
 
 			} else {
 
@@ -374,7 +381,7 @@ public class Richards1DSolver {
 				lowerDiagonal[i] = -kM * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
 				mainDiagonal[i] = tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2) * kM + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2)*kP;
 				upperDiagonal[i] = -kP * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
-				rhss[i] = thetas[i] + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM; 
+				rhss[i] = thetas[i] + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM;// + tTimestep*sourceSink[i]; 
 
 			}
 		}
@@ -394,6 +401,7 @@ public class Richards1DSolver {
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(thetas);
 		print.PrintTwoVectors(dir, "Theta_"+step+".csv", inCurrentDate, "Depth[m],Theta[-] ");
+
 		
 		step++;
 

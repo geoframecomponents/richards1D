@@ -47,22 +47,30 @@ public class TestRichards1DSolverCasulli {
 		/**
 		 * The top boundary condition is a Dirichlet type.
 		 * Casulli's top boundary values for psi are given in meters.
+		 * Casulli's test case 1 does not take into account of a source/sink term
+		 * thus all values in Casulli_SourceSink.csv are set to 0.
 		 * The psi values in Casulli_TopBoundaryCondition are expressed in millimeters 
 		 * since in the Richards' solver the top boundary condition (topBC) is divided by 1000
 		 */
 		String pathTopBC ="resources/Input/Casulli_TopBoundaryCondition.csv";
 		String pathBottomBC ="resources/Input/Casulli_BottomBoundaryCondition.csv";
 		String pathIC = "resources/Input/Casulli_InitialConditionHydrostatic.csv";
-
+		String pathSourceSink = "resources/Input/Casulli_SourceSink.csv";
+		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
 		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
 		readIC.setFilePath(pathIC);
 		readIC.process();
-		double[] iC = readIC.getSuction();
+		double[] iC = readIC.getVariable();
 		double[] depth = readIC.getDepth();
-
+		
+		ReadCsvTwoColumns readSourceSink = new ReadCsvTwoColumns();
+		readSourceSink.setFilePath(pathSourceSink);
+		readSourceSink.process();
+		double[] sourceSink = readSourceSink.getVariable();
+		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
 		R1DSolver.ks = 0.062/(3600*24);
@@ -88,6 +96,7 @@ public class TestRichards1DSolverCasulli {
 		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
+		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {

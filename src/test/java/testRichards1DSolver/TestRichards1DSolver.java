@@ -48,6 +48,7 @@ public class TestRichards1DSolver {
 		String pathTopBC ="resources/Input/D_Top0.csv";
 		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
+		String pathSourceSink = "resources/Input/SourceSink0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -55,8 +56,14 @@ public class TestRichards1DSolver {
 		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
 		readIC.setFilePath(pathIC);
 		readIC.process();
-		double[] iC = readIC.getSuction();
+		double[] iC = readIC.getVariable();
 		double[] depth = readIC.getDepth();
+		
+		ReadCsvTwoColumns readSourceSink = new ReadCsvTwoColumns();
+		readSourceSink.setFilePath(pathSourceSink);
+		readSourceSink.process();
+		double[] sourceSink = readSourceSink.getVariable();
+
 
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
@@ -78,6 +85,7 @@ public class TestRichards1DSolver {
 		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
+		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =0;
 		while( topBCReader.doProcess  ) {
