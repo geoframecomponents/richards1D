@@ -93,11 +93,12 @@ public class TestRichards1DSolverCasulli {
 		 * The time series is necessary for the jgrass-tools
 		 */
 		R1DSolver.tTimestep =1000;
+		R1DSolver.timeDelta =2000;
 		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
-		R1DSolver.dir = "resources/Output";
+		R1DSolver.dir = "C:/Users/Niccolo/Desktop/Output_2000";
 		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
