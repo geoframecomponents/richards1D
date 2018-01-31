@@ -196,6 +196,14 @@ public class Richards1DSolver {
 	@Description("Bottom boundary condition according with bottomBCType")
 	@Unit ("")
 	double bottomBC;
+	
+	@Description("Top boundary condition according with topBCType")
+	@Unit ("")
+	double tBC;
+	
+	@Description("Bottom boundary condition according with topBCType")
+	@Unit ("")
+	double bBC;
 
 	@Description("Psi values")
 	@Unit ("m")
@@ -383,15 +391,19 @@ public class Richards1DSolver {
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
 
 					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-						kP = kappas[i];					
+						kP = kappas[i];	
+						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
+						tBC = Math.min(topBC, kP);
 					} else {
+						// The rainfall height at the soil surface
+						tBC = topBC/tTimestep *timeDelta;
 						kP = 0.5*(kappas[i] + k_t);
 					}
 					kM = 0.5*(kappas[i] + kappas[i-1]);
 					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta); 
 					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i]; 
+					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(tBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i]; 
 
 				} else {
 
