@@ -108,6 +108,16 @@ public class Richards1DSolver {
 	@In
 	@Unit ("s")
 	public double tTimestep;
+	
+	@Description("Time step of integration")
+	@In
+	@Unit ("s")
+	public double timeDelta;
+	
+	@Description("Control variable for the integration time loop ")
+	@In
+	@Unit ("s")
+	public double sumTimeDelta;
 
 	@Description("Space step")
 	@Unit ("m")
@@ -320,7 +330,7 @@ public class Richards1DSolver {
 		} // chiudi step==0
 
 		
-		time = time + tTimestep;
+		//time = time + tTimestep;
 
 		topBC = 0.0;
 		if(inTopBC != null){
@@ -333,63 +343,74 @@ public class Richards1DSolver {
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
-
-		// Compute hydraulic conductivity and water content
-		k_t = soilPar.hydraulicConductivity(topBC);
-		k_b = soilPar.hydraulicConductivity(bottomBC);
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
-			thetas[i] = soilPar.waterContent(psis[i]);
-			kappas[i] = soilPar.hydraulicConductivity(psis[i]);
-		}
 		
-		/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
+		sumTimeDelta = 0;
+		
+		while(sumTimeDelta < tTimestep) {
+			
+			if(sumTimeDelta + timeDelta>tTimestep) {
+				timeDelta = tTimestep - sumTimeDelta;
+			}
+			sumTimeDelta = sumTimeDelta + timeDelta;
+			
+			// Compute hydraulic conductivity and water content
+			k_t = soilPar.hydraulicConductivity(topBC);
+			k_b = soilPar.hydraulicConductivity(bottomBC);
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
+				thetas[i] = soilPar.waterContent(psis[i]);
+				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+			}
+		
+			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
 				   	 c upper diagonal psi_(i-1)
 				   	 RIGHT HAND SIDE */
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			if( i == 0 ) {
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+				if( i == 0 ) {
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-					kM = kappas[i];
+					kP = 0.5*(kappas[i] + kappas[i+1]);
+					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+						kM = kappas[i];
+					} else {
+						kM = 0.5*(kappas[i] + k_b);
+					}
+					lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i];
+
+				} else if(i == NUM_CONTROL_VOLUMES -1) {
+
+					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
+						kP = kappas[i];					
+					} else {
+						kP = 0.5*(kappas[i] + k_t);
+					}
+					kM = 0.5*(kappas[i] + kappas[i-1]);
+					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta); 
+					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i]; 
+
 				} else {
-					kM = 0.5*(kappas[i] + k_b);
+
+					kP = 0.5*(kappas[i] + kappas[i+1]);
+					kM = 0.5*(kappas[i] + kappas[i-1]);
+					lowerDiagonal[i] = -kM * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
+					mainDiagonal[i] = timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2) * kM + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2)*kP;
+					upperDiagonal[i] = -kP * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
+					rhss[i] = thetas[i] + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM;// + timeDelta*sourceSink[i]; 
+
 				}
-				lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);// + tTimestep*sourceSink[i];
-
-			} else if(i == NUM_CONTROL_VOLUMES -1) {
-
-				if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-					kP = kappas[i];
-				} else {
-					kP = 0.5*(kappas[i] + k_t);
-				}
-				kM = 0.5*(kappas[i] + kappas[i-1]);
-				lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta); 
-				mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], tTimestep, delta);
-				rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM, spaceDelta[i+1], spaceDelta[i], tTimestep, delta);// + tTimestep*sourceSink[i]; 
-
-			} else {
-
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				kM = 0.5*(kappas[i] + kappas[i-1]);
-				lowerDiagonal[i] = -kM * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
-				mainDiagonal[i] = tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2) * kM + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2)*kP;
-				upperDiagonal[i] = -kP * tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
-				rhss[i] = thetas[i] + tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - tTimestep/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM;// + tTimestep*sourceSink[i]; 
-
 			}
+		
+			//// NESTED NEWTON ALGORITHM ////
+			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
+			psis = nestedNewtonAlg.solver();
+		
 		}
 		
-		//// NESTED NEWTON ALGORITHM ////
-		nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
-		psis = nestedNewtonAlg.solver();
-
 		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
