@@ -81,7 +81,8 @@ public class TestRichards1DSolver {
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.tTimestep =1;
+		R1DSolver.tTimestep = 86400;
+		R1DSolver.timeDelta =300;
 		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
