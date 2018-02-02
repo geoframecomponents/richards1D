@@ -445,7 +445,10 @@ public class Richards1DSolver {
 					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 						kM = kappas[i];
 						fluxes[i] = fluxes[i] -kM;
-					} else {
+					} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
+						fluxes[i] = fluxes[i] + 0;
+					}
+					else {
 						kM = 0.5*(kappas[i] + k_b);
 						fluxes[i] = fluxes[i] -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 					}
