@@ -224,7 +224,7 @@ public class Richards1DSolver {
 	@Description("Vector collects the adimensional water content of each cell")
 	@Unit ("-")
 	double[] thetas;
-	
+
 	@Description("Vector collects fluxes at cells' interfaces")
 	@Unit ("m/s")
 	double[] fluxes;
@@ -358,6 +358,14 @@ public class Richards1DSolver {
 			bottomBC = inBottomBC.get(1)[0];
 
 		sumTimeDelta = 0;
+		/*
+		 * Variable fluxes has to be set to 0 at each new time step since when timeDelta!=tTimestep 
+		 * for each time step there are more k integration-loops and thus fluxes are computed as 
+		 * a summation over k.
+		 */
+		for(int i = 0; i < NUM_CONTROL_VOLUMES+1; i++) {
+			fluxes[i] = 0;
+		}
 
 		while(sumTimeDelta < tTimestep) {
 
@@ -426,52 +434,58 @@ public class Richards1DSolver {
 			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 			psis = nestedNewtonAlg.solver();
 
-		}
 
-		/* COMPUTE FLUXES AT CELL INTERFACES*/
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			if( i == 0 ) {
+			/* COMPUTE FLUXES AT CELL INTERFACES
+			 * with the psi obtained at the new integration loop*  
+			 */ 
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+				if( i == 0 ) {
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-					kM = kappas[i];
-					fluxes[i] = -kM;
+					kP = 0.5*(kappas[i] + kappas[i+1]);
+					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+						kM = kappas[i];
+						fluxes[i] = fluxes[i] -kM;
+					} else {
+						kM = 0.5*(kappas[i] + k_b);
+						fluxes[i] = fluxes[i] -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+					}
+					fluxes[i+1] = fluxes[i+1] -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+
+				} else if(i == NUM_CONTROL_VOLUMES-1) {
+
+					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
+						kP = kappas[i];	
+						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
+						// tBC = Math.min(topBC, kP);
+						fluxes[i+1] = fluxes[i+1] + tBC;
+					} else {
+						// The rainfall height at the soil surface
+						// Note that the hydraulic head is tBC and not topBC, because in general timeDelta!=tTimestep
+						kP = 0.5*(kappas[i] + k_t);
+						fluxes[i+1] = fluxes[i+1] -kP * (tBC-psis[i])/spaceDelta[i+1] - kP;
+					}
+
 				} else {
-					kM = 0.5*(kappas[i] + k_b);
-					fluxes[i] = -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
-				}
-				fluxes[i+1] = -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
-				
-			} else if(i == NUM_CONTROL_VOLUMES-1) {
 
-				if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-					kP = kappas[i];	
-					// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
-					// tBC = Math.min(topBC, kP);
-					// DA SISTEMARE PERCHE` IL FLUSSO E` PRESO COME  tBC = Math.min(topBC, kP) QUINDI DEVI TENER CONTO DEL FATTO CHE timeDelta != tTimestep
-				} else {
-					// The rainfall height at the soil surface
-					kP = 0.5*(kappas[i] + k_t);
-					fluxes[i+1] = -kP * (topBC-psis[i])/spaceDelta[i+1] - kP;
-				}
-						
-			} else {
+					kP = 0.5*(kappas[i] + kappas[i+1]);
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				
-				fluxes[i+1] = -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+					fluxes[i+1] = fluxes[i+1] -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+				}
 			}
+
 		}
+
+
 
 		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
 		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
-		
+
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(fluxes);
 		print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Flux[m/s] ");
-		
+
 		//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
 		//	thetas[i] = soilPar.waterContent(psis[i]);
 		//}
