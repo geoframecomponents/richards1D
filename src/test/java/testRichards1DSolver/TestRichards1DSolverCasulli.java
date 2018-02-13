@@ -98,7 +98,7 @@ public class TestRichards1DSolverCasulli {
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
-		R1DSolver.dir = "/resources/Output";
+		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
