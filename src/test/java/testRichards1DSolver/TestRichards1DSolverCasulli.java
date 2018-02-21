@@ -93,6 +93,7 @@ public class TestRichards1DSolverCasulli {
 		 * The time series is necessary for the jgrass-tools
 		 */
 		R1DSolver.tTimestep =1000;
+		R1DSolver.timeDelta =300;
 		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;

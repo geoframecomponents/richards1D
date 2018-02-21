@@ -39,14 +39,14 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "1991-09-18 00:00" ;
-		String endDate = "1992-07-20 00:00";
-		int timeStepMinutes = 60*24;
+		String startDate = "2017-01-01 00:00" ;
+		String endDate = "2017-02-01 00:00";
+		int timeStepMinutes = 15;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/D_Top0.csv";
-		String pathBottomBC ="resources/Input/D_BottomBoundaryCondition.csv";
+		String pathTopBC ="resources/Input/Trento.csv";
+		String pathBottomBC ="resources/Input/TrentoBottom.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 		String pathSourceSink = "resources/Input/SourceSink0.csv";
 
@@ -77,12 +77,13 @@ public class TestRichards1DSolver {
 		R1DSolver.rMedian =0.0000020781 ;
 		R1DSolver.sigma =0.6 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
-		R1DSolver.topBCType = "Top Dirichlet";
+		R1DSolver.topBCType = "Top Neumann";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.tTimestep =1;
-		R1DSolver.newtonTolerance = Math.pow(10,-10);
+		R1DSolver.tTimestep = 900;
+		R1DSolver.timeDelta =300;
+		R1DSolver.newtonTolerance = Math.pow(10,-12);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
