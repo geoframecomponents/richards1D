@@ -104,7 +104,7 @@ public class Richards1DSolver {
 	@Description("It is needed to iterate on the date")
 	int step;
 
-	@Description("Time amount at every time-loop")
+	@Description("Time interval of boundary conditions")
 	@In
 	@Unit ("s")
 	public double tTimestep;
@@ -136,6 +136,10 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("s^(-1)")
 	public double[] sourceSink;
+	
+	@Description("Source/sink value at each time step of integration")
+	@Unit ("s^(-1)")
+	public double sS;
 
 	@Description("Slope of the soil")
 	@In 
@@ -197,7 +201,7 @@ public class Richards1DSolver {
 	@Unit ("")
 	double bottomBC;
 
-	@Description("Top boundary condition according with topBCType")
+	@Description("Top boundary condition for each time step of integration")
 	@Unit ("")
 	double tBC;
 
@@ -396,10 +400,11 @@ public class Richards1DSolver {
 					} else {
 						kM = 0.5*(kappas[i] + k_b);
 					}
+					sS = sourceSink[i]/tTimestep *timeDelta;
 					lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i];
+					rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta) + timeDelta*sS;
 
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
 
@@ -413,19 +418,21 @@ public class Richards1DSolver {
 						kP = 0.5*(kappas[i] + k_t);
 					}
 					kM = 0.5*(kappas[i] + kappas[i-1]);
+					sS = sourceSink[i]/tTimestep *timeDelta;
 					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta); 
 					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(tBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i]; 
+					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(tBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta) + timeDelta*sS; 
 
 				} else {
 
 					kP = 0.5*(kappas[i] + kappas[i+1]);
 					kM = 0.5*(kappas[i] + kappas[i-1]);
+					sS = sourceSink[i]/tTimestep *timeDelta;
 					lowerDiagonal[i] = -kM * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
 					mainDiagonal[i] = timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2) * kM + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2)*kP;
 					upperDiagonal[i] = -kP * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
-					rhss[i] = thetas[i] + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM;// + timeDelta*sourceSink[i]; 
+					rhss[i] = thetas[i] + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM + timeDelta*sS; 
 
 				}
 			}
