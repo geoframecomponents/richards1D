@@ -58,7 +58,7 @@ public class TotalDepth {
 			dH = 0;
 		}
 		
-		return 0;
+		return dH;
 	}
 	
 	
