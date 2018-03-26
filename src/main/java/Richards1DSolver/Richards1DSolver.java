@@ -221,9 +221,9 @@ public class Richards1DSolver {
 	@Unit ("m/s")
 	double[] kappas;
 
-	@Description("Vector collects the adimensional water content of each cell")
+	@Description("Vector collects the dimensional water content of each cell")
 	@Unit ("-")
-	double[] thetas;
+	double[] volumes;
 
 	@Description("Vector collects fluxes at cells' interfaces")
 	@Unit ("m/s")
@@ -292,7 +292,7 @@ public class Richards1DSolver {
 			k_t			  = 0.0;								
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
-			thetas 		  = new double[NUM_CONTROL_VOLUMES];
+			volumes		  = new double[NUM_CONTROL_VOLUMES];
 			fluxes        = new double[NUM_CONTROL_VOLUMES+1];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
@@ -346,13 +346,15 @@ public class Richards1DSolver {
 		//time = time + tTimestep;
 
 		topBC = 0.0;
-		if(inTopBC != null){
-			if(topBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-				topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
-			} else if(topBCType.equalsIgnoreCase("Top Dirichlet") || bottomBCType.equalsIgnoreCase("TopDirichlet")){
-				topBC = inTopBC.get(1)[0]/1000;
-			}
-		}
+		topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
+			/*if(inTopBC != null){
+				if(topBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
+					topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
+				} else if(topBCType.equalsIgnoreCase("Top Dirichlet") || bottomBCType.equalsIgnoreCase("TopDirichlet")){
+					topBC = inTopBC.get(1)[0]/1000;
+				}
+			}*/
+		
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
@@ -375,10 +377,14 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 			// Compute hydraulic conductivity and water content
-			k_t = soilPar.hydraulicConductivity(topBC);
+				//k_t = soilPar.hydraulicConductivity(topBC);
 			k_b = soilPar.hydraulicConductivity(bottomBC);
-			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
-				thetas[i] = soilPar.waterContent(psis[i]);
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
+				if(i==NUM_CONTROL_VOLUMES-1) {
+					volumes[i] = totalDepth(psis[i]);
+					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+				}
+				volumes[i] = soilPar.waterContent(psis[i])*(spaceDelta[i]+spaceDelta[i+1])/2;
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 			}
 
@@ -399,33 +405,27 @@ public class Richards1DSolver {
 					lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					upperDiagonal[i] = bottomBoundaryCondition.upperDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = thetas[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i];
+					rhss[i] = volumes[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i];
 
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
 
-					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-						kP = kappas[i];	
+						//kP = kappas[i];	
 						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
-						tBC = Math.min(topBC, kP);
-					} else {
-						// The rainfall height at the soil surface
-						tBC = topBC/tTimestep *timeDelta;
-						kP = 0.5*(kappas[i] + k_t);
-					}
+						//tBC = Math.min(topBC, kP);
 					kM = 0.5*(kappas[i] + kappas[i-1]);
 					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta); 
 					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = thetas[i] + topBoundaryCondition.rightHandSide(tBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i]; 
+					rhss[i] = volumes[i] + topBoundaryCondition.rightHandSide(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 
 				} else {
 
 					kP = 0.5*(kappas[i] + kappas[i+1]);
 					kM = 0.5*(kappas[i] + kappas[i-1]);
-					lowerDiagonal[i] = -kM * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
-					mainDiagonal[i] = timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i]*1/Math.pow(Math.cos(delta),2) * kM + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2)*kP;
-					upperDiagonal[i] = -kP * timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*1/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
-					rhss[i] = thetas[i] + timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2) * kP - timeDelta/(spaceDelta[i]/2+spaceDelta[i+1]/2)*kM;// + timeDelta*sourceSink[i]; 
+					lowerDiagonal[i] = -kM*timeDelta/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
+					mainDiagonal[i] = kM*timeDelta/spaceDelta[i]*1/Math.pow(Math.cos(delta),2)  + kP*timeDelta/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
+					upperDiagonal[i] = -kP*timeDelta/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
+					rhss[i] = volumes[i] + timeDelta*(kP - kM);// + timeDelta*sourceSink[i]; 
 
 				}
 			}
