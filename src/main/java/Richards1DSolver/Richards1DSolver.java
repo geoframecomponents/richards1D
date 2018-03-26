@@ -406,7 +406,7 @@ public class Richards1DSolver {
 				}
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 			}
-			System.out.println(volumes[320]);
+			
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
