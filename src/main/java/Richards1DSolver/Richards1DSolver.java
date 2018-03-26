@@ -261,7 +261,10 @@ public class Richards1DSolver {
 
 	@Description("Vector containing the z coordinates of the centres of control volumes")
 	double[] zeta;
-
+	
+	@Description("Vector containing the length of each control volume")
+	double[] dx;
+	
 	double time=0;
 
 	NestedNewton nestedNewtonAlg;
@@ -269,6 +272,7 @@ public class Richards1DSolver {
 	PrintTXT print;
 
 	SoilParametrization soilPar;
+	TotalDepth totalDepth;
 
 	BoundaryCondition topBoundaryCondition;
 	BoundaryCondition bottomBoundaryCondition;
@@ -301,14 +305,14 @@ public class Richards1DSolver {
 			kP 		      = 0.0;
 			kM	          = 0.0;
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
-			spaceDelta    = new double[NUM_CONTROL_VOLUMES+1];
-
+			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
+			dx			  = new double[NUM_CONTROL_VOLUMES];
 			print = new PrintTXT();
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
-
-			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, soilPar);
+			totalDepth = new TotalDepth();
+			
 
 			SimpleBoundaryConditionFactory boundCondFactory = new SimpleBoundaryConditionFactory();
 			topBoundaryCondition = boundCondFactory.createBoundaryCondition(topBCType);		
@@ -322,16 +326,35 @@ public class Richards1DSolver {
 				psis[i] = iC[i];
 				zeta[i] = spaceBottom-depth[i];
 			}
-			for(int i = 0; i <=NUM_CONTROL_VOLUMES; i++) {
+			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
 				if (i==0){
 					spaceDelta[i] = zeta[i];
-				}else if (i== NUM_CONTROL_VOLUMES){
-					spaceDelta[i] = spaceBottom-zeta[i-1];
-				}else{
+				}//else if (i== NUM_CONTROL_VOLUMES-1){
+					//spaceDelta[i] = zeta[i+1]-zeta[i];
+				//}
+				else{
 					spaceDelta[i] = zeta[i]-zeta[i-1];
+					//System.out.println("i:"+i+"  "+zeta[i]+"  "+zeta[i-1]);
 				}
 			}
-
+			
+			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
+				if (i==0){
+					dx[i] = spaceDelta[i]+spaceDelta[i+1]/2;
+					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]);
+				} else if (i== NUM_CONTROL_VOLUMES-1) {
+					dx[i] =0;
+				}
+				else if (i== NUM_CONTROL_VOLUMES-2){
+					dx[i] = spaceDelta[i]/2+spaceDelta[i+1];
+					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
+				}else{
+					dx[i] = (spaceDelta[i]+spaceDelta[i+1])/2;
+					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
+				}
+			}
+			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
+			
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
 
@@ -347,13 +370,6 @@ public class Richards1DSolver {
 
 		topBC = 0.0;
 		topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
-			/*if(inTopBC != null){
-				if(topBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-					topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
-				} else if(topBCType.equalsIgnoreCase("Top Dirichlet") || bottomBCType.equalsIgnoreCase("TopDirichlet")){
-					topBC = inTopBC.get(1)[0]/1000;
-				}
-			}*/
 		
 		bottomBC = 0.0;
 		if(inBottomBC != null)
@@ -380,14 +396,17 @@ public class Richards1DSolver {
 				//k_t = soilPar.hydraulicConductivity(topBC);
 			k_b = soilPar.hydraulicConductivity(bottomBC);
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
-				if(i==NUM_CONTROL_VOLUMES-1) {
-					volumes[i] = totalDepth(psis[i]);
+				if(i==1) {
+					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
+				} else if(i==NUM_CONTROL_VOLUMES-1) {
+					volumes[i] = totalDepth.totalDepth(psis[i]);
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+				} else {
+				volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 				}
-				volumes[i] = soilPar.waterContent(psis[i])*(spaceDelta[i]+spaceDelta[i+1])/2;
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 			}
-
+			System.out.println(volumes[320]);
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
@@ -413,10 +432,10 @@ public class Richards1DSolver {
 						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
 						//tBC = Math.min(topBC, kP);
 					kM = 0.5*(kappas[i] + kappas[i-1]);
-					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta); 
-					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
-					rhss[i] = volumes[i] + topBoundaryCondition.rightHandSide(-999, kP, kM,  spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
+					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i], spaceDelta[i-1], timeDelta, delta); 
+					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i], spaceDelta[i-1], timeDelta, delta);
+					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i], spaceDelta[i-1], timeDelta, delta);
+					rhss[i] = volumes[i] + topBoundaryCondition.rightHandSide(topBC, kP, kM,  spaceDelta[i], spaceDelta[i-1], timeDelta, delta);
 
 				} else {
 
@@ -438,7 +457,7 @@ public class Richards1DSolver {
 			/* COMPUTE FLUXES AT CELL INTERFACES
 			 * with the psi obtained at the new integration loop*  
 			 */ 
-			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+		/*	for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
 
 					kP = 0.5*(kappas[i] + kappas[i+1]);
@@ -457,7 +476,7 @@ public class Richards1DSolver {
 				} else if(i == NUM_CONTROL_VOLUMES-1) {
 
 					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-						kP = kappas[i];	
+						kP = 0.5*(kappas[i] + k_t);	
 						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
 						// tBC = Math.min(topBC, kP);
 						fluxes[i+1] = fluxes[i+1] + tBC;
@@ -475,19 +494,19 @@ public class Richards1DSolver {
 					fluxes[i+1] = fluxes[i+1] -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 				}
 			}
-
+*/
 		}
 
 
 
 		//// PRINT OUTPUT FILES ////
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(psis);
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(psis);
+		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(fluxes);
-		print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Flux[m/s] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(fluxes);
+		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Flux[m/s] ");
 
 		//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
 		//	thetas[i] = soilPar.waterContent(psis[i]);
