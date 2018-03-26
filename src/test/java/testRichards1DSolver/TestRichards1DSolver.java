@@ -82,13 +82,13 @@ public class TestRichards1DSolver {
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
 		R1DSolver.tTimestep = 900;
-		R1DSolver.timeDelta =300;
-		R1DSolver.newtonTolerance = Math.pow(10,-12);
+		R1DSolver.timeDelta =900;
+		R1DSolver.newtonTolerance = Math.pow(10,-10);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
-		R1DSolver.nestedNewton =0;
+		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
