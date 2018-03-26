@@ -30,32 +30,32 @@ public class BottomBoundaryConditionFreeDrainage extends BoundaryCondition {
 
 	
 	
-	public double upperDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta) {
+	public double upperDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
 		this.spaceDeltaP = spaceDeltaP;
 		this.spaceDeltaM = spaceDeltaM;
-		this.tTimestep = tTimestep;
+		this.timeDelta = timeDelta;
 		this.delta = delta;
 		
-		this.term = -this.kP * this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2);
+		this.term = -this.kP*this.timeDelta/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2);
 		
 		return term;
 	}
 	
 	
 	
-	public double mainDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta) {
+	public double mainDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
 		this.spaceDeltaP = spaceDeltaP;
 		this.spaceDeltaM = spaceDeltaM;
-		this.tTimestep = tTimestep;
+		this.timeDelta = timeDelta;
 		this.delta = delta;
 		
-		this.term = this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2)*1/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2)* this.kP ;
+		this.term = this.kP*this.timeDelta/this.spaceDeltaP*1/Math.pow(Math.cos(this.delta),2);
 		
 		return term;
 
@@ -63,13 +63,13 @@ public class BottomBoundaryConditionFreeDrainage extends BoundaryCondition {
 	
 	
 	
-	public double lowerDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta) {
+	public double lowerDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
 		this.spaceDeltaP = spaceDeltaP;
 		this.spaceDeltaM = spaceDeltaM;
-		this.tTimestep = tTimestep;
+		this.timeDelta = timeDelta;
 		this.delta = delta;
 		
 		this.term = 0;
@@ -80,16 +80,16 @@ public class BottomBoundaryConditionFreeDrainage extends BoundaryCondition {
 
 	
 	
-	public double rightHandSide(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta) {
+	public double rightHandSide(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta) {
 		this.bC = bC;
 		this.kP = kP;
 		this.kM = kM;
 		this.spaceDeltaP = spaceDeltaP;
 		this.spaceDeltaM = spaceDeltaM;
-		this.tTimestep = tTimestep;
+		this.timeDelta = timeDelta;
 		this.delta = delta;
 		
-		this.term = -this.kM*this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2) + this.kP*this.tTimestep/(this.spaceDeltaM+this.spaceDeltaP/2); 
+		this.term = this.timeDelta*(this.kP - this.kM); 
 		
 		return term;
 
