@@ -12,66 +12,63 @@ package richards_classes;
  * q(suction) is called dTheta2 and is computed by dWaterContent2
  * 
  */
-public class JordanDecomposition {
-	protected double theta1;
-	protected double theta2;
-	protected double dTheta1;
-	protected double dTheta2;
+public class JordanDecompositionSoilMoisture extends JordanDecomposition {
+
 	protected SoilParametrization soilPar;
 	
-	public JordanDecomposition(SoilParametrization sp){
-		soilPar = sp;
+	public JordanDecompositionSoilMoisture(Object myFunction){
+		soilPar = (SoilParametrization) myFunction;
 	}
 	
 	/**
 	 * @param suction
 	 * @return theta1 
 	 */
-	public double waterContent1(double suction){
+	public double pIntegral(double suction){
 		if(suction <= soilPar.psiStar) {
-			this.theta1 = soilPar.waterContent(suction);
+			this.f1 = soilPar.waterContent(suction);
 		} else {
-			this.theta1 = soilPar.waterContent(soilPar.psiStar) + soilPar.dWaterContent(soilPar.psiStar)*(suction - soilPar.psiStar);
+			this.f1 = soilPar.waterContent(soilPar.psiStar) + soilPar.dWaterContent(soilPar.psiStar)*(suction - soilPar.psiStar);
 		}
 
-		return this.theta1;
+		return this.f1;
 	}
 	
 	/**
 	 * @param suction
 	 * @return theta2
 	 */
-	public double waterContent2(double suction){
-		this.theta2 = waterContent1(suction) - soilPar.waterContent(suction);
+	public double qIntegral(double suction){
+		this.f2 = pIntegral(suction) - soilPar.waterContent(suction);
 
-		return this.theta2;
+		return this.f2;
 	}
 	
 	/**
 	 * @param suction
 	 * @return dtheta1
 	 */
-	public double dWaterContent1(double suction){
+	public double p(double suction){
 		if (suction <= soilPar.psiStar) {
 		    // left of critical value, take the original derivative
-		    this.dTheta1 = soilPar.dWaterContent(suction);
+		    this.df1 = soilPar.dWaterContent(suction);
 		}
 		else {
 		    // on the right of the critical value, keep the maximum derivative
-		    this.dTheta1 = soilPar.dWaterContent(soilPar.psiStar);
+		    this.df1 = soilPar.dWaterContent(soilPar.psiStar);
 		}
 
-		return this.dTheta1;
+		return this.df1;
 	}
 	
 	/**
 	 * @param suction
 	 * @return dtheta2
 	 */
-	public double dWaterContent2(double suction){
-		this.dTheta2 = dWaterContent1(suction) - soilPar.dWaterContent(suction);
+	public double q(double suction){
+		this.df2 = q(suction) - soilPar.dWaterContent(suction);
 
-		return this.dTheta2;
+		return this.df2;
 	}
 
 }
