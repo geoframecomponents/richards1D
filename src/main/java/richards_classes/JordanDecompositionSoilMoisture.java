@@ -66,7 +66,7 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 	 * @return dtheta2
 	 */
 	public double q(double suction){
-		this.df2 = q(suction) - soilPar.dWaterContent(suction);
+		this.df2 = p(suction) - soilPar.dWaterContent(suction);
 
 		return this.df2;
 	}
