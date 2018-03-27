@@ -421,6 +421,7 @@ public class Richards1DSolver {
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
 			}
+			k_b = soilPar.hydraulicConductivity(bottomBC);
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
@@ -441,8 +442,7 @@ public class Richards1DSolver {
 					rhss[i] = volumes[i] + bottomBoundaryCondition.rightHandSide(bottomBC, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);// + timeDelta*sourceSink[i];
 
 				} else if(i == NUM_CONTROL_VOLUMES -1) {
-
-						//kP = kappas[i];	
+					kP = 0;	
 						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
 						//tBC = Math.min(topBC, kP);
 					kM = 0.5*(kappas[i] + kappas[i-1]);
@@ -461,12 +461,15 @@ public class Richards1DSolver {
 					rhss[i] = volumes[i] + timeDelta*(kP - kM);// + timeDelta*sourceSink[i]; 
 
 				}
+				//System.out.println(rhss[i]);
 			}
 
 			//// NESTED NEWTON ALGORITHM ////
 			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 			psis = nestedNewtonAlg.solver();
-			
+			//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			//	System.out.println(psis[i]);
+			//}
 			
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
 			 * with hydraulic conductivity at time level n 
@@ -505,7 +508,7 @@ public class Richards1DSolver {
 				volume +=volumes[i];
 				volumeNew +=volumesNew[i];
 			}
-			errorVolume = volumeNew - volume + tTimestep*(velocities[320]- velocities[0]);
+			errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
 			System.out.println("    errorMass: "+errorVolume);
 			
 
@@ -517,9 +520,9 @@ public class Richards1DSolver {
 		print.setValueSecondVector(psis);
 		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(velocities);
-		print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(velocities);
+		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
 
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(volumesNew);
