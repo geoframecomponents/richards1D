@@ -466,48 +466,51 @@ public class Richards1DSolver {
 			//// NESTED NEWTON ALGORITHM ////
 			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 			psis = nestedNewtonAlg.solver();
+			
+			
+			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
+			 * with hydraulic conductivity at time level n 
+			 */ 
+			volume = 0.0;
+			volumeNew =0.0;
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+				if( i == 0 ) {
 
+					kP = 0.5*(kappas[i] + kappas[i+1]);
+					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+						kM = kappas[i];
+						velocities[i] =  -kM;
+					} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
+						velocities[i] = + 0;
+					}
+					else {
+						kM = 0.5*(kappas[i] + k_b);
+						velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+						
+						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+					}
 
-		}
-		/* COMPUTE velocities AT CELL INTERFACES at time level n+1
-		 * with hydraulic conductivity at time level n 
-		 */ 
-		volume = 0.0;
-		volumeNew =0.0;
-		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			if( i == 0 ) {
+				} else if(i == NUM_CONTROL_VOLUMES-1) {
+					kP = kappas[i];
+					velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
+					
+					volumesNew[i] = totalDepth.totalDepth(psis[i]);
+				} else {
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-					kM = kappas[i];
-					velocities[i] =  -kM;
-				} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-					velocities[i] = + 0;
-				}
-				else {
-					kM = 0.5*(kappas[i] + k_b);
-					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+					kP = 0.5*(kappas[i] + kappas[i+1]);
+					velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 					
 					volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
 				}
-
-			} else if(i == NUM_CONTROL_VOLUMES-1) {
-				kP = kappas[i];
-				velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
-				
-				volumesNew[i] = totalDepth.totalDepth(psis[i]);
-			} else {
-
-				kP = 0.5*(kappas[i] + kappas[i+1]);
-				velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
-				
-				volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+				volume +=volumes[i];
+				volumeNew +=volumesNew[i];
 			}
-			volume +=volumes[i];
-			volumeNew +=volumesNew[i];
+			errorVolume = volumeNew - volume + tTimestep*(velocities[320]- velocities[0]);
+			System.out.println("    errorMass: "+errorVolume);
+			
+
 		}
-		errorVolume = volumeNew - volume + tTimestep*(velocities[320]- velocities[0]);
-		System.out.println("    errorMass: "+errorVolume);
+		
 
 		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
