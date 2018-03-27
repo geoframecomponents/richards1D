@@ -221,13 +221,29 @@ public class Richards1DSolver {
 	@Unit ("m/s")
 	double[] kappas;
 
-	@Description("Vector collects the dimensional water content of each cell")
+	@Description("Vector collects the dimensional water content of each cell at time level n")
 	@Unit ("-")
 	double[] volumes;
+	
+	@Description("Vector collects the dimensional water content of each cell at time level n+1")
+	@Unit ("-")
+	double[] volumesNew;
+	
+	@Description("Total volume at time level n")
+	@Unit ("-")
+	double volume;
+	
+	@Description("Total volume at time level n+1")
+	@Unit ("-")
+	double volumeNew;
+	
+	@Description("Volume error between time levels n+1 and n")
+	@Unit ("-")
+	double errorVolume;
 
-	@Description("Vector collects fluxes at cells' interfaces")
+	@Description("Vector collects velocities at cells' interfaces")
 	@Unit ("m/s")
-	double[] fluxes;
+	double[] velocities;
 
 	@Description("Vector collects the lower diagonal entries of the coefficient matrix")
 	@Unit ("?")
@@ -297,7 +313,8 @@ public class Richards1DSolver {
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
-			fluxes        = new double[NUM_CONTROL_VOLUMES+1];
+			volumesNew    = new double[NUM_CONTROL_VOLUMES];
+			velocities    = new double[NUM_CONTROL_VOLUMES+1];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
@@ -375,16 +392,14 @@ public class Richards1DSolver {
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
 
-		sumTimeDelta = 0;
-		/*
-		 * Variable fluxes has to be set to 0 at each new time step since when timeDelta!=tTimestep 
-		 * for each time step there are more k integration-loops and thus fluxes are computed as 
-		 * a summation over k.
-		 */
-		for(int i = 0; i < NUM_CONTROL_VOLUMES+1; i++) {
-			fluxes[i] = 0;
-		}
 
+		// Hydraulic conductivity are computed at time level n
+		//k_b = soilPar.hydraulicConductivity(bottomBC);
+		//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
+		//	kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+		//}
+		
+		sumTimeDelta = 0;
 		while(sumTimeDelta < tTimestep) {
 
 			if(sumTimeDelta + timeDelta>tTimestep) {
@@ -392,21 +407,20 @@ public class Richards1DSolver {
 			}
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
-			// Compute hydraulic conductivity and water content
-				//k_t = soilPar.hydraulicConductivity(topBC);
-			k_b = soilPar.hydraulicConductivity(bottomBC);
+			// Compute volumes and hydraulic conductivity
+			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 				if(i==1) {
 					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
+					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				} else if(i==NUM_CONTROL_VOLUMES-1) {
 					volumes[i] = totalDepth.totalDepth(psis[i]);
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				} else {
 				volumes[i] = soilPar.waterContent(psis[i])*dx[i];
-				}
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+				}
 			}
-			
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
@@ -454,66 +468,59 @@ public class Richards1DSolver {
 			psis = nestedNewtonAlg.solver();
 
 
-			/* COMPUTE FLUXES AT CELL INTERFACES
-			 * with the psi obtained at the new integration loop*  
-			 */ 
-		/*	for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-				if( i == 0 ) {
-
-					kP = 0.5*(kappas[i] + kappas[i+1]);
-					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-						kM = kappas[i];
-						fluxes[i] = fluxes[i] -kM;
-					} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-						fluxes[i] = fluxes[i] + 0;
-					}
-					else {
-						kM = 0.5*(kappas[i] + k_b);
-						fluxes[i] = fluxes[i] -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
-					}
-					fluxes[i+1] = fluxes[i+1] -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
-
-				} else if(i == NUM_CONTROL_VOLUMES-1) {
-
-					if(bottomBCType.equalsIgnoreCase("Top Neumann") || bottomBCType.equalsIgnoreCase("TopNeumann")){
-						kP = 0.5*(kappas[i] + k_t);	
-						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
-						// tBC = Math.min(topBC, kP);
-						fluxes[i+1] = fluxes[i+1] + tBC;
-					} else {
-						// The rainfall height at the soil surface
-						// Note that the hydraulic head is tBC and not topBC, because in general timeDelta!=tTimestep
-						kP = 0.5*(kappas[i] + k_t);
-						fluxes[i+1] = fluxes[i+1] -kP * (tBC-psis[i])/spaceDelta[i+1] - kP;
-					}
-
-				} else {
-
-					kP = 0.5*(kappas[i] + kappas[i+1]);
-
-					fluxes[i+1] = fluxes[i+1] -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
-				}
-			}
-*/
 		}
+		/* COMPUTE velocities AT CELL INTERFACES at time level n+1
+		 * with hydraulic conductivity at time level n 
+		 */ 
+		volume = 0.0;
+		volumeNew =0.0;
+		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			if( i == 0 ) {
 
+				kP = 0.5*(kappas[i] + kappas[i+1]);
+				if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+					kM = kappas[i];
+					velocities[i] =  -kM;
+				} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
+					velocities[i] = + 0;
+				}
+				else {
+					kM = 0.5*(kappas[i] + k_b);
+					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+					
+					volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+				}
 
+			} else if(i == NUM_CONTROL_VOLUMES-1) {
+				kP = kappas[i];
+				velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
+				
+				volumesNew[i] = totalDepth.totalDepth(psis[i]);
+			} else {
+
+				kP = 0.5*(kappas[i] + kappas[i+1]);
+				velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+				
+				volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+			}
+			volume +=volumes[i];
+			volumeNew +=volumesNew[i];
+		}
+		errorVolume = volumeNew - volume + tTimestep*(velocities[320]- velocities[0]);
+		System.out.println("    errorMass: "+errorVolume);
 
 		//// PRINT OUTPUT FILES ////
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(psis);
-		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		print.setValueFirstVector(depth);
+		print.setValueSecondVector(psis);
+		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(fluxes);
-		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Flux[m/s] ");
+		print.setValueFirstVector(depth);
+		print.setValueSecondVector(velocities);
+		print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
 
-		//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {           
-		//	thetas[i] = soilPar.waterContent(psis[i]);
-		//}
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(thetas);
-		//print.PrintTwoVectors(dir, "Theta_"+step+".csv", inCurrentDate, "Depth[m],Theta[-] ");
+		print.setValueFirstVector(depth);
+		print.setValueSecondVector(volumesNew);
+		print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
 
 
 		step++;
