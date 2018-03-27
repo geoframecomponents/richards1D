@@ -137,7 +137,7 @@ public class NestedNewton {
 				outerResidual += fs[j]*fs[j];
 			}
 			outerResidual = Math.pow(outerResidual,0.5);  
-			System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
+			//System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
 			if(outerResidual < newtonTolerance) {
 				break;
 			}
@@ -197,7 +197,7 @@ public class NestedNewton {
 					}
 					innerResidual = Math.pow(innerResidual,0.5);
 
-					System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
+					//System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
 
 					if(innerResidual < newtonTolerance) {
 						break;
