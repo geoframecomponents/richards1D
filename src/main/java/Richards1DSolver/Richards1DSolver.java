@@ -461,16 +461,13 @@ public class Richards1DSolver {
 					rhss[i] = volumes[i] + timeDelta*(kP - kM);// + timeDelta*sourceSink[i]; 
 
 				}
-				//System.out.println(rhss[i]);
+				
 			}
 
 			//// NESTED NEWTON ALGORITHM ////
 			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 			psis = nestedNewtonAlg.solver();
-			//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			//	System.out.println(psis[i]);
-			//}
-			
+
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
 			 * with hydraulic conductivity at time level n 
 			 */ 
