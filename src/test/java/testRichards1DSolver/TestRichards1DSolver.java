@@ -39,7 +39,7 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "2017-01-02 00:00" ;
+		String startDate = "2017-01-01 00:00" ;
 		String endDate = "2017-03-16 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
