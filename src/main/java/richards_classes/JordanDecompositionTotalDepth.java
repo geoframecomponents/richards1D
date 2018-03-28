@@ -12,41 +12,52 @@ package richards_classes;
  * q(suction) is called dTheta2 and is computed by dWaterContent2
  * 
  */
-public abstract class JordanDecomposition {
-	protected double f1;
-	protected double f2;
-	protected double df1;
-	protected double df2;
-	protected Object myFunction;
+public class JordanDecompositionTotalDepth extends JordanDecomposition {
+
+	protected TotalDepth totalDepth;
 	
-	//public JordanDecomposition(Object myFunction){
-	//	this.myFunction = myFunction;
-	//}
+	public JordanDecompositionTotalDepth(Object myFunction){
+		totalDepth = (TotalDepth) myFunction;
+	}
 	
 	/**
-	 * @param variable
-	 * @return integral of p 
+	 * @param suction
+	 * @return H1 
 	 */
-	public abstract double pIntegral(double variable);
-	
-	
+	public double pIntegral(double suction){
+		this.f1 = totalDepth.totalDepth(suction);
+
+		return this.f1;
+	}
 	
 	/**
-	 * @param variable
-	 * @return integral of q
+	 * @param suction
+	 * @return H2
 	 */
-	public abstract double qIntegral(double suction);
+	public double qIntegral(double suction){
+		this.f2 = 0;
+
+		return this.f2;
+	}
 	
 	/**
-	 * @param variable
-	 * @return p
+	 * @param suction
+	 * @return dH1
 	 */
-	public abstract double p(double suction);
+	public double p(double suction){
+		this.df1 = totalDepth.dTotalDepth(suction);
+
+		return this.df1;
+	}
 	
 	/**
-	 * @param variable
-	 * @return q
+	 * @param suction
+	 * @return dH2
 	 */
-	public abstract double q(double suction);
+	public double q(double suction){
+		this.df2 = 0;
+
+		return this.df2;
+	}
 
 }

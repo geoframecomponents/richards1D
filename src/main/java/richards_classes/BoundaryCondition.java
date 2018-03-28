@@ -30,7 +30,7 @@ public abstract class BoundaryCondition {
 	protected double kM;
 	protected double spaceDeltaP;
 	protected double spaceDeltaM;
-	protected double tTimestep;
+	protected double timeDelta;
 	protected double delta;
 	protected double term;
 	
@@ -46,7 +46,7 @@ public abstract class BoundaryCondition {
 	 * @param delta length of the control volume
 	 * @return
 	 */
-	public abstract double upperDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta);
+	public abstract double upperDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta);
 	
 	/**
 	 * 
@@ -60,7 +60,7 @@ public abstract class BoundaryCondition {
 	 * @param delta length of the control volume
 	 * @return
 	 */
-	public abstract double mainDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta);
+	public abstract double mainDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta);
 	
 	/**
 	 *
@@ -74,7 +74,7 @@ public abstract class BoundaryCondition {
 	 * @param delta length of the control volume
 	 * @return
 	 */
-	public abstract double lowerDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta);
+	public abstract double lowerDiagonal(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta);
 	
 	/**
 	 *
@@ -88,5 +88,5 @@ public abstract class BoundaryCondition {
 	 * @param delta length of the control volume
 	 * @return
 	 */
-	public abstract double rightHandSide(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double tTimestep, double delta);
+	public abstract double rightHandSide(double bC, double kP, double kM, double spaceDeltaP, double spaceDeltaM, double timeDelta, double delta);
 }

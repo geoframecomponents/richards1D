@@ -39,6 +39,7 @@ public class NestedNewton {
 	double[] upperDiagonal;
 	double[] lowerDiagonal;
 	double[] rhss;
+	double[] dx;
 		
 	double[] fs;
 	double[] fks;
@@ -49,8 +50,10 @@ public class NestedNewton {
 	double[] psis_outer;
 	
 	SoilParametrization soilPar;
+	TotalDepth totalDepth;
 	Thomas thomasAlg = new Thomas();
-	JordanDecomposition jordanDecomposition;
+	JordanDecomposition soilMoistureJordanDecomposition;
+	JordanDecomposition totalDepthJordanDecomposition;
 	
 	/**
 	 * @param nestedNewton control parameter to choose between simple Newton method (0), or the nested Newton one (1)
@@ -59,14 +62,18 @@ public class NestedNewton {
 	 * @param NUM_CONTROL_VOLUMES number of control volumes
 	 * @param soilPar is the class to compute the soil hydraulic properties
 	 */
-	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, SoilParametrization soilPar){
+	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth){
 		this.nestedNewton = nestedNewton;
 		this.newtonTolerance = newtonTolerance;
 		this.MAXITER_NEWT = MAXITER_NEWT;
 		this.NUM_CONTROL_VOLUMES = NUM_CONTROL_VOLUMES;
 		this.soilPar = soilPar;
+		this.totalDepth = totalDepth;
+		this.dx = dx;
 		
-		jordanDecomposition = new JordanDecomposition(this.soilPar);
+		soilMoistureJordanDecomposition = new JordanDecompositionSoilMoisture(this.soilPar);
+		totalDepthJordanDecomposition = new JordanDecompositionTotalDepth(this.totalDepth);
+		
 		fs			  = new double[this.NUM_CONTROL_VOLUMES];
 		fks			  = new double[this.NUM_CONTROL_VOLUMES];
 		bb            = new double[this.NUM_CONTROL_VOLUMES]; 
@@ -91,6 +98,7 @@ public class NestedNewton {
 		this.upperDiagonal = upperDiagonal;
 		this.lowerDiagonal = lowerDiagonal;
 		this.rhss = rhss;
+
 	}
 	
 	
@@ -99,7 +107,13 @@ public class NestedNewton {
 
 		// Initial guess of psis
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-			psis[i] = Math.min(psis[i], soilPar.getPsiStar());
+			if(i==NUM_CONTROL_VOLUMES-1) {
+				psis[i] = Math.min(psis[i],-1);
+				//System.out.println(i +"   "+psis[i]);
+			} else {
+				psis[i] = Math.min(psis[i], soilPar.getPsiStar());
+				//System.out.println(i +"   "+psis[i]);
+			}
 		}
 
 		//// OUTER CYCLE ////
@@ -107,19 +121,23 @@ public class NestedNewton {
 			// I have to assign 0 to outerResidual otherwise I will take into account of the previous error
 			outerResidual = 0.0;
 			for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-				fs[j] = soilPar.waterContent(psis[j]) - rhss[j];
-				if(j == 0) {
-					fs[j] = fs[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
-				}else if(j == NUM_CONTROL_VOLUMES -1) {
-					fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
-				}else {
-					fs[j] = fs[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+				if(j==0) {
+					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					//System.out.println(j+" "+fs[j]);
+				} else if(j==NUM_CONTROL_VOLUMES-1) {
+					fs[j] = totalDepth.totalDepth(psis[j]) - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
+					//System.out.println(j+" "+fs[j]);
+				} else {
+					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					//System.out.println(j+" "+soilPar.waterContent(psis[j]));
+					//System.out.println(j+" "+fs[j]);
 				}
-				dis[j] = soilPar.dWaterContent(psis[j]);
+			
+				//dis[j] = soilPar.dWaterContent(psis[j]);
 				outerResidual += fs[j]*fs[j];
 			}
 			outerResidual = Math.pow(outerResidual,0.5);  
-			System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
+			//System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
 			if(outerResidual < newtonTolerance) {
 				break;
 			}
@@ -141,7 +159,11 @@ public class NestedNewton {
 
 				// Initial guess of psis
 				for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
+					if(j==NUM_CONTROL_VOLUMES-1) {
+						psis[j] = Math.max(psis[j],1);
+					} else {
 					psis[j] = Math.max(psis[j], soilPar.getPsiStar());
+					}
 				}
 
 				//// INNER CYCLE ////
@@ -149,20 +171,33 @@ public class NestedNewton {
 					// I have to assign 0 to innerResidual otherwise I will take into account of the previous error
 					innerResidual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
-						fks[l] = jordanDecomposition.waterContent1(psis[l]) - (jordanDecomposition.waterContent2(psis_outer[l]) + jordanDecomposition.dWaterContent2(psis_outer[l])*(psis[l] - psis_outer[l])) - this.rhss[l];
-						if(l == 0) {
-							fks[l] = fks[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
-						}else if(l == NUM_CONTROL_VOLUMES -1) {
-							fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
-						}else {
-							fks[l] = fks[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+						if(l==0) {
+							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
+							//System.out.println(l+" "+fks[l]);
+							//System.out.println(l+" "+dis[l]);
+						} else if(l==NUM_CONTROL_VOLUMES-1) {
+							fks[l] = totalDepthJordanDecomposition.pIntegral(psis[l]) - ( totalDepthJordanDecomposition.qIntegral(psis_outer[l]) + totalDepthJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
+							dis[l] = totalDepthJordanDecomposition.p(psis[l]) - totalDepthJordanDecomposition.q(psis_outer[l]);
+							//System.out.println(l+" "+fks[l]);
+							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
+						} else if(l==NUM_CONTROL_VOLUMES-2) {
+							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
+							//System.out.println(l+" "+fks[l]);
+							//System.out.println(l+" "+dis[l]);
+						} else {
+							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
+							//System.out.println(l+" "+fks[l]);
+							//System.out.println(l+" "+dis[l]);
 						}
-						dis[l] = jordanDecomposition.dWaterContent1(psis[l]) - jordanDecomposition.dWaterContent2(psis_outer[l]);
+
 						innerResidual += fks[l]*fks[l];
 					}
 					innerResidual = Math.pow(innerResidual,0.5);
 
-					System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
+					//System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
 
 					if(innerResidual < newtonTolerance) {
 						break;

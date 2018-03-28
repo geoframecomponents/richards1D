@@ -40,12 +40,12 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-02-01 00:00";
-		int timeStepMinutes = 15;
+		String endDate = "2017-03-16 00:00";
+		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Trento.csv";
+		String pathTopBC ="resources/Input/Trento_2Gradini.csv";
 		String pathBottomBC ="resources/Input/TrentoBottom.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 		String pathSourceSink = "resources/Input/SourceSink0.csv";
@@ -81,14 +81,14 @@ public class TestRichards1DSolver {
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
-		R1DSolver.tTimestep = 900;
+		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta =300;
-		R1DSolver.newtonTolerance = Math.pow(10,-12);
+		R1DSolver.newtonTolerance = Math.pow(10,-14);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
-		R1DSolver.nestedNewton =0;
+		R1DSolver.nestedNewton =1;
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
