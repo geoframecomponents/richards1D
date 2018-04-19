@@ -14,6 +14,7 @@ public class PrintTXT {
 	private double v1[];
 	private double v2[];
 	private double v3[];
+	private double v4[];
 	
 	// Matrix to print
 	private double matrix[][];
@@ -32,7 +33,11 @@ public class PrintTXT {
 	}
 	
 	public void setValueThirdVector(double a[]){
-		this.v1 = a;
+		this.v3 = a;
+	}
+	
+	public void setValueFourthVector(double a[]){
+		this.v4 = a;
 	}
 	
 	public void setValueMatrix(double a[][]){
@@ -115,6 +120,35 @@ public class PrintTXT {
 		          System.exit(1);
 		      }
 	}
+	
+	
+	
+	public void PrintFourVectors(String dir, String name, String header, String variable){
+		this.name = name;
+		this.header = header;
+		this.variable = variable;
+		
+		try {
+		      //FileWriter fileout = new FileWriter(name);
+		      FileWriter fileout = new FileWriter(new File(dir, name));
+		      fileout.write(this.header +"\n");
+		      fileout.write(this.variable +"\n");
+		      for(int i=0;i<v1.length;i++)
+		      {
+		    	  	fileout.write(v1[i] + "," + v2[i] + "," + v3[i] + "," + v4[i]+"\n");
+		    	
+		      }
+		            
+		      fileout.close(); // chiude il file
+		  }
+		      catch (IOException e)
+		      {
+		          System.out.println("Errore: " + e);
+		          System.exit(1);
+		      }
+	}
+	
+	
 	
 	
 	public void PrintMatrix(String dir, String name, String header, String variable){

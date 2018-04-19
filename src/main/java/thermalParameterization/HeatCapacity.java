@@ -65,8 +65,8 @@ public class HeatCapacity {
 	 */
 	public double cT(double suction){
 		
-		this.heatCapacity = waterDensity*waterSpecificHeatCapacity*soilPar.waterContent(suction) + (1-thetaS)*(2.128*sandFraction+2.385*clayFraction)/(sandFraction+clayFraction)*Math.pow(10, 6);
-		
+		//this.heatCapacity = waterDensity*waterSpecificHeatCapacity*soilPar.waterContent(suction) + (1-thetaS)*(2.128*sandFraction+2.385*clayFraction)/(sandFraction+clayFraction)*Math.pow(10, 6);
+		this.heatCapacity = 2230800*(1-thetaS) +1000*4188*soilPar.waterContent(suction);
 		return heatCapacity;
 		
 	}

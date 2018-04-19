@@ -34,22 +34,33 @@ public class SimpleBoundaryConditionFactory {
 	public BoundaryCondition createBoundaryCondition (String type) {
 
 		BoundaryCondition boundaryCondition = null;
-		if(type.equalsIgnoreCase("Top Dirichlet") || type.equalsIgnoreCase("TopDirichlet")){
+		if(type.equalsIgnoreCase("Psi Top Dirichlet") || type.equalsIgnoreCase("PsiTopDirichlet")){
 			boundaryCondition = new TopBoundaryConditionDirichlet();
 		}
-		else if(type.equalsIgnoreCase("Top Neumann") || type.equalsIgnoreCase("TopNeumann")){
+		else if(type.equalsIgnoreCase("Psi Top Neumann") || type.equalsIgnoreCase("PsiTopNeumann")){
 			boundaryCondition = new TopBoundaryConditionNeumann();
 		}
-		else if(type.equalsIgnoreCase("Bottom Free Drainage") || type.equalsIgnoreCase("BottomFreeDrainage")){
+		else if(type.equalsIgnoreCase("Psi Bottom Free Drainage") || type.equalsIgnoreCase("PsiBottomFreeDrainage")){
 			boundaryCondition = new BottomBoundaryConditionFreeDrainage();
 		}
-		else if(type.equalsIgnoreCase("Bottom Dirichlet") || type.equalsIgnoreCase("BottomDirichlet")){
+		else if(type.equalsIgnoreCase("Psi Bottom Dirichlet") || type.equalsIgnoreCase("PsiBottomDirichlet")){
 			boundaryCondition = new BottomBoundaryConditionDirichlet();
 		}
-		else if(type.equalsIgnoreCase("Bottom Impervious") || type.equalsIgnoreCase("BottomImpervious")){
+		else if(type.equalsIgnoreCase("Psi Bottom Impervious") || type.equalsIgnoreCase("PsiBottomImpervious")){
 			boundaryCondition = new BottomBoundaryConditionImpervious();
 		}
-
+		else if(type.equalsIgnoreCase("Temperature Diffusion Bottom Dirichlet") || type.equalsIgnoreCase("TemperatureDiffusionBottomDirichelet")){
+			boundaryCondition = new TemperatureBottomBoundaryConditionDirichlet();
+		}
+		else if(type.equalsIgnoreCase("Temperature Diffusion Top Dirichlet") || type.equalsIgnoreCase("TemperatureDiffusionTopDirichlet")){
+			boundaryCondition = new TemperatureTopBoundaryConditionDirichlet();
+		}
+		else if(type.equalsIgnoreCase("Temperature Convection Bottom Dirichlet") || type.equalsIgnoreCase("TemperatureConvectionBottomDirichlet")){
+			boundaryCondition = new TemperatureConvectionBottomBoundaryConditionDirichlet();
+		}
+		else if(type.equalsIgnoreCase("Temperature Convection Top Dirichlet") || type.equalsIgnoreCase("TemperatureConvectionTopDirichlet")){
+			boundaryCondition = new TemperatureConvectionTopBoundaryConditionDirichlet();
+		}
 		return boundaryCondition;
 		}
 }

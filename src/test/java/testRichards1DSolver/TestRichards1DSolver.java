@@ -39,20 +39,27 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-03-16 00:00";
+		String startDate = "2017-01-01 18:00" ;
+		String endDate = "2017-01-02 23:55";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Trento_2Gradini.csv";
-		String pathBottomBC ="resources/Input/TrentoBottom.csv";
+		String pathTopBC ="resources/Input/Trento0.csv";
+		String pathBottomBC ="resources/Input/TrentoBottom - Copy.csv";
 		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
 		String pathSourceSink = "resources/Input/SourceSink0.csv";
 
+		String pathTempTopBC ="resources/Input/Temperature_2Gradini.csv";
+		String pathTempBottomBC ="resources/Input/Temperature_TrentoBottom.csv";
+		String pathTempIC = "resources/Input/InitialConditionTemperature.csv";
+	
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
+		OmsTimeSeriesIteratorReader tempTopBCReader = getTimeseriesReader(pathTempTopBC, fId, startDate, endDate, timeStepMinutes);
+		OmsTimeSeriesIteratorReader tempBottomBCReader = getTimeseriesReader(pathTempBottomBC, fId, startDate, endDate, timeStepMinutes);
+		
 		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
 		readIC.setFilePath(pathIC);
 		readIC.process();
@@ -64,21 +71,38 @@ public class TestRichards1DSolver {
 		readSourceSink.process();
 		double[] sourceSink = readSourceSink.getVariable();
 
-
+		ReadCsvTwoColumns readTempIC = new ReadCsvTwoColumns();
+		readIC.setFilePath(pathTempIC);
+		readIC.process();
+		double[] temperatureIC = readIC.getVariable();
+		double[] temperatureDepth = readIC.getDepth();
+		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		R1DSolver.ks = 0.062/(3600*24);
-		R1DSolver.thetaS =0.41;
-		R1DSolver.thetaR = 0.095;
-		R1DSolver.n = 1.31;
-		R1DSolver.alpha = 1.9;
+		R1DSolver.ks = 0.00000007;
+		R1DSolver.thetaS =0.35;
+		R1DSolver.thetaR = 0.02;
+		R1DSolver.n = 1.964;
+		R1DSolver.alpha = 4.1;
 		R1DSolver.lambda =1.5 ;
 		R1DSolver.psiE = -1/(0.0286/0.01);
 		R1DSolver.rMedian =0.0000020781 ;
 		R1DSolver.sigma =0.6 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
-		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom Dirichlet";
+		R1DSolver.topBCType = "Psi Top Neumann";
+		R1DSolver.bottomBCType = "Psi Bottom Dirichlet";
+		R1DSolver.tempTopBCType = "Temperature Diffusion Top Dirichlet";
+		R1DSolver.tempBottomBCType = "Temperature Diffusion Bottom Dirichlet";
+		R1DSolver.tempConvectionTopBCType = "Temperature Convection Top Dirichlet";
+		R1DSolver.tempConvectionBottomBCType = "Temperature Convection Bottom Dirichlet";
+		R1DSolver.energySolver = "diffusion convection";
+		R1DSolver.soilType = "mineral soil"; // "unfrozen peat" "mineral soil" "crushed rock"
+		R1DSolver.sandFraction = 0.5;
+		R1DSolver.clayFraction = 0.2;
+		R1DSolver.lambda0 = 2.5; // 2<lambda0<3
+		R1DSolver.quartzFraction = 0.1;
+		R1DSolver.soilThermalModel = "Johansen";
+		R1DSolver.kappaWithTemperatureModel = "Isothermal flow";
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
 		R1DSolver.tTimestep = 300;
@@ -87,8 +111,12 @@ public class TestRichards1DSolver {
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
 		R1DSolver.sourceSink = sourceSink;
-		R1DSolver.dir = "resources/Output";
+		R1DSolver.temperatureIC = temperatureIC;
+		R1DSolver.temperatureDepth = temperatureDepth;
+		R1DSolver.dir = "resources/Output clay 2";
 		R1DSolver.nestedNewton =1;
+		
+
 		while( topBCReader.doProcess  ) {
 
 			topBCReader.nextRecord();	
@@ -99,6 +127,14 @@ public class TestRichards1DSolver {
 			bottomBCReader.nextRecord();
 			bCValueMap = bottomBCReader.outData;
 			R1DSolver.inBottomBC = bCValueMap;
+			
+			tempTopBCReader.nextRecord();	
+			bCValueMap = tempTopBCReader.outData;
+			R1DSolver.inTemperatureTopBC= bCValueMap;
+			
+			tempBottomBCReader.nextRecord();
+			bCValueMap = tempBottomBCReader.outData;
+			R1DSolver.inTemperatureBottomBC = bCValueMap;
 
 			R1DSolver.inCurrentDate = topBCReader.tCurrent;
 			

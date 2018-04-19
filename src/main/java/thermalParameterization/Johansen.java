@@ -36,7 +36,7 @@ public class Johansen extends ThermalSoilParameterization {
 	private double quartzFraction;
 	private double lambda;
 	private String drySoil;
-	final double lambdaW = 0.6;
+	final double lambdaW = 0.57;
 	
 	public Johansen(double thetaS, double sandFraction, double clayFraction,
 			SoilParametrization soilPar, String drySoil, double lambda0, double quartzFraction) {
@@ -52,10 +52,10 @@ public class Johansen extends ThermalSoilParameterization {
 		if(this.quartzFraction > 1 || this.quartzFraction <= 0){
 			throw new IllegalArgumentException( "ERROR: Check the value of the quartz fraction \n");
 		}
-		/*if(this.drySoil.equalsIgnoreCase("unfrozen peat") || this.drySoil.equalsIgnoreCase("mineral soil") || this.drySoil.equalsIgnoreCase("crushed rock")){
-			throw new IllegalArgumentException( "ERROR: Check the kind of dry soil you selected \n");
-		}
-		*/
+		//if(this.drySoil.equalsIgnoreCase("unfrozen peat") || this.drySoil.equalsIgnoreCase("mineral soil") || this.drySoil.equalsIgnoreCase("crushed rock") this.drySoil.no){
+		//	throw new IllegalArgumentException( "ERROR: Check the kind of dry soil you selected \n");
+		//}
+		
 	}
 	
 	
@@ -78,7 +78,7 @@ public class Johansen extends ThermalSoilParameterization {
 	
 	private double saturatedThermalConductivity(){
 		lambdaSaturated = Math.pow(quartzThermalConductivity(), 1-super.thetaS)*Math.pow(lambdaW, super.thetaS);
-		
+		//lambdaSaturated = Math.pow(1.5, 1-thetaS)*Math.pow(0.6, thetaS);
 		return lambdaSaturated;
 	}
 	
@@ -91,12 +91,14 @@ public class Johansen extends ThermalSoilParameterization {
 		else{
 			lambdaG = (8.80*super.sandFraction + 2.92*super.clayFraction)/(super.sandFraction + super.clayFraction);
 		}
+		//lambdaG = 1.5;
 		return lambdaG;
 	}
 
 	
 	@Override
 	public double thermalConductivity(double suction) {
+		
 		lambda = saturatedThermalConductivity()*super.soilPar.waterContent(suction)/super.thetaS + (1-super.soilPar.waterContent(suction)/super.thetaS)*dryThermalConductivity(this.drySoil); 
 		return lambda;
 	}

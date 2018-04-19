@@ -25,7 +25,11 @@ import oms3.annotations.*;
 
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
+
+import Energy1DSolver.*;
 import richards_classes.*;
+import thermalParameterization.SimpleThermalSoilParameterizationFactory;
+import thermalParameterization.ThermalSoilParameterization;
 
 @Description("Solve the Richards equation for the 1D domain.")
 @Documentation("")
@@ -162,6 +166,16 @@ public class Richards1DSolver {
 			+ "- Neumann boundary condition --> Top Neumann")
 	@In 
 	public String topBCType;
+	
+	@Description("Initial condition for the soil temperature")
+	@In 
+	@Unit ("C")
+	public double[] temperatureIC;
+	
+	@Description("Initial condition for the soil temperature")
+	@In 
+	@Unit ("m")
+	public double[] temperatureDepth;
 
 	@Description("The HashMap with the time series of the boundary condition at the bottom of soil column")
 	@In
@@ -189,7 +203,79 @@ public class Richards1DSolver {
 			+"1 --> nested Newton method")
 	@In
 	public int nestedNewton; 
+///////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////
+	@Description("Type of energy integrator:"
+			+" no energy --> do not solve energy equation"
+			+" pure diffusion --> consider only diffusion fluxes"
+			+" diffusion convection --> consider both diffusion and convection")
+	@In
+	public String energySolver; 
+	
+	@In
+	public String tempTopBCType;
+	@In
+	public String tempBottomBCType;
+	@In
+	public String tempConvectionTopBCType;
+	@In
+	public String tempConvectionBottomBCType;
+	
+	@In
+	public String soilThermalModel;
+	
+	@In
+	public String soilType;
+	
+	@In
+	public String kappaWithTemperatureModel;
+	
+	@In
+	public double sandFraction;
+	
+	@In
+	public double clayFraction;
+	
+	@In
+	public double lambda0;
+	
+	@In
+	public double quartzFraction;
+	
+	@Description("The HashMap with the time series of the boundary condition at the bottom of soil column")
+	@In
+	@Unit ("m")
+	public HashMap<Integer, double[]> inTemperatureBottomBC;
+	
+	@Description("The HashMap with the time series of the boundary condition at the bottom of soil column")
+	@In
+	@Unit ("m")
+	public HashMap<Integer, double[]> inTemperatureTopBC;
+		
+	double[] temperatures;
+	 
+	double temperatureBottomBC;
+	
+	double temperatureTopBC;
+	
+	EnergyIntegrator energyIntegrator;
+	
+	BoundaryCondition tempTopBoundaryCondition;
+	BoundaryCondition tempBottomBoundaryCondition;
+	BoundaryCondition tempConvectionTopBoundaryCondition;
+	BoundaryCondition tempConvectionBottomBoundaryCondition;
+	
+	ThermalSoilParameterization thermalSoilPar;
+	HydraulicConductivityTemperature kappaWithTemperature;
+	
+	SimpleThermalSoilParameterizationFactory thermalSoilParFactory;
+	
+	double[][] thermalParametrization;
+	double[] peclets;
 
+	
+	///////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 	@Description("Maximun number of Newton iterations")
 	final int MAXITER_NEWT = 50;
 
@@ -212,6 +298,10 @@ public class Richards1DSolver {
 	@Description("Psi values")
 	@Unit ("m")
 	double[] psis;
+	
+	@Description("Psi values")
+	@Unit ("m")
+	double[] psisNew;
 
 	@Description("Hydraulic conductivity at the top of the soil column")
 	@Unit ("m/s")
@@ -228,6 +318,10 @@ public class Richards1DSolver {
 	@Description("Vector collects the dimensional water content of each cell at time level n")
 	@Unit ("-")
 	double[] volumes;
+	
+	@Description("Vector collects the dimensional water content of each cell at time level n")
+	@Unit ("-")
+	double[] thetas;
 	
 	@Description("Vector collects the dimensional water content of each cell at time level n+1")
 	@Unit ("-")
@@ -308,17 +402,22 @@ public class Richards1DSolver {
 		if(step==0){
 
 			iC = iC.getClass().cast(checkIC(depth, iC, depth));
+			temperatureIC = temperatureIC.getClass().cast(checkIC(temperatureDepth, temperatureIC, temperatureDepth));
 			sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
 
 			NUM_CONTROL_VOLUMES = iC.length;
 
 			psis 		  = new double[NUM_CONTROL_VOLUMES];
+			psis 		  = new double[NUM_CONTROL_VOLUMES];
+			temperatures  = new double[NUM_CONTROL_VOLUMES-1];
 			k_t			  = 0.0;								
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
+			thetas		  = new double[NUM_CONTROL_VOLUMES];
 			volumesNew    = new double[NUM_CONTROL_VOLUMES];
-			velocities    = new double[NUM_CONTROL_VOLUMES+1];
+			velocities    = new double[NUM_CONTROL_VOLUMES];
+			peclets       = new double[NUM_CONTROL_VOLUMES];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
@@ -329,16 +428,27 @@ public class Richards1DSolver {
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
 			dx			  = new double[NUM_CONTROL_VOLUMES];
 			print = new PrintTXT();
-
+			
+			SimpleHydraulicConductivityTemperatureFactory hydraulicConductivityTemperatureFactory = new SimpleHydraulicConductivityTemperatureFactory();
+			kappaWithTemperature = hydraulicConductivityTemperatureFactory.createHydraulicConductivityTemperature(kappaWithTemperatureModel);
+			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
-			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
+			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,kappaWithTemperature,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
 			totalDepth = new TotalDepth();
 			
-
+			thermalSoilParFactory = new SimpleThermalSoilParameterizationFactory();
+			thermalSoilPar = thermalSoilParFactory.createThermalSoilParameterization( soilThermalModel, thetaS, sandFraction, clayFraction, soilPar, soilType, lambda0, quartzFraction);
+			
+			
 			SimpleBoundaryConditionFactory boundCondFactory = new SimpleBoundaryConditionFactory();
 			topBoundaryCondition = boundCondFactory.createBoundaryCondition(topBCType);		
 			bottomBoundaryCondition = boundCondFactory.createBoundaryCondition(bottomBCType);	
-			// Initial domain conditions
+			tempTopBoundaryCondition = boundCondFactory.createBoundaryCondition(tempTopBCType);		
+			tempBottomBoundaryCondition = boundCondFactory.createBoundaryCondition(tempBottomBCType);
+			tempConvectionTopBoundaryCondition = boundCondFactory.createBoundaryCondition(tempConvectionTopBCType);		
+			tempConvectionBottomBoundaryCondition = boundCondFactory.createBoundaryCondition(tempConvectionBottomBCType);
+			
+     		// Initial domain conditions
 			/* da rivedere: forse è meglio mettere z=0 alla superficie anzichè alla base della colonna di suolo
 			 *  oltre a rivedere la definizione della variabile spaceDelta è da rivedere anche il file della condizione iniziale
 			 *  in cui la profondità deve essere data come negativa
@@ -346,7 +456,13 @@ public class Richards1DSolver {
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = iC[i];
 				zeta[i] = spaceBottom-depth[i];
+				//temperatures[i] = temperatureIC[i];
 			}
+			
+			for(int i = 0; i < NUM_CONTROL_VOLUMES-1; i++) {
+				temperatures[i] = temperatureIC[i];
+			}
+	
 			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
 				if (i==0){
 					spaceDelta[i] = zeta[i];
@@ -376,13 +492,23 @@ public class Richards1DSolver {
 			}
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
 			
+			
+			SimpleEnergyIntegratorFactory energyIntegratorFactory = new SimpleEnergyIntegratorFactory();
+			energyIntegrator = energyIntegratorFactory.createEnergyIntegrator(energySolver,thermalSoilPar, NUM_CONTROL_VOLUMES, dx, spaceDelta, tempTopBoundaryCondition, tempBottomBoundaryCondition,
+																					tempConvectionTopBoundaryCondition, tempConvectionBottomBoundaryCondition);
+	
+			
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
 
-			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
+			// Create and print a matrix with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
 			hydraulicParametrization = soilPar.hydraulicModelCurves();
 			print.setValueMatrix(hydraulicParametrization);
 			print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
+			
+			thermalParametrization = this.thermalSoilPar.thermalSoilPropertiesCurves();
+			print.setValueMatrix(thermalParametrization);
+			print.PrintMatrix(dir, "Thermal Parametrization"+".csv", soilThermalModel, "Psi[m], Heat Capacity [J K^-1 m^-3], Thermal Conductivity[W m^-1 K^-1], NaN, NaN");
 
 		} // chiudi step==0
 
@@ -390,12 +516,20 @@ public class Richards1DSolver {
 		//time = time + tTimestep;
 
 		topBC = 0.0;
+		//if(inTopBC != null)
 		topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
 		
 		bottomBC = 0.0;
-		if(inBottomBC != null)
-			bottomBC = inBottomBC.get(1)[0];
+		//if(inBottomBC != null)
+		bottomBC = inBottomBC.get(1)[0];
 
+		temperatureTopBC = 0.0;
+		//if(inTemperatureBottomBC != null)
+		temperatureTopBC = inTemperatureTopBC.get(1)[0];
+		
+		temperatureBottomBC = 0.0;
+		//if(inTemperatureBottomBC != null)
+		temperatureBottomBC = inTemperatureBottomBC.get(1)[0];
 
 		// Hydraulic conductivity are computed at time level n
 		//k_b = soilPar.hydraulicConductivity(bottomBC);
@@ -416,16 +550,20 @@ public class Richards1DSolver {
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 				if(i==1) {
 					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
-					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					//kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					kappas[i] = soilPar.hydraulicConductivity(psis[i], temperatures[i]);
 				} else if(i==NUM_CONTROL_VOLUMES-1) {
 					volumes[i] = totalDepth.totalDepth(psis[i]);
-					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					//kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					kappas[i] = soilPar.hydraulicConductivity(psis[i], temperatureTopBC);
 				} else {
-				volumes[i] = soilPar.waterContent(psis[i])*dx[i];
-				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
+					//kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					kappas[i] = soilPar.hydraulicConductivity(psis[i], temperatures[i]);
 				}
 			}
-			k_b = soilPar.hydraulicConductivity(bottomBC);
+			//k_b = soilPar.hydraulicConductivity(bottomBC);
+			k_b = soilPar.hydraulicConductivity(bottomBC, temperatureBottomBC);
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
@@ -477,11 +615,13 @@ public class Richards1DSolver {
 
 			//// NESTED NEWTON ALGORITHM ////
 			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
-			psis = nestedNewtonAlg.solver();
-
+			psisNew = nestedNewtonAlg.solver();
+	
+			
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
 			 * with hydraulic conductivity at time level n 
 			 */ 
+			
 			volume = 0.0;
 			volumeNew =0.0;
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
@@ -496,47 +636,71 @@ public class Richards1DSolver {
 					}
 					else {
 						kM = 0.5*(kappas[i] + k_b);
-						velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+						velocities[i] =  -kM * (psisNew[i]-bottomBC)/spaceDelta[i] - kM;
 						
-						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+						volumesNew[i] = soilPar.waterContent(psisNew[i])*dx[i];
+						thetas[i] = soilPar.waterContent(psisNew[i]);
 					}
 
 				} else if(i == NUM_CONTROL_VOLUMES-1) {
 					kP = kappas[i];
-					velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
+					velocities[i] =  -kP * (psisNew[i]-psisNew[i-1])/spaceDelta[i] - kP;
 					
-					volumesNew[i] = totalDepth.totalDepth(psis[i]);
+					volumesNew[i] = totalDepth.totalDepth(psisNew[i]);
+					thetas[i] = totalDepth.totalDepth(psisNew[i]);
 				} else {
 
 					kP = 0.5*(kappas[i] + kappas[i+1]);
-					velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+					velocities[i+1] =  -kP * (psisNew[i+1]-psisNew[i])/spaceDelta[i+1] - kP;
 					
-					volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+					volumesNew[i] = soilPar.waterContent(psisNew[i])*dx[i];
+					thetas[i] = soilPar.waterContent(psisNew[i]);
 				}
 				volume +=volumes[i];
 				volumeNew +=volumesNew[i];
 			}
+			
 			errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
 			System.out.println("    errorMass: "+errorVolume);
-			
+						
+			/**
+			 * Solve energy equation 
+			 */
+			energyIntegrator.set(psis, psisNew, velocities, temperatures, sumTimeDelta, temperatureBottomBC, temperatureTopBC);
+			temperatures = energyIntegrator.solver1D();
+			//DA RIVEDERE
+			energyIntegrator.computeConvectionFluxes(velocities, temperatures, temperatureBottomBC, temperatureTopBC);
+			energyIntegrator.computeDiffusionFluxes(psis, temperatures, temperatureBottomBC, temperatureTopBC);
+			peclets=energyIntegrator.computePeclets();
 
+			psis = psisNew.clone();
+			
 		}
 		
 
 		//// PRINT OUTPUT FILES ////
 		print.setValueFirstVector(depth);
 		print.setValueSecondVector(psis);
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		print.setValueThirdVector(thetas);
+		print.PrintThreeVectors(dir,"Richards_"+step+".csv", inCurrentDate, "Depth[m],Psi[m],Theta[-] ");
 
 		//print.setValueFirstVector(depth);
 		//print.setValueSecondVector(velocities);
 		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
 
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(volumesNew);
-		print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
-
-
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(volumesNew);
+		//print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
+		
+		// da sistemare il controllo su quando stampare la temperatura
+		if(energySolver.equalsIgnoreCase("PureDiffusion") || energySolver.equalsIgnoreCase("Pure Diffusion") || energySolver.equalsIgnoreCase("diffusion convection")){
+			
+			print.setValueFirstVector(temperatureDepth);
+			print.setValueSecondVector(temperatures);
+			print.setValueThirdVector(peclets);
+			print.PrintThreeVectors(dir, "Temperature_"+step+".csv", inCurrentDate, "Depth[m],Temperatures[C], Peclets[-] ");
+		
+		}
 		step++;
 
 	} //// MAIN CYCLE END ////

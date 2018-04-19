@@ -44,12 +44,13 @@ public class BrooksCorey extends SoilParametrization {
 	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
 	 * @exception if kappaSaturation <0 check the value
 	 */
-	public BrooksCorey(double n, double psiD, double thetaR, double thetaS, double kappaSaturation){
+	public BrooksCorey(HydraulicConductivityTemperature kappaWithTemperature, double n, double psiD, double thetaR, double thetaS, double kappaSaturation){
 		this.n = n;
 		this.psiD = psiD; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.kappaTemperature = kappaWithTemperature;
 		
 		if(this.n < 1){
 			throw new IllegalArgumentException( "ERROR: Check the value of the Brooks-Corey's parameter  n \n");

@@ -33,12 +33,13 @@ public class KosugiUnimodal extends SoilParametrization {
 
 	
 	
-	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
+	public KosugiUnimodal(HydraulicConductivityTemperature kappaWithTemperature, double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.kappaTemperature = kappaWithTemperature;
 		
 		if(this.rMedian < 0){
 			throw new IllegalArgumentException( "ERROR: Check the value of the median radius of the pore-size distribution rMedian \n");

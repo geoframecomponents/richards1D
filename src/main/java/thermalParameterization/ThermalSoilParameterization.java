@@ -131,7 +131,7 @@ public abstract class ThermalSoilParameterization {
 		double myThermalConductivity = thermalPar.thermalConductivity(-10);
 		System.out.println("myThermalConductivity: " +myThermalConductivity);
 		
-		//thermalParametrization = thermalPar.thermalSoilPropertiesCurves();
+		thermalParametrization = thermalPar.thermalSoilPropertiesCurves();
 		//print.setValueMatrix(thermalParametrization);
 		//print.PrintMatrix("resources/Output", "heatCapacityParametrization"+".csv", soilHydraulicModel+"&"+thermalModel, "Psi, CT, lambda, na, na");
 	} 

@@ -45,13 +45,14 @@ public class VanGenuchten extends SoilParametrization {
 	 * @exception if kappaSaturation <0 check the value
 	 */
 	
-	public VanGenuchten(double n, double alpha, double thetaR, double thetaS, double kappaSaturation){
+	public VanGenuchten(HydraulicConductivityTemperature kappaWithTemperature, double n, double alpha, double thetaR, double thetaS, double kappaSaturation){
 		
 		this.n = n;
 		this.alpha = alpha; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.kappaTemperature = kappaWithTemperature;
 		
 		if(this.n < 1){
 			throw new IllegalArgumentException( "ERROR: Check the value of the Van Genuchten's parameter  n \n");

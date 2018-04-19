@@ -36,6 +36,8 @@ public abstract class SoilParametrization {
 	protected double saturationDegree; 
 	protected double kappa; // hydraulic conductivity
 	
+	protected HydraulicConductivityTemperature kappaTemperature;
+	
 	
 	/**
 	 * This method return the value of suction at which the derivative
@@ -71,13 +73,29 @@ public abstract class SoilParametrization {
 	public abstract double hydraulicConductivity(double suction);
 	
 	
+	
+	/**
+	 * This method compute the hydraulic conductivity accordingly with Mualem's assumption and considering the effect of temperature.
+	 * @param suction
+	 * @param temperature
+	 * @return
+	 */
+	public double hydraulicConductivity(double suction, double temperature) {
+		
+		kappa = hydraulicConductivity(suction)*kappaTemperature.temperatureCorrection(temperature);
+		
+		return kappa;
+				
+	}
+	
+	
 	/**
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
 	 */
 	public double[][] hydraulicModelCurves(){
 		
-		double[][] result  = new double[200][5];
+		double[][] result  = new double[200][6];
 
 		for(int i=0; i<result.length; i++){
 			result[i][0] = (double)(-i);
@@ -88,6 +106,7 @@ public abstract class SoilParametrization {
 			result[i][2] = waterContent(result[i][0]);
 			result[i][3] = dWaterContent(result[i][0]);
 			result[i][4] = hydraulicConductivity(result[i][0]);
+			
 		}
 		
 	return result;
