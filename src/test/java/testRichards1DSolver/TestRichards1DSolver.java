@@ -24,6 +24,11 @@ import java.util.*;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Out;
+import oms3.annotations.Unit;
 
 import org.junit.Test;
 import richards_classes.ReadCsvTwoColumns;
@@ -40,7 +45,7 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-03-16 00:00";
+		String endDate = "2017-01-01 00:05";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
@@ -52,7 +57,7 @@ public class TestRichards1DSolver {
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
-
+		
 		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
 		readIC.setFilePath(pathIC);
 		readIC.process();
@@ -102,7 +107,8 @@ public class TestRichards1DSolver {
 
 			R1DSolver.inCurrentDate = topBCReader.tCurrent;
 			
-			R1DSolver.solve();		
+			R1DSolver.solve();
+			Buffer1D(R1DSolver.inCurrentDate,R1DSolver.outputs);
 
 		}
 
@@ -121,6 +127,18 @@ public class TestRichards1DSolver {
 		reader.fileNovalue = "-9999";
 		reader.initProcess();
 		return reader;
+	}
+	
+	private void Buffer1D (String inputDate, ArrayList<double[]> inputVariable) {
+		
+		LinkedHashMap<String,ArrayList<double[]>> myVariable = new LinkedHashMap<String,ArrayList<double[]>>(); // consider the opportunity to save varibale as float instead of double
+
+
+		myVariable.put(inputDate,inputVariable);
+			
+
+		
+
 	}
 	/* Per la lettura della condizione iniziale con la vecchia formattazione
 	private double[] ReadAndStoreDouble(String filePath) {
