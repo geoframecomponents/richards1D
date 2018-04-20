@@ -19,6 +19,7 @@
 
 package Richards1DSolver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import oms3.annotations.*;
@@ -144,6 +145,7 @@ public class Richards1DSolver {
 
 	@Description("Depth at which the initial condition is defined")
 	@In 
+	@Out
 	@Unit ("m")
 	public double[] depth;
 
@@ -174,6 +176,7 @@ public class Richards1DSolver {
 
 	@Description("The first day of the simulation.")
 	@In
+	@Out
 	public String inCurrentDate;
 
 	@Description("Path of output folder")
@@ -295,6 +298,10 @@ public class Richards1DSolver {
 
 
 	double[][] hydraulicParametrization;
+	
+	@Description()
+	@Out
+	public ArrayList<double[]> outputs;
 
 	@Execute
 	public void solve() {
@@ -324,6 +331,7 @@ public class Richards1DSolver {
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
 			dx			  = new double[NUM_CONTROL_VOLUMES];
+			outputs       = new ArrayList<double[]>();
 			print = new PrintTXT();
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
@@ -391,7 +399,7 @@ public class Richards1DSolver {
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
-
+		outputs.clear();
 
 		// Hydraulic conductivity are computed at time level n
 		//k_b = soilPar.hydraulicConductivity(bottomBC);
@@ -511,19 +519,21 @@ public class Richards1DSolver {
 
 		}
 		
-
+		outputs.add(psis);
+		outputs.add(volumesNew);
+		
 		//// PRINT OUTPUT FILES ////
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(psis);
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(psis);
+		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
 		//print.setValueFirstVector(depth);
 		//print.setValueSecondVector(velocities);
 		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
 
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(volumesNew);
-		print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(volumesNew);
+		//print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
 
 
 		step++;
