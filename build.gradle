@@ -35,6 +35,11 @@ repositories {
     }
 
     mavenCentral() //jgt
+    
+    // to write NetCDF
+    maven {
+        url "https://artifacts.unidata.ucar.edu/repository/unidata-all/"
+    }
 
 }
 
@@ -60,6 +65,12 @@ dependencies {
 	
 	// https://mvnrepository.com/artifact/joda-time/joda-time
 	compile group: 'joda-time', name: 'joda-time', version: '2.9.9'
+	
+		
+	// https://mvnrepository.com/artifact/edu.ucar/netcdf
+	compile group: 'edu.ucar', name: 'netcdf', version: '4.3.22'
+	
+	compile group: 'org.slf4j', name:'slf4j-nop', version: '1.7.5'
 	
 	
     testCompile group: 'junit', name: 'junit', version: '4.+'
