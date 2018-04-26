@@ -20,7 +20,9 @@
 package Richards1DSolver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import oms3.annotations.*;
 
@@ -232,6 +234,10 @@ public class Richards1DSolver {
 	@Unit ("-")
 	double[] volumesNew;
 	
+	@Description("Vector collects the adimensional water content of each soil cell and the water depth at soil surface at time level n+1")
+	@Unit ("-")
+	double[] thetasNew;
+	
 	@Description("Total volume at time level n")
 	@Unit ("-")
 	double volume;
@@ -299,10 +305,16 @@ public class Richards1DSolver {
 
 	double[][] hydraulicParametrization;
 	
-	@Description()
-	@Out
-	public ArrayList<double[]> outputs;
+	//@Description()
+	//@Out
+	//public
+	//public ArrayList<double[]> outputs;
+	//LinkedHashMap<String,ArrayList<double[]>> outputs;
 
+	@Out
+	public ArrayList<double[]> arrayList;
+	
+	
 	@Execute
 	public void solve() {
 
@@ -321,6 +333,7 @@ public class Richards1DSolver {
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
 			volumesNew    = new double[NUM_CONTROL_VOLUMES];
+			thetasNew     = new double[NUM_CONTROL_VOLUMES];
 			velocities    = new double[NUM_CONTROL_VOLUMES+1];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
@@ -331,7 +344,9 @@ public class Richards1DSolver {
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
 			dx			  = new double[NUM_CONTROL_VOLUMES];
-			outputs       = new ArrayList<double[]>();
+			//outputs       = new ArrayList<double[]>();
+			arrayList     = new ArrayList<double[]>();
+			//outputs       = new LinkedHashMap<String,ArrayList<double[]>>();
 			print = new PrintTXT();
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
@@ -399,7 +414,8 @@ public class Richards1DSolver {
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
-		outputs.clear();
+		//outputs.clear();
+		arrayList.clear();
 
 		// Hydraulic conductivity are computed at time level n
 		//k_b = soilPar.hydraulicConductivity(bottomBC);
@@ -496,6 +512,7 @@ public class Richards1DSolver {
 						velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 						
 						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+						thetasNew[i] = soilPar.waterContent(psis[i]);
 					}
 
 				} else if(i == NUM_CONTROL_VOLUMES-1) {
@@ -503,29 +520,33 @@ public class Richards1DSolver {
 					velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
 					
 					volumesNew[i] = totalDepth.totalDepth(psis[i]);
+					thetasNew[i] = totalDepth.totalDepth(psis[i]);
 				} else {
 
 					kP = 0.5*(kappas[i] + kappas[i+1]);
 					velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 					
 					volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+					thetasNew[i] = soilPar.waterContent(psis[i]);
 				}
 				volume +=volumes[i];
 				volumeNew +=volumesNew[i];
 			}
 			errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
-			System.out.println("    errorMass: "+errorVolume);
+			//System.out.println("    errorMass: "+errorVolume);
 			
 
 		}
+		arrayList.add(psis);
+		arrayList.add(thetasNew);
+		arrayList.add(new double[] {errorVolume});
+
 		
-		outputs.add(psis);
-		outputs.add(volumesNew);
 		
 		//// PRINT OUTPUT FILES ////
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(psis);
-		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		print.setValueFirstVector(depth);
+		print.setValueSecondVector(psis);
+		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
 		//print.setValueFirstVector(depth);
 		//print.setValueSecondVector(velocities);
