@@ -20,15 +20,11 @@
 package testRichards1DSolver;
 import java.net.URISyntaxException;
 import java.util.*;
-
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Out;
-import oms3.annotations.Unit;
+import bufferWriter.Buffer1D;
+import writeNetCDF.WriteNetCDFRichards1D;
 
 import org.junit.Test;
 import richards_classes.ReadCsvTwoColumns;
@@ -45,14 +41,14 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-01 00:05";
+		String endDate = "2017-01-02 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Trento_2Gradini.csv";
-		String pathBottomBC ="resources/Input/TrentoBottom.csv";
-		String pathIC = "resources/Input/InitialConditionHydrostatic.csv";
+		String pathTopBC ="resources/Input/All_0.csv";
+		String pathBottomBC ="resources/Input/All_0.csv";
+		String pathIC = "resources/Input/InitialConditionHydrostaticPonding.csv";
 		String pathSourceSink = "resources/Input/SourceSink0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
@@ -69,14 +65,16 @@ public class TestRichards1DSolver {
 		readSourceSink.process();
 		double[] sourceSink = readSourceSink.getVariable();
 
-
+		Buffer1D buffer = new Buffer1D();
+		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
+		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		R1DSolver.ks = 0.062/(3600*24);
-		R1DSolver.thetaS =0.41;
-		R1DSolver.thetaR = 0.095;
-		R1DSolver.n = 1.31;
-		R1DSolver.alpha = 1.9;
+		R1DSolver.ks = 0.000017;
+		R1DSolver.thetaS =0.5;
+		R1DSolver.thetaR = 0.02;
+		R1DSolver.n = 1.16;
+		R1DSolver.alpha = 5.88;
 		R1DSolver.lambda =1.5 ;
 		R1DSolver.psiE = -1/(0.0286/0.01);
 		R1DSolver.rMedian =0.0000020781 ;
@@ -87,7 +85,7 @@ public class TestRichards1DSolver {
 		R1DSolver.delta = 0;
 		R1DSolver.spaceBottom = 2.0;
 		R1DSolver.tTimestep = 300;
-		R1DSolver.timeDelta =300;
+		R1DSolver.timeDelta = 50;
 		R1DSolver.newtonTolerance = Math.pow(10,-14);
 		R1DSolver.iC = iC;
 		R1DSolver.depth = depth;
@@ -108,10 +106,25 @@ public class TestRichards1DSolver {
 			R1DSolver.inCurrentDate = topBCReader.tCurrent;
 			
 			R1DSolver.solve();
-			Buffer1D(R1DSolver.inCurrentDate,R1DSolver.outputs);
+			
+			buffer.inputDate = R1DSolver.inCurrentDate;
+			buffer.inputSpatialCoordinate = R1DSolver.depth;
+			buffer.inputVariable = R1DSolver.arrayList;
+			
+			buffer.solve();
+
 
 		}
 
+		writeNetCDF.fileName = "C:/Users/Niccolo/eclipse-workspace/richards1D/resources/Output/PondingTest33.nc";
+		writeNetCDF.briefDescritpion = "\n		ponding test\n		"
+				+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
+				+ "BC: top no rain, bottom free drainage\n		"
+				+ "Soil parameters: Ks = 0.000017 m/s, thetaS = 0.5, thetaR = 0.02, n = 1.16, alpha = 5.88 m, Van Genuchten\n\n\n";
+		writeNetCDF.myVariables = buffer.myVariable;
+		writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
+		writeNetCDF.writeNetCDF();
+		
 		topBCReader.close();
 		bottomBCReader.close();
 	}
@@ -128,18 +141,9 @@ public class TestRichards1DSolver {
 		reader.initProcess();
 		return reader;
 	}
+}
 	
-	private void Buffer1D (String inputDate, ArrayList<double[]> inputVariable) {
-		
-		LinkedHashMap<String,ArrayList<double[]>> myVariable = new LinkedHashMap<String,ArrayList<double[]>>(); // consider the opportunity to save varibale as float instead of double
-
-
-		myVariable.put(inputDate,inputVariable);
-			
-
-		
-
-	}
+	
 	/* Per la lettura della condizione iniziale con la vecchia formattazione
 	private double[] ReadAndStoreDouble(String filePath) {
 
@@ -168,4 +172,3 @@ public class TestRichards1DSolver {
 
 	}
 	*/
-}
