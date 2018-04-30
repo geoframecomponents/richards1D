@@ -109,21 +109,24 @@ public class TestRichards1DSolver {
 			
 			buffer.inputDate = R1DSolver.inCurrentDate;
 			buffer.inputSpatialCoordinate = R1DSolver.depth;
-			buffer.inputVariable = R1DSolver.arrayList;
+			buffer.inputVariable = R1DSolver.outputToBuffer;
 			
 			buffer.solve();
+			
+			writeNetCDF.fileName = R1DSolver.dir+"/Test.nc";
+			writeNetCDF.briefDescritpion = "\n		ponding test\n		"
+					+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
+					+ "BC: top no rain, bottom free drainage\n		"
+					+ "Soil parameters: Ks = 0.000017 m/s, thetaS = 0.5, thetaR = 0.02, n = 1.16, alpha = 5.88 m, Van Genuchten\n\n\n";
+			writeNetCDF.myVariables = buffer.myVariable;
+			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
+			writeNetCDF.doProcess = topBCReader.doProcess;
+			writeNetCDF.writeNetCDF();
 
 
 		}
 
-		writeNetCDF.fileName = "C:/Users/Niccolo/eclipse-workspace/richards1D/resources/Output/PondingTest33.nc";
-		writeNetCDF.briefDescritpion = "\n		ponding test\n		"
-				+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
-				+ "BC: top no rain, bottom free drainage\n		"
-				+ "Soil parameters: Ks = 0.000017 m/s, thetaS = 0.5, thetaR = 0.02, n = 1.16, alpha = 5.88 m, Van Genuchten\n\n\n";
-		writeNetCDF.myVariables = buffer.myVariable;
-		writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
-		writeNetCDF.writeNetCDF();
+
 		
 		topBCReader.close();
 		bottomBCReader.close();
