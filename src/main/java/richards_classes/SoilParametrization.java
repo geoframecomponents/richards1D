@@ -18,6 +18,9 @@
  */
 package richards_classes;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 /**
  * The soil prametrization abstract class.
  * @author Niccolò Tubini
@@ -89,6 +92,46 @@ public abstract class SoilParametrization {
 			result[i][3] = dWaterContent(result[i][0]);
 			result[i][4] = hydraulicConductivity(result[i][0]);
 		}
+		
+	return result;
+	} 
+	
+	/**
+	 * This method creates a data set to plot the hydraulic properties of the soil
+	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
+	 */
+	public LinkedHashMap<String, double[]> hydraulicModelCurves1(){
+		
+		LinkedHashMap<String, double[]> result  = new LinkedHashMap<String, double[]>();
+		double[] tempValues = new double[200];
+		//System.out.println("\n\nPsi");
+		for(int i=0; i<tempValues.length; i++){
+			tempValues[i] = (double)(-i);
+			//System.out.println(tempValues[i]);
+		}
+		result.put("Psi [m]", tempValues.clone());
+		
+		//System.out.println("\n\nTheta");
+		for(int i=0; i<result.get("Psi [m]").length; i++){
+			tempValues[i] = waterContent(result.get("Psi [m]")[i]);
+			//System.out.println(tempValues[i]);
+
+		}
+		result.put("Theta [-]", tempValues.clone());
+		//System.out.println("\n\ndTheta");
+		for(int i=0; i<result.get("Psi [m]").length; i++){
+			//System.out.println(result.get("Psi [m]")[i]);
+			tempValues[i] = dWaterContent(result.get("Psi [m]")[i]);
+			//System.out.println("	"+tempValues[i]);
+		}
+		result.put("dTheta [1/m]", tempValues.clone());
+		
+		//System.out.println("\n\nK");
+		for(int i=0; i<result.get("Psi [m]").length; i++){
+			tempValues[i] = hydraulicConductivity(result.get("Psi [m]")[i]);
+			//System.out.println(tempValues[i]);
+		}
+		result.put("K [m/s]", tempValues.clone());
 		
 	return result;
 	} 
