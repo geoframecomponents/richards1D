@@ -33,15 +33,12 @@ import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
 import oms3.annotations.In;
-import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayDouble;
-import ucar.ma2.ArrayFloat;
 import ucar.ma2.DataType;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Attribute;
@@ -49,9 +46,9 @@ import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
 
-@Description("Buffer for 1D simulation in which there is one spatial coordinate and time.")
+@Description("This class writes a NetCDF with Richards' equation outputs. Before writing, outputs are stored in a buffer writer and as simulation is ended they are written in a NetCDF file.")
 @Documentation("")
-@Author(name = "Niccolo' Tubini, Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
+@Author(name = "Niccolo' Tubini, Francesco Serafin, Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
 @Keywords("Hydrology, Richards, Infiltration")
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 //@Name("shortradbal")
@@ -60,27 +57,37 @@ import ucar.nc2.Variable;
 
 
 public class WriteNetCDFRichards1D {
-	
+
 	@Description()
 	@In
 	@Unit ()
-	public LinkedHashMap<String,ArrayList<double[]>> myVariables; // consider the opportunity to save varibale as float instead of double
-	
+	public LinkedHashMap<String,ArrayList<double[]>> myVariables; // consider the opportunity to save variable as float instead of double
+
 	@Description()
 	@In
 	@Unit ()
 	public double[] mySpatialCoordinate;
-	
+
+	@Description()
+	@In
+	@Unit ()
+	public String dir;
+
 	@Description()
 	@In
 	@Unit ()
 	public String fileName;
-	
+
 	@Description("Brief descritpion of the problem")
 	@In
 	@Unit ()
 	public String briefDescritpion;
-	
+
+	@Description("Boolean variable to print")
+	@In
+	@Unit ()
+	public boolean doProcess;
+
 	int NLVL;
 	int NREC;
 	// human readable date will be converted in unix format, the format will be an input and it has to be consistent with that used in OMS
@@ -88,8 +95,9 @@ public class WriteNetCDFRichards1D {
 	Date date = null;
 	long unixTime;
 	double[] myTempVariable; 
+	@SuppressWarnings("rawtypes")
 	Iterator it;
-    
+
 
 	// Create the file.
 	String filename;
@@ -97,140 +105,161 @@ public class WriteNetCDFRichards1D {
 
 	@Execute
 	public void writeNetCDF() {
-		
-		final int NLVL = mySpatialCoordinate.length;
-		final int NREC = myVariables.keySet().size();
-		// human readable date will be converted in unix format, the format will be an input and it has to be consistent with that used in OMS
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-		Date date = null;
-		long unixTime;
-		double[] myTempVariable; 
-		//Iterator it;
-        
 
-		// Create the file.
-		//String filename = fileName;
-		NetcdfFileWriter dataFile = null;
 
-		try {
-			// Create new netcdf-3 file with the given filename
-			dataFile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, fileName);
-			// add a general attribute describing the problem and containing other relevant information for the user
-			dataFile.addGroupAttribute(null, new Attribute("Description of the problem",briefDescritpion));
+		if(doProcess == false) {
 			
-			//add dimensions  where time dimension is unlimit
-			// in 1D case dimension are time and the depth
-			Dimension lvlDim = dataFile.addDimension(null, "depth", NLVL);
-			Dimension timeDim = dataFile.addUnlimitedDimension("time");
-
-			// Define the coordinate variables.
-			Variable depthVar = dataFile.addVariable(null, "depth", DataType.DOUBLE, "depth");
-			Variable timeVar = dataFile.addVariable(null, "time", DataType.INT, "time");
-
-			// Define units attributes for data variables.
-			dataFile.addVariableAttribute(depthVar, new Attribute("units", "m"));
-			dataFile.addVariableAttribute(depthVar, new Attribute("long_name", "Soil depth"));
-			dataFile.addVariableAttribute(timeVar, new Attribute("units","unix convention"));
-
-			// Define the netCDF variables for the psi and theta data.
-			String dims = "time depth";
-
-			Variable psiVar = dataFile.addVariable(null, "psi", DataType.DOUBLE, dims);
-			Variable waterHeightVar = dataFile.addVariable(null, "water heigth", DataType.DOUBLE, dims);
-			Variable errorVar = dataFile.addVariable(null, "error", DataType.DOUBLE, "time");
 			
-			// Define units attributes for data variables.
-			dataFile.addVariableAttribute(psiVar, new Attribute("units", "m"));
-			dataFile.addVariableAttribute(psiVar, new Attribute("long_name", "Hydraulic head"));
-			dataFile.addVariableAttribute(waterHeightVar, new Attribute("units", "m"));
-			dataFile.addVariableAttribute(waterHeightVar, new Attribute("long_name", "water height"));
-			dataFile.addVariableAttribute(errorVar, new Attribute("units", "m"));
-			dataFile.addVariableAttribute(errorVar, new Attribute("long_name", "volume error at each time step"));
-			
-			// These data are those created by bufferWriter class. If this wasn't an example program, we
-			// would have some real data to write for example, model output.
-			// times variable is filled later
-			ArrayDouble.D1 depths = new ArrayDouble.D1(lvlDim.getLength());
-			Array times = Array.factory(DataType.LONG, new int[] {NREC});
+			final int NLVL = mySpatialCoordinate.length;
+			final int NREC = myVariables.keySet().size();
+			// human readable date will be converted in unix format, the format will be an input and it has to be consistent with that used in OMS
+			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+			Date date = null;
+			long unixTime;
+			double[] myTempVariable; 
+			//Iterator it;
 
-			int z;
 
-			for (z = 0; z < lvlDim.getLength(); z++) {
-				depths.set(z, mySpatialCoordinate[z]);
+			// Create the file.
+			//String filename = fileName;
+			NetcdfFileWriter dataFile = null;
+
+			try {
+				// Create new netcdf-3 file with the given filename
+				dataFile = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, fileName);
+				// add a general attribute describing the problem and containing other relevant information for the user
+				dataFile.addGroupAttribute(null, new Attribute("Description of the problem",briefDescritpion));
+
+				//add dimensions  where time dimension is unlimit
+				// in 1D case dimension are time and the depth
+				Dimension lvlDim = dataFile.addDimension(null, "depth", NLVL);
+				@SuppressWarnings("unused")
+				Dimension timeDim = dataFile.addUnlimitedDimension("time");
+
+				// Define the coordinate variables.
+				Variable depthVar = dataFile.addVariable(null, "depth", DataType.DOUBLE, "depth");
+				Variable timeVar = dataFile.addVariable(null, "time", DataType.INT, "time");
+
+				// Define units attributes for data variables.
+				dataFile.addVariableAttribute(depthVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(depthVar, new Attribute("long_name", "Soil depth"));
+				dataFile.addVariableAttribute(timeVar, new Attribute("units","unix convention"));
+
+				// Define the netCDF variables for the psi and theta data.
+				String dims = "time depth";
+
+				Variable psiVar = dataFile.addVariable(null, "psi", DataType.DOUBLE, dims);
+				Variable waterHeightVar = dataFile.addVariable(null, "water heigth", DataType.DOUBLE, dims);
+				Variable errorVar = dataFile.addVariable(null, "error", DataType.DOUBLE, "time");
+				Variable topBCVar = dataFile.addVariable(null, "topBC", DataType.DOUBLE, "time");
+				Variable bottomBCVar = dataFile.addVariable(null, "bottomBC", DataType.DOUBLE, "time");
+
+				// Define units attributes for data variables.
+				dataFile.addVariableAttribute(psiVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(psiVar, new Attribute("long_name", "Hydraulic head"));
+				dataFile.addVariableAttribute(waterHeightVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(waterHeightVar, new Attribute("long_name", "water height"));
+				dataFile.addVariableAttribute(errorVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(errorVar, new Attribute("long_name", "volume error at each time step"));
+				dataFile.addVariableAttribute(topBCVar, new Attribute("units", "mm"));
+				dataFile.addVariableAttribute(topBCVar, new Attribute("long_name", "rainfall heights"));
+				dataFile.addVariableAttribute(bottomBCVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(bottomBCVar, new Attribute("long_name", "water suction"));
+
+				// These data are those created by bufferWriter class. If this wasn't an example program, we
+				// would have some real data to write for example, model output.
+				// times variable is filled later
+				ArrayDouble.D1 depths = new ArrayDouble.D1(lvlDim.getLength());
+				Array times = Array.factory(DataType.LONG, new int[] {NREC});
+
+				int z;
+
+				for (z = 0; z < lvlDim.getLength(); z++) {
+					depths.set(z, mySpatialCoordinate[z]);
+				}
+
+				// These data are those created by bufferWriter class. This will write our hydraulic head (psi) and
+				// adimensional water content (theta) data
+				ArrayDouble.D2 dataWaterHeight = new ArrayDouble.D2(NREC, lvlDim.getLength());
+				ArrayDouble.D2 dataPsi = new ArrayDouble.D2(NREC, lvlDim.getLength());
+				ArrayDouble.D1 dataError =  new ArrayDouble.D1(NREC);
+				ArrayDouble.D1 dataTopBC =  new ArrayDouble.D1(NREC);
+				ArrayDouble.D1 dataBottomBC =  new ArrayDouble.D1(NREC);
+
+				int i=0;
+				it = myVariables.entrySet().iterator();
+				while (it.hasNext()) {
+
+					@SuppressWarnings("unchecked")
+					Entry<String, ArrayList<double[]>> entry = (Entry<String, ArrayList<double[]>>) it.next();
+
+					try {
+						date = dateFormat.parse(entry.getKey());
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					unixTime = (long) date.getTime()/1000;
+					// think if there is a better way instead of using i
+					times.setLong(i, unixTime);
+
+
+					myTempVariable =  entry.getValue().get(0);
+					for (int lvl = 0; lvl < NLVL; lvl++) {
+
+						dataPsi.set(i, lvl, myTempVariable[lvl]);
+
+					}
+
+					myTempVariable =  entry.getValue().get(1);
+					for (int lvl = 0; lvl < NLVL; lvl++) {
+
+						dataWaterHeight.set(i, lvl, myTempVariable[lvl]);
+
+					}
+
+					dataError.set(i, entry.getValue().get(2)[0]);
+
+					dataTopBC.set(i, entry.getValue().get(3)[0]);
+
+					dataBottomBC.set(i, entry.getValue().get(4)[0]);
+
+					i++;
+				}
+
+
+				//Create the file. At this point the (empty) file will be written to disk
+				dataFile.create();
+
+				// A newly created Java integer array to be initialized to zeros.
+				int[] origin = new int[2];
+
+				dataFile.write(depthVar, depths);
+				dataFile.write(timeVar, origin, times);
+				dataFile.write(psiVar, origin, dataPsi);
+				dataFile.write(waterHeightVar, origin, dataWaterHeight);
+				dataFile.write(errorVar, origin, dataError);
+				dataFile.write(topBCVar, origin, dataTopBC);
+				dataFile.write(bottomBCVar, origin, dataBottomBC);
+
+			} catch (IOException e) {
+				e.printStackTrace(System.err);
+
+			} catch (InvalidRangeException e) {
+				e.printStackTrace(System.err);
+
+			} finally {
+				if (dataFile != null)
+					try {
+						dataFile.close();
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}
 			}
 
-			// These data are those created by bufferWriter class. This will write our hydraulic head (psi) and
-			// adimensional water content (theta) data
-			ArrayDouble.D2 dataWaterHeight = new ArrayDouble.D2(NREC, lvlDim.getLength());
-			ArrayDouble.D2 dataPsi = new ArrayDouble.D2(NREC, lvlDim.getLength());
-			ArrayDouble.D1 dataError =  new ArrayDouble.D1(NREC);
-			
-			int i=0;
-			it = myVariables.entrySet().iterator();
-			while (it.hasNext()) {
-				
-				Entry<String, ArrayList<double[]>> entry = (Entry<String, ArrayList<double[]>>) it.next();
-				
-				try {
-					date = dateFormat.parse(entry.getKey());
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				unixTime = (long) date.getTime()/1000;
-				// think if there is a better way instead of using i
-				times.setLong(i, unixTime);
-				
-						
-				myTempVariable =  entry.getValue().get(0);
-				for (int lvl = 0; lvl < NLVL; lvl++) {
-					
-					dataPsi.set(i, lvl, myTempVariable[lvl]);
+			System.out.println("*** SUCCESS writing output file, " + fileName);
 
-				}
-				
-				myTempVariable =  entry.getValue().get(1);
-				for (int lvl = 0; lvl < NLVL; lvl++) {
-					
-					dataWaterHeight.set(i, lvl, myTempVariable[lvl]);
-
-				}
-
-				dataError.set(i, entry.getValue().get(2)[0]);
-				
-				i++;
-			}
-		
-
-			//Create the file. At this point the (empty) file will be written to disk
-			dataFile.create();
-
-			// A newly created Java integer array to be initialized to zeros.
-			int[] origin = new int[2];
-
-			dataFile.write(depthVar, depths);
-			dataFile.write(timeVar, origin, times);
-			dataFile.write(psiVar, origin, dataPsi);
-			dataFile.write(waterHeightVar, origin, dataWaterHeight);
-			dataFile.write(errorVar, origin, dataError);
-
-		} catch (IOException e) {
-			e.printStackTrace(System.err);
-
-		} catch (InvalidRangeException e) {
-			e.printStackTrace(System.err);
-
-		} finally {
-			if (dataFile != null)
-				try {
-					dataFile.close();
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
 		}
-		
-		System.out.println("*** SUCCESS writing output file, " + fileName);
-		
 	}
 
 
