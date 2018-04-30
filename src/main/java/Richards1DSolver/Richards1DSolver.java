@@ -29,6 +29,7 @@ import oms3.annotations.*;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import richards_classes.*;
+import writeNetCDF.WriteNetCDFParameterization;
 
 @Description("Solve the Richards equation for the 1D domain.")
 @Documentation("")
@@ -40,6 +41,8 @@ import richards_classes.*;
 //@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Richards1DSolver {
+	
+	// SOIL PARAMETERS
 	@Description("The hydraulic conductivity at saturation")
 	@In 
 	@Unit ("m/s")
@@ -89,7 +92,9 @@ public class Richards1DSolver {
 			+ "the soil hydraulic properties: Van Genuchten; Brooks and Corey; Kosugi unimodal")
 	@In 
 	public String soilHydraulicModel;
-
+	
+	/////////////////////////////////////////////
+	
 	@Description("Depth of the soil column")
 	@In
 	@Unit ("m")
@@ -129,6 +134,12 @@ public class Richards1DSolver {
 	@Description("Tolerance for Newton iteration")
 	@In
 	public double newtonTolerance;
+	
+	@Description("Control parameter for nested Newton algorithm:"
+			+"0 --> simple Newton method"
+			+"1 --> nested Newton method")
+	@In
+	public int nestedNewton; 
 
 	@Description("Initial condition for the soil suction")
 	@In 
@@ -151,6 +162,8 @@ public class Richards1DSolver {
 	@Unit ("m")
 	public double[] depth;
 
+	// BOUNDARY CONDITIONS
+	
 	@Description("The HashMap with the time series of the boundary condition at the top of soil column")
 	@In
 	@Unit ("m")
@@ -181,15 +194,17 @@ public class Richards1DSolver {
 	@Out
 	public String inCurrentDate;
 
-	@Description("Path of output folder")
+	@Description("Path of output files")
 	@In
 	public String dir;
+	
+	@Description("ArrayList of variable to be stored in the buffer writer")
+	@Out
+	public ArrayList<double[]> outputToBuffer;
+	
 
-	@Description("Control parameter for nested Newton algorithm:"
-			+"0 --> simple Newton method"
-			+"1 --> nested Newton method")
-	@In
-	public int nestedNewton; 
+	//////////////////////////////////////////
+	//////////////////////////////////////////
 
 	@Description("Maximun number of Newton iterations")
 	final int MAXITER_NEWT = 50;
@@ -291,6 +306,9 @@ public class Richards1DSolver {
 	double[] dx;
 	
 	double time=0;
+	
+	@Description("Variable containing theta-psi, hydraulic conductivity-psi, and moisture capacity-psi")
+	LinkedHashMap<String,double[]> hydraulicParametrization;
 
 	NestedNewton nestedNewtonAlg;
 
@@ -302,18 +320,10 @@ public class Richards1DSolver {
 	BoundaryCondition topBoundaryCondition;
 	BoundaryCondition bottomBoundaryCondition;
 
+	WriteNetCDFParameterization writeSoilPar;
 
-	double[][] hydraulicParametrization;
 	
-	//@Description()
-	//@Out
-	//public
-	//public ArrayList<double[]> outputs;
-	//LinkedHashMap<String,ArrayList<double[]>> outputs;
 
-	@Out
-	public ArrayList<double[]> arrayList;
-	
 	
 	@Execute
 	public void solve() {
@@ -344,11 +354,11 @@ public class Richards1DSolver {
 			zeta 		  = new double[NUM_CONTROL_VOLUMES];
 			spaceDelta    = new double[NUM_CONTROL_VOLUMES];
 			dx			  = new double[NUM_CONTROL_VOLUMES];
-			//outputs       = new ArrayList<double[]>();
-			arrayList     = new ArrayList<double[]>();
-			//outputs       = new LinkedHashMap<String,ArrayList<double[]>>();
-			print = new PrintTXT();
-
+			outputToBuffer= new ArrayList<double[]>();
+			
+			//print = new PrintTXT();
+			writeSoilPar = new WriteNetCDFParameterization();
+			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
 			totalDepth = new TotalDepth();
@@ -399,9 +409,10 @@ public class Richards1DSolver {
 			delta = delta*Math.PI/180;
 
 			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
-			hydraulicParametrization = soilPar.hydraulicModelCurves();
-			print.setValueMatrix(hydraulicParametrization);
-			print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
+			hydraulicParametrization = soilPar.hydraulicModelCurves1();
+			writeSoilPar.writeNetCDF(hydraulicParametrization, dir+"/HydraulicParameterization", soilHydraulicModel);
+			//print.setValueMatrix(hydraulicParametrization);
+			//print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
 
 		} // chiudi step==0
 
@@ -414,8 +425,8 @@ public class Richards1DSolver {
 		bottomBC = 0.0;
 		if(inBottomBC != null)
 			bottomBC = inBottomBC.get(1)[0];
-		//outputs.clear();
-		arrayList.clear();
+		
+		outputToBuffer.clear();
 
 		// Hydraulic conductivity are computed at time level n
 		//k_b = soilPar.hydraulicConductivity(bottomBC);
@@ -537,16 +548,19 @@ public class Richards1DSolver {
 			
 
 		}
-		arrayList.add(psis);
-		arrayList.add(thetasNew);
-		arrayList.add(new double[] {errorVolume});
+		outputToBuffer.add(psis);
+		outputToBuffer.add(thetasNew);
+		outputToBuffer.add(new double[] {errorVolume});
+		outputToBuffer.add(new double[] {topBC});
+		outputToBuffer.add(new double[] {bottomBC});
+		
 
 		
 		
 		//// PRINT OUTPUT FILES ////
-		print.setValueFirstVector(depth);
-		print.setValueSecondVector(psis);
-		print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
+		//print.setValueFirstVector(depth);
+		//print.setValueSecondVector(psis);
+		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
 
 		//print.setValueFirstVector(depth);
 		//print.setValueSecondVector(velocities);
