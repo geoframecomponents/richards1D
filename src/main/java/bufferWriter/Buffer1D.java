@@ -88,6 +88,8 @@ public class Buffer1D {
 		tempVariable.add(inputVariable.get(0).clone());
 		tempVariable.add(inputVariable.get(1).clone());
 		tempVariable.add(inputVariable.get(2).clone());
+		tempVariable.add(inputVariable.get(3).clone());
+		tempVariable.add(inputVariable.get(4).clone());
 		
 		myVariable.put(inputDate,(ArrayList<double[]>) tempVariable.clone());
 		//System.out.println(myVariable.size() +"       "+ myVariable.keySet());
