@@ -149,6 +149,7 @@ public class WriteNetCDFRichards1D {
 				String dims = "time depth";
 
 				Variable psiVar = dataFile.addVariable(null, "psi", DataType.DOUBLE, dims);
+				Variable iCVar = dataFile.addVariable(null, "psiIC", DataType.DOUBLE, "depth");
 				Variable waterHeightVar = dataFile.addVariable(null, "water heigth", DataType.DOUBLE, dims);
 				Variable errorVar = dataFile.addVariable(null, "error", DataType.DOUBLE, "time");
 				Variable topBCVar = dataFile.addVariable(null, "topBC", DataType.DOUBLE, "time");
@@ -157,6 +158,8 @@ public class WriteNetCDFRichards1D {
 				// Define units attributes for data variables.
 				dataFile.addVariableAttribute(psiVar, new Attribute("units", "m"));
 				dataFile.addVariableAttribute(psiVar, new Attribute("long_name", "Hydraulic head"));
+				dataFile.addVariableAttribute(iCVar, new Attribute("units", "m"));
+				dataFile.addVariableAttribute(iCVar, new Attribute("long_name", "Initial condition for hydraulic head"));
 				dataFile.addVariableAttribute(waterHeightVar, new Attribute("units", "m"));
 				dataFile.addVariableAttribute(waterHeightVar, new Attribute("long_name", "water height"));
 				dataFile.addVariableAttribute(errorVar, new Attribute("units", "m"));
@@ -170,6 +173,7 @@ public class WriteNetCDFRichards1D {
 				// would have some real data to write for example, model output.
 				// times variable is filled later
 				ArrayDouble.D1 depths = new ArrayDouble.D1(lvlDim.getLength());
+				ArrayDouble.D1 dataPsiIC = new ArrayDouble.D1(lvlDim.getLength());
 				Array times = Array.factory(DataType.LONG, new int[] {NREC});
 
 				int z;
@@ -217,12 +221,20 @@ public class WriteNetCDFRichards1D {
 						dataWaterHeight.set(i, lvl, myTempVariable[lvl]);
 
 					}
+					
+					myTempVariable =  entry.getValue().get(2);
+					for (int lvl = 0; lvl < NLVL; lvl++) {
 
-					dataError.set(i, entry.getValue().get(2)[0]);
+						dataPsiIC.set(lvl, myTempVariable[lvl]);
 
-					dataTopBC.set(i, entry.getValue().get(3)[0]);
+					}
 
-					dataBottomBC.set(i, entry.getValue().get(4)[0]);
+
+					dataError.set(i, entry.getValue().get(3)[0]);
+
+					dataTopBC.set(i, entry.getValue().get(4)[0]);
+
+					dataBottomBC.set(i, entry.getValue().get(5)[0]);
 
 					i++;
 				}
@@ -238,6 +250,7 @@ public class WriteNetCDFRichards1D {
 				dataFile.write(timeVar, origin, times);
 				dataFile.write(psiVar, origin, dataPsi);
 				dataFile.write(waterHeightVar, origin, dataWaterHeight);
+				dataFile.write(iCVar, origin, dataPsiIC);
 				dataFile.write(errorVar, origin, dataError);
 				dataFile.write(topBCVar, origin, dataTopBC);
 				dataFile.write(bottomBCVar, origin, dataBottomBC);
