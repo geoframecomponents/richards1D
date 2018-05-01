@@ -29,7 +29,7 @@ import oms3.annotations.*;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 import richards_classes.*;
-import writeNetCDF.WriteNetCDFParameterization;
+import monodimensionalProblemTimeDependent.WriteNetCDFRichardsParameterization;
 
 @Description("Solve the Richards equation for the 1D domain.")
 @Documentation("")
@@ -320,7 +320,7 @@ public class Richards1DSolver {
 	BoundaryCondition topBoundaryCondition;
 	BoundaryCondition bottomBoundaryCondition;
 
-	WriteNetCDFParameterization writeSoilPar;
+	WriteNetCDFRichardsParameterization writeSoilPar;
 
 	
 
@@ -357,7 +357,7 @@ public class Richards1DSolver {
 			outputToBuffer= new ArrayList<double[]>();
 			
 			//print = new PrintTXT();
-			writeSoilPar = new WriteNetCDFParameterization();
+			writeSoilPar = new WriteNetCDFRichardsParameterization();
 			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
