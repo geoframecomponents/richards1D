@@ -41,6 +41,18 @@ public abstract class SoilParametrization {
 	
 	
 	/**
+	 * This method set SWRC parameters
+	 * @param par1
+	 * @param par2
+	 * @param thetaR adimensional residual water content
+	 * @param thetaS adimensional water content at saturation
+	 * @param kappaSaturation hydraulic conductivity at saturation
+	 * 
+	 */
+	public abstract void set(double par1, double par2, double thetaR, double thetaS, double kappaSaturation);
+	
+	
+	/**
 	 * This method return the value of suction at which the derivative
 	 * of theta with respect of suction has its maximum.
 	 * @return
@@ -78,6 +90,8 @@ public abstract class SoilParametrization {
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
 	 */
+	// DEPRECATED
+	/*
 	public double[][] hydraulicModelCurves(){
 		
 		double[][] result  = new double[200][5];
@@ -95,7 +109,10 @@ public abstract class SoilParametrization {
 		
 	return result;
 	} 
+	*/
 	
+	
+	// To be reviewed since this method has to be applied to each layer
 	/**
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
