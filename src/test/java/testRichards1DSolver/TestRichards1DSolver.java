@@ -23,7 +23,7 @@ import java.util.*;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
-import bufferWriter.Buffer1D;
+import bW.Buffer1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 //import writeNetCDF.WriteNetCDFRichards1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
@@ -124,6 +124,7 @@ public class TestRichards1DSolver {
 			buffer.inputDate = R1DSolver.inCurrentDate;
 			//buffer.inputSpatialCoordinate = R1DSolver.depth;
 			buffer.inputSpatialCoordinate = readNetCDF.eta;
+			buffer.inputDualSpatialCoordinate = readNetCDF.etaDual;
 			buffer.inputVariable = R1DSolver.outputToBuffer;
 			
 			buffer.solve();
@@ -135,6 +136,7 @@ public class TestRichards1DSolver {
 					+ "Soil parameters: Ks = 0.000017 m/s, thetaS = 0.5, thetaR = 0.02, n = 1.16, alpha = 5.88 m, Van Genuchten\n\n\n";
 			writeNetCDF.myVariables = buffer.myVariable;
 			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
+			writeNetCDF.myDualSpatialCoordinate = buffer.myDualSpatialCoordinate;			
 			writeNetCDF.doProcess = topBCReader.doProcess;
 			writeNetCDF.writeNetCDF();
 
