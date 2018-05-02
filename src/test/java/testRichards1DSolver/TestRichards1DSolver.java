@@ -24,6 +24,7 @@ import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
 import bufferWriter.Buffer1D;
+import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 //import writeNetCDF.WriteNetCDFRichards1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
 
@@ -68,9 +69,19 @@ public class TestRichards1DSolver {
 
 		Buffer1D buffer = new Buffer1D();
 		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
+		ReadNetCDFRichardsGrid1D readNetCDF = new ReadNetCDFRichardsGrid1D();
 		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
+		readNetCDF.richardsGridFilename = "Soil4.nc";
+		
+		readNetCDF.read();
+		
+		R1DSolver.z = readNetCDF.z;
+		R1DSolver.spaceDeltaZ = readNetCDF.spaceDelta;
+		R1DSolver.psiIC = readNetCDF.psiIC;
+		R1DSolver.deltaZ = readNetCDF.deltaZ;
+		
 		R1DSolver.ks = 0.000017;
 		R1DSolver.thetaS =0.5;
 		R1DSolver.thetaR = 0.02;
@@ -93,8 +104,10 @@ public class TestRichards1DSolver {
 		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
+		
 		while( topBCReader.doProcess  ) {
-
+			
+			
 			topBCReader.nextRecord();	
 			HashMap<Integer, double[]> bCValueMap = topBCReader.outData;
 			R1DSolver.inTopBC= bCValueMap;
@@ -109,12 +122,13 @@ public class TestRichards1DSolver {
 			R1DSolver.solve();
 			
 			buffer.inputDate = R1DSolver.inCurrentDate;
-			buffer.inputSpatialCoordinate = R1DSolver.depth;
+			//buffer.inputSpatialCoordinate = R1DSolver.depth;
+			buffer.inputSpatialCoordinate = readNetCDF.eta;
 			buffer.inputVariable = R1DSolver.outputToBuffer;
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = R1DSolver.dir+"/Test.nc";
+			writeNetCDF.fileName = R1DSolver.dir+"/TestWithReader.nc";
 			writeNetCDF.briefDescritpion = "\n		ponding test\n		"
 					+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
 					+ "BC: top no rain, bottom free drainage\n		"
