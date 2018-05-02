@@ -582,6 +582,7 @@ public class Richards1DSolver {
 		outputToBuffer.add(psis);
 		outputToBuffer.add(thetasNew);
 		outputToBuffer.add(iC);
+		outputToBuffer.add(velocities);
 		outputToBuffer.add(new double[] {errorVolume});
 		outputToBuffer.add(new double[] {topBC});
 		outputToBuffer.add(new double[] {bottomBC});
