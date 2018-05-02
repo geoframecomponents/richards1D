@@ -24,6 +24,43 @@ package richards_classes;
 
 public class SimpleSoilParametrizationFactory {
 	
+	
+	
+	/**
+	 * Creates a new SoilParametrization object.
+	 * 
+	 * @param type name of the SWRC model
+	 * @param alpha SWRC parameter
+	 * @param n SWRC parameter
+	 * @param psi_e SWRC parameter
+	 * @param lambda SWRC parameter
+	 * @param rMedian SWRC parameter
+	 * @param sigma SWRC parameter
+	 * @param theta_r dimensionless residual water content
+	 * @param theta_s dimensionless water content at saturation
+	 * @param ks hydraulic conductivity at saturation
+	 * @return soilPar
+	 */
+	public SoilParametrization createSoilParametrization (String type) {
+
+		SoilParametrization soilPar = null;
+		if(type.equalsIgnoreCase("BrooksCorey") || type.equalsIgnoreCase("Brooks Corey")){
+			soilPar = new BrooksCorey();
+		}
+		else if(type.equalsIgnoreCase("VanGenuchten") || type.equalsIgnoreCase("Van Genuchten")){
+			soilPar = new VanGenuchten();
+		}
+		else if(type.equalsIgnoreCase("Kosugi")){
+			soilPar = new KosugiUnimodal();
+		}
+		else if(type.equalsIgnoreCase("Gardner")){
+			soilPar = new Gardner();
+		}
+		return soilPar;
+		}
+	
+	
+	
 	/**
 	 * Creates a new SoilParametrization object.
 	 * 
