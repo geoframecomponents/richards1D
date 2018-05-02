@@ -33,6 +33,30 @@ public class KosugiUnimodal extends SoilParametrization {
 
 	
 	
+	/**
+	 * General constructor to be used when there are several soil layers
+	 * each one with its own parameters
+	 */
+	
+	public KosugiUnimodal() {};
+	
+	
+	
+	/**
+	 * 
+	 * @param rMedian	Kodugi's parameter      >0
+	 * @param sigma Kosugi's parameter      >0
+	 * @param thetaR residual water content	     ]0,1[
+	 * @param thetaS water content at saturation ]0,1[
+	 * @param kappaSaturation hydraulic conductivity at saturation >0
+	 * @exception if rMedian<0 error check the value
+	 * @exception if sigma<0 error check the value
+	 * @exception if thetaR>1 or thetaR<0 error check the value
+	 * @exception if thetaS>1 or thetaR<0 error check the value
+	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
+	 * @exception if kappaSaturation <0 check the value
+	 */
+	
 	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
@@ -63,6 +87,18 @@ public class KosugiUnimodal extends SoilParametrization {
 		this.psiMedian = -1.49*Math.pow(10, -5)/this.rMedian;
 	}
 	
+	
+	
+	public void set(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation) {
+		
+		this.rMedian = rMedian;
+		this.sigma = sigma; 
+		this.thetaR = thetaR;
+		this.thetaS = thetaS;
+		this.kappaSaturation = kappaSaturation;
+		
+		this.psiStar = -1.49*Math.pow(10, -5)/this.rMedian/Math.exp(Math.pow(this.sigma,2));  // see Brutsaert, 1996
+	}
 	
 	
 	/**
