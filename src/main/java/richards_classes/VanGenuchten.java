@@ -30,6 +30,15 @@ public class VanGenuchten extends SoilParametrization {
 	private double m;
 	private double alpha;
 	
+	
+	/**
+	 * General constructor to be used when there are several soil layers
+	 * each one with its own parameters
+	 */
+	
+	public VanGenuchten() {};
+	
+	
 	/**
 	 * 
 	 * @param n		Van Genuchten's parameter      >1
@@ -78,6 +87,19 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	
+	public void set(double n, double alpha, double thetaR, double thetaS, double kappaSaturation) {
+		
+		this.n = n;
+		this.alpha = alpha; 
+		this.thetaR = thetaR;
+		this.thetaS = thetaS;
+		this.kappaSaturation = kappaSaturation;
+		this.m = 1-1/this.n;
+		this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
+	}
+	
+
+	
 	/**
 	 * @param suction 
 	 * @return theta water content at suction value
@@ -96,7 +118,7 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	/**
-	 * @param suction
+	 * @param suction 
 	 * @return dTheta the value of the moisture capacity 
 	 */
 	public double dWaterContent(double suction){
@@ -111,7 +133,7 @@ public class VanGenuchten extends SoilParametrization {
 	}
 	
 	
-	
+		
 	/**
 	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
