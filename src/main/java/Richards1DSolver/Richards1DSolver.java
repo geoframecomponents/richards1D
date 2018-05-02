@@ -323,7 +323,27 @@ public class Richards1DSolver {
 	WriteNetCDFRichardsParameterization writeSoilPar;
 
 	
+    ///////////////////////////////
+	@Description("Initial condition for water head read from grid NetCDF file")
+	@In
+	@Unit("m")
+	public double[] psiIC;
 
+	@Description("z coordinate read from grid NetCDF file")
+	@In
+	@Unit("m")
+	public double[] z;
+	
+	@Description("Space delta to compute gradients read from grid NetCDF file")
+	@In 
+	@Unit("m")
+	public double[] spaceDeltaZ;
+	
+	@Description("Length of control volumes read from grid NetCDF file")
+	@In 
+	@Unit("m")
+	public double[] deltaZ;
+	
 	
 	@Execute
 	public void solve() {
@@ -334,8 +354,8 @@ public class Richards1DSolver {
 
 			iC = iC.getClass().cast(checkIC(depth, iC, depth));
 			sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
-
-			NUM_CONTROL_VOLUMES = iC.length;
+			
+			NUM_CONTROL_VOLUMES = z.length;
 
 			psis 		  = new double[NUM_CONTROL_VOLUMES];
 			k_t			  = 0.0;								
@@ -372,37 +392,48 @@ public class Richards1DSolver {
 			 *  oltre a rivedere la definizione della variabile spaceDelta è da rivedere anche il file della condizione iniziale
 			 *  in cui la profondità deve essere data come negativa
 			 */
-			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			/*for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = iC[i];
 				zeta[i] = spaceBottom-depth[i];
+			}*/
+			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+				psis[i] = psiIC[i];
+				zeta[i] = z[i];
+				spaceDelta[i] = spaceDeltaZ[i];
 			}
+			for(int i = 0; i < NUM_CONTROL_VOLUMES-1; i++) {
+				dx[i] = deltaZ[i];
+			}
+			/*
 			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
 				if (i==0){
-					spaceDelta[i] = zeta[i];
+					spaceDeltaOld[i] = zeta[i];
 				}//else if (i== NUM_CONTROL_VOLUMES-1){
 					//spaceDelta[i] = zeta[i+1]-zeta[i];
 				//}
 				else{
-					spaceDelta[i] = zeta[i]-zeta[i-1];
+					spaceDeltaOld[i] = zeta[i]-zeta[i-1];
 					//System.out.println("i:"+i+"  "+zeta[i]+"  "+zeta[i-1]);
 				}
 			}
 			
+			
 			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
 				if (i==0){
-					dx[i] = spaceDelta[i]+spaceDelta[i+1]/2;
+					dxOld[i] = spaceDelta[i]+spaceDelta[i+1]/2;
 					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]);
 				} else if (i== NUM_CONTROL_VOLUMES-1) {
-					dx[i] =0;
+					dxOld[i] =0;
 				}
 				else if (i== NUM_CONTROL_VOLUMES-2){
-					dx[i] = spaceDelta[i]/2+spaceDelta[i+1];
+					dxOld[i] = spaceDelta[i]/2+spaceDelta[i+1];
 					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
 				}else{
-					dx[i] = (spaceDelta[i]+spaceDelta[i+1])/2;
+					dxOld[i] = (spaceDelta[i]+spaceDelta[i+1])/2;
 					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
 				}
 			}
+			*/
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
 			
 			// conversion from degree to radiant of slope angle
