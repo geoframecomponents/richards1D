@@ -30,6 +30,16 @@ public class BrooksCorey extends SoilParametrization {
 	private double n;
 	private double psiD;
 	
+	
+	/**
+	 * General constructor to be used when there are several soil layers
+	 * each one with its own parameters
+	 */
+	
+	public BrooksCorey() {};
+	
+	
+	
 	/**
 	 * 
 	 * @param n		Brooks-Corey's parameter      >1
@@ -71,6 +81,20 @@ public class BrooksCorey extends SoilParametrization {
 		}
 		
 	}
+	
+	
+	
+	public void set(double n, double psiD, double thetaR, double thetaS, double kappaSaturation) {
+		
+		this.n = n;
+		this.psiD = psiD; 
+		this.thetaR = thetaR;
+		this.thetaS = thetaS;
+		this.kappaSaturation = kappaSaturation;
+		// DA CALCOLARE!!!
+		//this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
+	}
+	
 	
 	
 	
