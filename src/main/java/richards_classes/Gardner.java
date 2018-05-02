@@ -29,6 +29,16 @@ public class Gardner extends SoilParametrization {
 	// Gardner's parameter
 	private double alpha;
 	
+	
+	/**
+	 * General constructor to be used when there are several soil layers
+	 * each one with its own parameters
+	 */
+	
+	public Gardner() {};
+	
+	
+	
 	/**
 	 * 
 	 * @param alpha Gardner's parameter      >0
@@ -68,6 +78,17 @@ public class Gardner extends SoilParametrization {
 		this.psiStar = 0;
 	}
 	
+	
+	
+	public void set(double n, double alpha, double thetaR, double thetaS, double kappaSaturation) {
+		
+		this.alpha = alpha; 
+		this.thetaR = thetaR;
+		this.thetaS = thetaS;
+		this.kappaSaturation = kappaSaturation;
+		// DA CONTROLLARE
+		this.psiStar = 0;
+	}
 	
 	
 	/**
