@@ -381,6 +381,7 @@ public class Richards1DSolver {
 			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
+			//soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel);
 			totalDepth = new TotalDepth();
 			
 
