@@ -20,6 +20,13 @@ public class JordanDecompositionTotalDepth extends JordanDecomposition {
 		totalDepth = (TotalDepth) myFunction;
 	}
 	
+	
+	@Override
+	public void setSoilParametrization(double thetaS, double thetaR, double par1swrc, double par2swrc) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	/**
 	 * @param suction
 	 * @return H1 
@@ -59,5 +66,7 @@ public class JordanDecompositionTotalDepth extends JordanDecomposition {
 
 		return this.df2;
 	}
+
+
 
 }
