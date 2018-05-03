@@ -478,12 +478,15 @@ public class Richards1DSolver {
 			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 				if(i==1) {
+					// soilPar.set(n[i],alpha[i],thetaR[i],thetaS[i],Ks[i]);
 					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+					//k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
 				} else if(i==NUM_CONTROL_VOLUMES-1) {
 					volumes[i] = totalDepth.totalDepth(psis[i]);
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				} else {
+				// soilPar.set(n[i],alpha[i],thetaR[i],thetaS[i],Ks[i]);
 				volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
