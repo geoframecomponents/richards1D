@@ -408,11 +408,13 @@ public class Richards1DSolver {
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
 
-					kP = 0.5*(kappas[i] + kappas[i+1]);
+					//kP = 0.5*(kappas[i] + kappas[i+1]);
+					kP = Math.max(kappas[i], kappas[i+1]);
 					if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 						kM = kappas[i];
 					} else {
-						kM = 0.5*(kappas[i] + k_b);
+						//kM = 0.5*(kappas[i] + k_b);
+						kM = Math.max(kappas[i], k_b);
 					}
 					lowerDiagonal[i] =  bottomBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
 					mainDiagonal[i] = bottomBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i+1], spaceDelta[i], timeDelta, delta);
@@ -423,7 +425,8 @@ public class Richards1DSolver {
 					kP = 0;	
 						// Water flux has to assigned as the minimum between rainfall rate and the maximum infiltrability of the soil
 						//tBC = Math.min(topBC, kP);
-					kM = 0.5*(kappas[i] + kappas[i-1]);
+					//kM = 0.5*(kappas[i] + kappas[i-1]);
+					kM = Math.max(kappas[i], kappas[i-1]);
 					lowerDiagonal[i] = topBoundaryCondition.lowerDiagonal(-999, kP, kM, spaceDelta[i], spaceDelta[i-1], timeDelta, delta); 
 					mainDiagonal[i] = topBoundaryCondition.mainDiagonal(-999, kP, kM, spaceDelta[i], spaceDelta[i-1], timeDelta, delta);
 					upperDiagonal[i] = topBoundaryCondition.upperDiagonal(-999, kP, kM,  spaceDelta[i], spaceDelta[i-1], timeDelta, delta);
@@ -431,8 +434,10 @@ public class Richards1DSolver {
 
 				} else {
 
-					kP = 0.5*(kappas[i] + kappas[i+1]);
-					kM = 0.5*(kappas[i] + kappas[i-1]);
+					//kP = 0.5*(kappas[i] + kappas[i+1]);
+					kP = Math.max(kappas[i], kappas[i+1]);
+					//kM = 0.5*(kappas[i] + kappas[i-1]);
+					kM = Math.max(kappas[i], kappas[i-1]);
 					lowerDiagonal[i] = -kM*timeDelta/spaceDelta[i]*1/Math.pow(Math.cos(delta),2);
 					mainDiagonal[i] = kM*timeDelta/spaceDelta[i]*1/Math.pow(Math.cos(delta),2)  + kP*timeDelta/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
 					upperDiagonal[i] = -kP*timeDelta/spaceDelta[i+1]*1/Math.pow(Math.cos(delta),2);
@@ -461,6 +466,9 @@ public class Richards1DSolver {
 						velocities[i] =  -kM;
 					} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
 						velocities[i] = + 0;
+						soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
+						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
+						thetasNew[i] = soilPar.waterContent(psis[i]);
 					}
 					else {
 						kM = 0.5*(kappas[i] + k_b);
