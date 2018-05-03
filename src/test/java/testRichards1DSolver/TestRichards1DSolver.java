@@ -25,7 +25,6 @@ import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import Richards1DSolver.*;
 import bufferWriter.Buffer1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
-//import writeNetCDF.WriteNetCDFRichards1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
 
 import org.junit.Test;
