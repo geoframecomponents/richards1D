@@ -29,7 +29,6 @@ import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
 
 import org.junit.Test;
-import richards_classes.ReadCsvTwoColumns;
 
 /**
  * Test the {@link TestRichards1DSolver} module.
@@ -50,22 +49,9 @@ public class TestRichards1DSolver {
 
 		String pathTopBC ="resources/Input/All_0.csv";
 		String pathBottomBC ="resources/Input/All_0.csv";
-		String pathIC = "resources/Input/InitialConditionHydrostaticPonding.csv";
-		String pathSourceSink = "resources/Input/SourceSink0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
-		
-		ReadCsvTwoColumns readIC = new ReadCsvTwoColumns();
-		readIC.setFilePath(pathIC);
-		readIC.process();
-		double[] iC = readIC.getVariable();
-		double[] depth = readIC.getDepth();
-		
-		ReadCsvTwoColumns readSourceSink = new ReadCsvTwoColumns();
-		readSourceSink.setFilePath(pathSourceSink);
-		readSourceSink.process();
-		double[] sourceSink = readSourceSink.getVariable();
 
 		Buffer1D buffer = new Buffer1D();
 		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
@@ -81,33 +67,18 @@ public class TestRichards1DSolver {
 		R1DSolver.spaceDeltaZ = readNetCDF.spaceDelta;
 		R1DSolver.psiIC = readNetCDF.psiIC;
 		R1DSolver.deltaZ = readNetCDF.deltaZ;
-		
-		//R1DSolver.ks = 0.000017;
-		//R1DSolver.thetaS =0.5;
-		//R1DSolver.thetaR = 0.02;
 		R1DSolver.ks = readNetCDF.Ks;
 		R1DSolver.thetaS = readNetCDF.thetaS;
 		R1DSolver.thetaR = readNetCDF.thetaR;
 		R1DSolver.par1SWRC = readNetCDF.par1SWRC;
 		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
-		
-		R1DSolver.n = 1.16;
-		R1DSolver.alpha = 5.88;
-		R1DSolver.lambda =1.5 ;
-		R1DSolver.psiE = -1/(0.0286/0.01);
-		R1DSolver.rMedian =0.0000020781 ;
-		R1DSolver.sigma =0.6 ;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Neumann";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
-		R1DSolver.spaceBottom = 2.0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 50;
 		R1DSolver.newtonTolerance = Math.pow(10,-14);
-		R1DSolver.iC = iC;
-		R1DSolver.depth = depth;
-		R1DSolver.sourceSink = sourceSink;
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		
@@ -128,7 +99,6 @@ public class TestRichards1DSolver {
 			R1DSolver.solve();
 			
 			buffer.inputDate = R1DSolver.inCurrentDate;
-			//buffer.inputSpatialCoordinate = R1DSolver.depth;
 			buffer.inputSpatialCoordinate = readNetCDF.eta;
 			buffer.inputDualSpatialCoordinate = readNetCDF.etaDual;
 			buffer.inputVariable = R1DSolver.outputToBuffer;
