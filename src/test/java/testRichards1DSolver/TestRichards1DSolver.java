@@ -82,9 +82,15 @@ public class TestRichards1DSolver {
 		R1DSolver.psiIC = readNetCDF.psiIC;
 		R1DSolver.deltaZ = readNetCDF.deltaZ;
 		
-		R1DSolver.ks = 0.000017;
-		R1DSolver.thetaS =0.5;
-		R1DSolver.thetaR = 0.02;
+		//R1DSolver.ks = 0.000017;
+		//R1DSolver.thetaS =0.5;
+		//R1DSolver.thetaR = 0.02;
+		R1DSolver.ks = readNetCDF.Ks;
+		R1DSolver.thetaS = readNetCDF.thetaS;
+		R1DSolver.thetaR = readNetCDF.thetaR;
+		R1DSolver.par1SWRC = readNetCDF.par1SWRC;
+		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
+		
 		R1DSolver.n = 1.16;
 		R1DSolver.alpha = 5.88;
 		R1DSolver.lambda =1.5 ;
@@ -129,7 +135,7 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = R1DSolver.dir+"/TestWithReader.nc";
+			writeNetCDF.fileName = R1DSolver.dir+"/TestWithReader1.nc";
 			writeNetCDF.briefDescritpion = "\n		ponding test\n		"
 					+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
 					+ "BC: top no rain, bottom free drainage\n		"
