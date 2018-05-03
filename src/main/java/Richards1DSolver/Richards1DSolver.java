@@ -104,16 +104,7 @@ public class Richards1DSolver {
 	public String soilHydraulicModel;
 	
 	/////////////////////////////////////////////
-/*	
-	@Description("Depth of the soil column")
-	@In
-	@Unit ("m")
-	public double spaceBottom;
 
-	@Description("")
-	@Unit ("m")
-	public double spaceTop=0;
-*/
 	@Description("Number of control volume for domain discetrization")
 	//@In
 	@Unit (" ")
@@ -322,7 +313,7 @@ public class Richards1DSolver {
 
 	NestedNewton nestedNewtonAlg;
 
-	PrintTXT print;
+	
 
 	SoilParametrization soilPar;
 	TotalDepth totalDepth;
@@ -386,7 +377,7 @@ public class Richards1DSolver {
 			dx			  = new double[NUM_CONTROL_VOLUMES];
 			outputToBuffer= new ArrayList<double[]>();
 			
-			//print = new PrintTXT();
+			
 			writeSoilPar = new WriteNetCDFRichardsParameterization();
 			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
@@ -453,9 +444,7 @@ public class Richards1DSolver {
 			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
 			//hydraulicParametrization = soilPar.hydraulicModelCurves1();
 			//writeSoilPar.writeNetCDF(hydraulicParametrization, dir+"/HydraulicParameterization", soilHydraulicModel);
-			//print.setValueMatrix(hydraulicParametrization);
-			//print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
-
+			
 		} // chiudi step==0
 
 
@@ -606,21 +595,6 @@ public class Richards1DSolver {
 		
 
 		
-		
-		//// PRINT OUTPUT FILES ////
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(psis);
-		//print.PrintTwoVectors(dir,"Psi_"+step+".csv", inCurrentDate, "Depth[m],Psi[m] ");
-
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(velocities);
-		//print.PrintTwoVectors(dir,"Flux_"+step+".csv", inCurrentDate, "Depth[m],Velocity[m/s] ");
-
-		//print.setValueFirstVector(depth);
-		//print.setValueSecondVector(volumesNew);
-		//print.PrintTwoVectors(dir, "Volume_"+step+".csv", inCurrentDate, "Depth[m],Volumes[m] ");
-
-
 		step++;
 
 	} //// MAIN CYCLE END ////
