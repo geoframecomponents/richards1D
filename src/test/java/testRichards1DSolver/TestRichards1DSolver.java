@@ -71,6 +71,7 @@ public class TestRichards1DSolver {
 		R1DSolver.thetaR = readNetCDF.thetaR;
 		R1DSolver.par1SWRC = readNetCDF.par1SWRC;
 		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
+		R1DSolver.et = readNetCDF.et;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Neumann";
 		R1DSolver.bottomBCType = "Bottom Dirichlet";
