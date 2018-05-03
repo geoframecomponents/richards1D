@@ -75,14 +75,31 @@ public class Richards1DSolver {
 	
 	/////////////////////////////////////////////
 
-	@Description("Number of control volume for domain discetrization")
-	//@In
-	@Unit (" ")
-	int NUM_CONTROL_VOLUMES; 
+	@Description("Coefficient to simulate ET by making use of Casulli's formula")
+	@In
+	@Unit("1/s")
+	public double[] et;
+	
+	@Description("Initial condition for water head read from grid NetCDF file")
+	@In
+	@Unit("m")
+	public double[] psiIC;
 
-	@Description("It is needed to iterate on the date")
-	int step;
-
+	@Description("z coordinate read from grid NetCDF file")
+	@In
+	@Unit("m")
+	public double[] z;
+	
+	@Description("Space delta to compute gradients read from grid NetCDF file")
+	@In 
+	@Unit("m")
+	public double[] spaceDeltaZ;
+	
+	@Description("Length of control volumes read from grid NetCDF file")
+	@In 
+	@Unit("m")
+	public double[] deltaZ;
+	
 	@Description("Time amount at every time-loop")
 	@In
 	@Unit ("s")
@@ -97,10 +114,6 @@ public class Richards1DSolver {
 	@In
 	@Unit ("s")
 	public double sumTimeDelta;
-
-	@Description("Space step")
-	@Unit ("m")
-	double[] spaceDelta;
 
 	@Description("Tolerance for Newton iteration")
 	@In
@@ -249,9 +262,20 @@ public class Richards1DSolver {
 
 	@Description("Risidual of the inner iteration of Nested Newton method")
 	double innerResidual;
+	
+	@Description("Number of control volume for domain discetrization")
+	@Unit (" ")
+	int NUM_CONTROL_VOLUMES; 
+
+	@Description("It is needed to iterate on the date")
+	int step;
 
 	@Description("Vector containing the z coordinates of the centres of control volumes")
 	double[] zeta;
+	
+	@Description("Space step")
+	@Unit ("m")
+	double[] spaceDelta;
 	
 	@Description("Vector containing the length of each control volume")
 	double[] dx;
@@ -275,26 +299,6 @@ public class Richards1DSolver {
 
 	
     ///////////////////////////////
-	@Description("Initial condition for water head read from grid NetCDF file")
-	@In
-	@Unit("m")
-	public double[] psiIC;
-
-	@Description("z coordinate read from grid NetCDF file")
-	@In
-	@Unit("m")
-	public double[] z;
-	
-	@Description("Space delta to compute gradients read from grid NetCDF file")
-	@In 
-	@Unit("m")
-	public double[] spaceDeltaZ;
-	
-	@Description("Length of control volumes read from grid NetCDF file")
-	@In 
-	@Unit("m")
-	public double[] deltaZ;
-	
 	
 	@Execute
 	public void solve() {
