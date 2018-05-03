@@ -58,7 +58,7 @@ public class TestRichards1DSolver {
 		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		readNetCDF.richardsGridFilename = "Soil4.nc";
+		readNetCDF.richardsGridFilename = "InputSoil4.nc";
 		
 		readNetCDF.read();
 		
