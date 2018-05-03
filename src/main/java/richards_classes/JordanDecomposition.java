@@ -23,6 +23,8 @@ public abstract class JordanDecomposition {
 	//	this.myFunction = myFunction;
 	//}
 	
+	public abstract void setSoilParametrization (double thetaS, double thetaR, double par1SWRC, double par2SWRC);
+	
 	/**
 	 * @param variable
 	 * @return integral of p 
