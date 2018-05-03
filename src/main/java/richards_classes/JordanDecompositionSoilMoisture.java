@@ -20,7 +20,7 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 		soilPar = (SoilParametrization) myFunction;
 	}
 	
-	public void setSoilParametrization (double thetaS, double thetaR, double par1SWRC, double par2SWRC) {
+	public void setSoilParametrization (double par1SWRC, double par2SWRC, double thetaR, double thetaS) {
 		this.soilPar.set(par1SWRC, par2SWRC, thetaR, thetaS, -999);
 	}
 	
