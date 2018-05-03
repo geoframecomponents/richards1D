@@ -388,10 +388,7 @@ public class Richards1DSolver {
 			 *  oltre a rivedere la definizione della variabile spaceDelta è da rivedere anche il file della condizione iniziale
 			 *  in cui la profondità deve essere data come negativa
 			 */
-			/*for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-				psis[i] = iC[i];
-				zeta[i] = spaceBottom-depth[i];
-			}*/
+
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = psiIC[i];
 				zeta[i] = z[i];
@@ -400,36 +397,7 @@ public class Richards1DSolver {
 			for(int i = 0; i < NUM_CONTROL_VOLUMES-1; i++) {
 				dx[i] = deltaZ[i];
 			}
-			/*
-			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
-				if (i==0){
-					spaceDeltaOld[i] = zeta[i];
-				}//else if (i== NUM_CONTROL_VOLUMES-1){
-					//spaceDelta[i] = zeta[i+1]-zeta[i];
-				//}
-				else{
-					spaceDeltaOld[i] = zeta[i]-zeta[i-1];
-					//System.out.println("i:"+i+"  "+zeta[i]+"  "+zeta[i-1]);
-				}
-			}
-			
-			
-			for(int i = 0; i <NUM_CONTROL_VOLUMES; i++) {
-				if (i==0){
-					dxOld[i] = spaceDelta[i]+spaceDelta[i+1]/2;
-					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]);
-				} else if (i== NUM_CONTROL_VOLUMES-1) {
-					dxOld[i] =0;
-				}
-				else if (i== NUM_CONTROL_VOLUMES-2){
-					dxOld[i] = spaceDelta[i]/2+spaceDelta[i+1];
-					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
-				}else{
-					dxOld[i] = (spaceDelta[i]+spaceDelta[i+1])/2;
-					//System.out.println("i:"+i+"  "+spaceDelta[i]+"  "+spaceDelta[i+1]+"  "+dx[i]);
-				}
-			}
-			*/
+
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
 			
 			// conversion from degree to radiant of slope angle
