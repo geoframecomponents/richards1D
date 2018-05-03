@@ -20,15 +20,19 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 		soilPar = (SoilParametrization) myFunction;
 	}
 	
+	public void setSoilParametrization (double thetaS, double thetaR, double par1SWRC, double par2SWRC) {
+		this.soilPar.set(par1SWRC, par2SWRC, thetaR, thetaS, -999);
+	}
+	
 	/**
 	 * @param suction
 	 * @return theta1 
 	 */
 	public double pIntegral(double suction){
-		if(suction <= soilPar.psiStar) {
-			this.f1 = soilPar.waterContent(suction);
+		if(suction <= this.soilPar.getPsiStar()) {
+			this.f1 = this.soilPar.waterContent(suction);
 		} else {
-			this.f1 = soilPar.waterContent(soilPar.psiStar) + soilPar.dWaterContent(soilPar.psiStar)*(suction - soilPar.psiStar);
+			this.f1 = this.soilPar.waterContent(this.soilPar.getPsiStar()) + this.soilPar.dWaterContent(this.soilPar.getPsiStar())*(suction - this.soilPar.getPsiStar());
 		}
 
 		return this.f1;
@@ -39,7 +43,7 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 	 * @return theta2
 	 */
 	public double qIntegral(double suction){
-		this.f2 = pIntegral(suction) - soilPar.waterContent(suction);
+		this.f2 = pIntegral(suction) - this.soilPar.waterContent(suction);
 
 		return this.f2;
 	}
@@ -49,13 +53,13 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 	 * @return dtheta1
 	 */
 	public double p(double suction){
-		if (suction <= soilPar.psiStar) {
+		if (suction <= this.soilPar.getPsiStar()) {
 		    // left of critical value, take the original derivative
-		    this.df1 = soilPar.dWaterContent(suction);
+		    this.df1 = this.soilPar.dWaterContent(suction);
 		}
 		else {
 		    // on the right of the critical value, keep the maximum derivative
-		    this.df1 = soilPar.dWaterContent(soilPar.psiStar);
+		    this.df1 = this.soilPar.dWaterContent(this.soilPar.getPsiStar());
 		}
 
 		return this.df1;
@@ -66,7 +70,7 @@ public class JordanDecompositionSoilMoisture extends JordanDecomposition {
 	 * @return dtheta2
 	 */
 	public double q(double suction){
-		this.df2 = p(suction) - soilPar.dWaterContent(suction);
+		this.df2 = p(suction) - this.soilPar.dWaterContent(suction);
 
 		return this.df2;
 	}
