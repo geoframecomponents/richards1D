@@ -444,7 +444,7 @@ public class Richards1DSolver {
 
 			//// NESTED NEWTON ALGORITHM ////
 			//nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
-			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss, thetaS, thetaR, par1SWRC, par2SWRC);
+			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss, par1SWRC, par2SWRC, thetaR, thetaS);
 			psis = nestedNewtonAlg.solver();
 
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
