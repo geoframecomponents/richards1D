@@ -46,17 +46,27 @@ public class Richards1DSolver {
 	@Description("The hydraulic conductivity at saturation")
 	@In 
 	@Unit ("m/s")
-	public double ks;
+	public double[] ks;
 
 	@Description("Saturated water content")
 	@In 
 	@Unit ("-")
-	public double thetaS;
+	public double[] thetaS;
 
 	@Description("Residual water content")
 	@In 
 	@Unit ("-")
-	public double thetaR;
+	public double[] thetaR;
+	
+	@Description("First parameter of SWRC")
+	@In 
+	@Unit ("-")
+	public double[] par1SWRC;
+	
+	@Description("Second parameter of SWRC")
+	@In 
+	@Unit ("-")
+	public double[] par2SWRC;
 
 	@Description("Exponent of Van Genuchten model")
 	@In
@@ -380,8 +390,8 @@ public class Richards1DSolver {
 			writeSoilPar = new WriteNetCDFRichardsParameterization();
 			
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
-			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
-			//soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel);
+			//soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
+			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel);
 			totalDepth = new TotalDepth();
 			
 
@@ -441,8 +451,8 @@ public class Richards1DSolver {
 			delta = delta*Math.PI/180;
 
 			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
-			hydraulicParametrization = soilPar.hydraulicModelCurves1();
-			writeSoilPar.writeNetCDF(hydraulicParametrization, dir+"/HydraulicParameterization", soilHydraulicModel);
+			//hydraulicParametrization = soilPar.hydraulicModelCurves1();
+			//writeSoilPar.writeNetCDF(hydraulicParametrization, dir+"/HydraulicParameterization", soilHydraulicModel);
 			//print.setValueMatrix(hydraulicParametrization);
 			//print.PrintMatrix(dir, "Hydraulic Parametrization"+".csv", soilHydraulicModel, "Psi[m], Se[-], Theta[-], dTheta[1/m], K[m/s]");
 
@@ -478,15 +488,15 @@ public class Richards1DSolver {
 			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 				if(i==1) {
-					// soilPar.set(n[i],alpha[i],thetaR[i],thetaS[i],Ks[i]);
+					soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
 					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
-					//k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
+					k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
 				} else if(i==NUM_CONTROL_VOLUMES-1) {
 					volumes[i] = totalDepth.totalDepth(psis[i]);
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				} else {
-				// soilPar.set(n[i],alpha[i],thetaR[i],thetaS[i],Ks[i]);
+				soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
 				volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
@@ -535,7 +545,8 @@ public class Richards1DSolver {
 			}
 
 			//// NESTED NEWTON ALGORITHM ////
-			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
+			//nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
+			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss, thetaS, thetaR, par1SWRC, par2SWRC);
 			psis = nestedNewtonAlg.solver();
 
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
@@ -557,6 +568,7 @@ public class Richards1DSolver {
 						kM = 0.5*(kappas[i] + k_b);
 						velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 						
+						soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
 						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
 						thetasNew[i] = soilPar.waterContent(psis[i]);
 					}
@@ -572,6 +584,7 @@ public class Richards1DSolver {
 					kP = 0.5*(kappas[i] + kappas[i+1]);
 					velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 					
+					soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
 					volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
 					thetasNew[i] = soilPar.waterContent(psis[i]);
 				}
