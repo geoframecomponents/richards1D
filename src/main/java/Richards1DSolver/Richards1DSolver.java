@@ -67,37 +67,7 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("-")
 	public double[] par2SWRC;
-/*
-	@Description("Exponent of Van Genuchten model")
-	@In
-	@Unit ("-")
-	public double n;            
 
-	@Description("Parameter of Van Genuchten model")
-	@In 
-	@Unit ("m^(-1)")
-	public double alpha;
-
-	@Description("Exponent of Brooks and Corey model")
-	@In
-	@Unit ("-")
-	public double lambda;
-
-	@Description("Parameter of Brooks and Corey model")
-	@In
-	@Unit ("m")
-	public double psiE;
-
-	@Description("Median pore radius of the pore size-distribution for Kosugi Model")
-	@In
-	@Unit ("m")
-	public double rMedian;
-
-	@Description("Standard deviation of the pore size-distribution for Kosugi Model")
-	@In
-	@Unit ("m")
-	public double sigma;
-*/
 	@Description("It is possibile to chose between 3 different models to compute "
 			+ "the soil hydraulic properties: Van Genuchten; Brooks and Corey; Kosugi unimodal")
 	@In 
@@ -141,17 +111,7 @@ public class Richards1DSolver {
 			+"1 --> nested Newton method")
 	@In
 	public int nestedNewton; 
-/*
-	@Description("Initial condition for the soil suction")
-	@In 
-	@Unit ("m")
-	public double[] iC;
 
-	@Description("Source/sink value")
-	@In 
-	@Unit ("s^(-1)")
-	public double[] sourceSink;
-*/
 	@Description("Slope of the soil")
 	@In 
 	@Unit ("°")
@@ -347,8 +307,7 @@ public class Richards1DSolver {
 
 		if(step==0){
 
-			//iC = iC.getClass().cast(checkIC(depth, iC, depth));
-			//sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
+
 			
 			NUM_CONTROL_VOLUMES = z.length;
 
