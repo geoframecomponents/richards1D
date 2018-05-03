@@ -383,11 +383,6 @@ public class Richards1DSolver {
 			SimpleBoundaryConditionFactory boundCondFactory = new SimpleBoundaryConditionFactory();
 			topBoundaryCondition = boundCondFactory.createBoundaryCondition(topBCType);		
 			bottomBoundaryCondition = boundCondFactory.createBoundaryCondition(bottomBCType);	
-			// Initial domain conditions
-			/* da rivedere: forse è meglio mettere z=0 alla superficie anzichè alla base della colonna di suolo
-			 *  oltre a rivedere la definizione della variabile spaceDelta è da rivedere anche il file della condizione iniziale
-			 *  in cui la profondità deve essere data come negativa
-			 */
 
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				psis[i] = psiIC[i];
