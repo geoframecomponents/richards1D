@@ -138,33 +138,3 @@ public class TestRichards1DSolver {
 		return reader;
 	}
 }
-	
-	
-	/* Per la lettura della condizione iniziale con la vecchia formattazione
-	private double[] ReadAndStoreDouble(String filePath) {
-
-		double[] readVector;
-		List<Double> list = new ArrayList<>();	
-
-		try (Stream<String> stream = Files.lines(Paths.get(filePath))) {
-			list = stream.
-					filter(line -> !line.startsWith("!")).
-					flatMap(line->Arrays.stream(line.split(" "))).
-					map(Double::valueOf).
-					collect(Collectors.toList());
-		} catch (IOException e) { 
-			e.printStackTrace();
-		}
-
-		System.out.println("Reading completed");
-
-
-		readVector = new double[list.size()];
-		for(int i = 0;i < readVector.length;i++){
-			readVector[i] = list.get(i);
-		}
-
-		return readVector;
-
-	}
-	*/
