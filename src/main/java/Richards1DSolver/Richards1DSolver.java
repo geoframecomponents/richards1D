@@ -67,7 +67,7 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("-")
 	public double[] par2SWRC;
-
+/*
 	@Description("Exponent of Van Genuchten model")
 	@In
 	@Unit ("-")
@@ -97,14 +97,14 @@ public class Richards1DSolver {
 	@In
 	@Unit ("m")
 	public double sigma;
-
+*/
 	@Description("It is possibile to chose between 3 different models to compute "
 			+ "the soil hydraulic properties: Van Genuchten; Brooks and Corey; Kosugi unimodal")
 	@In 
 	public String soilHydraulicModel;
 	
 	/////////////////////////////////////////////
-	
+/*	
 	@Description("Depth of the soil column")
 	@In
 	@Unit ("m")
@@ -113,7 +113,7 @@ public class Richards1DSolver {
 	@Description("")
 	@Unit ("m")
 	public double spaceTop=0;
-
+*/
 	@Description("Number of control volume for domain discetrization")
 	//@In
 	@Unit (" ")
@@ -150,7 +150,7 @@ public class Richards1DSolver {
 			+"1 --> nested Newton method")
 	@In
 	public int nestedNewton; 
-
+/*
 	@Description("Initial condition for the soil suction")
 	@In 
 	@Unit ("m")
@@ -160,18 +160,18 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("s^(-1)")
 	public double[] sourceSink;
-
+*/
 	@Description("Slope of the soil")
 	@In 
 	@Unit ("°")
 	public double delta;
-
+/*
 	@Description("Depth at which the initial condition is defined")
 	@In 
 	@Out
 	@Unit ("m")
 	public double[] depth;
-
+*/
 	// BOUNDARY CONDITIONS
 	
 	@Description("The HashMap with the time series of the boundary condition at the top of soil column")
@@ -362,8 +362,8 @@ public class Richards1DSolver {
 
 		if(step==0){
 
-			iC = iC.getClass().cast(checkIC(depth, iC, depth));
-			sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
+			//iC = iC.getClass().cast(checkIC(depth, iC, depth));
+			//sourceSink = sourceSink.getClass().cast(checkIC(depth, sourceSink, depth));
 			
 			NUM_CONTROL_VOLUMES = z.length;
 
@@ -501,7 +501,7 @@ public class Richards1DSolver {
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
 			}
-			k_b = soilPar.hydraulicConductivity(bottomBC);
+			//k_b = soilPar.hydraulicConductivity(bottomBC);
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
@@ -598,7 +598,7 @@ public class Richards1DSolver {
 		}
 		outputToBuffer.add(psis);
 		outputToBuffer.add(thetasNew);
-		outputToBuffer.add(iC);
+		outputToBuffer.add(psiIC);
 		outputToBuffer.add(velocities);
 		outputToBuffer.add(new double[] {errorVolume});
 		outputToBuffer.add(new double[] {topBC});
