@@ -115,12 +115,12 @@ public class NestedNewton {
 	 * @param mainDiagonal main diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
 	 * @param lowerDiagonal lower diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
 	 * @param rhss right hand side term of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
-	 * @param thetaR vector containing the adimensional residual water contentfor each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 * @param par1SWRC vector containing the first parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 * @param par2SWRC vector containing the second parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
+	 * @param thetaR vector containing the adimensional residual water contentfor each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
+	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 */
-	public void set(double[] psis, double[] mainDiagonal, double[] upperDiagonal, double[] lowerDiagonal, double[] rhss, double[] thetaS, double[] thetaR, double[] par1SWRC, double[] par2SWRC){
+	public void set(double[] psis, double[] mainDiagonal, double[] upperDiagonal, double[] lowerDiagonal, double[] rhss, double[] par1SWRC, double[] par2SWRC, double[] thetaR, double[] thetaS){
 		this.psis = psis;
 		this.mainDiagonal = mainDiagonal;
 		this.upperDiagonal = upperDiagonal;
@@ -209,7 +209,7 @@ public class NestedNewton {
 					innerResidual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 						if(l==0) {
-							soilMoistureJordanDecomposition.setSoilParametrization(thetaS[i], thetaR[i], par1SWRC[i], par2SWRC[i]);
+							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[i], par2SWRC[i], thetaR[i], thetaS[i]);
 							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
 							//System.out.println(l+" "+fks[l]);
@@ -220,7 +220,7 @@ public class NestedNewton {
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
 						} else {
-							soilMoistureJordanDecomposition.setSoilParametrization(thetaS[i], thetaR[i], par1SWRC[i], par2SWRC[i]);
+							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[i], par2SWRC[i], thetaR[i], thetaS[i]);
 							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
 							//System.out.println(l+" "+fks[l]);
