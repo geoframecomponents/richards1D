@@ -184,10 +184,6 @@ public class Richards1DSolver {
 	@Unit ("m")
 	double[] psis;
 
-	@Description("Hydraulic conductivity at the top of the soil column")
-	@Unit ("m/s")
-	double k_t;
-
 	@Description("Hydraulic conductivity at the bottom of the soil column")
 	@Unit ("m/s")
 	double k_b;
@@ -311,8 +307,7 @@ public class Richards1DSolver {
 			
 			NUM_CONTROL_VOLUMES = z.length;
 
-			psis 		  = new double[NUM_CONTROL_VOLUMES];
-			k_t			  = 0.0;								
+			psis 		  = new double[NUM_CONTROL_VOLUMES];						
 			k_b			  = 0.0;
 			kappas 		  = new double[NUM_CONTROL_VOLUMES];
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
@@ -406,7 +401,7 @@ public class Richards1DSolver {
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
 			}
-			//k_b = soilPar.hydraulicConductivity(bottomBC);
+			
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
 				   	 b main diagonal  psi_i
