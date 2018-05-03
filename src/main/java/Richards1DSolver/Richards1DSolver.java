@@ -156,13 +156,7 @@ public class Richards1DSolver {
 	@In 
 	@Unit ("°")
 	public double delta;
-/*
-	@Description("Depth at which the initial condition is defined")
-	@In 
-	@Out
-	@Unit ("m")
-	public double[] depth;
-*/
+
 	// BOUNDARY CONDITIONS
 	
 	@Description("The HashMap with the time series of the boundary condition at the top of soil column")
