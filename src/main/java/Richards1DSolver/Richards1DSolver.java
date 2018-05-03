@@ -369,12 +369,6 @@ public class Richards1DSolver {
 			bottomBC = inBottomBC.get(1)[0];
 		
 		outputToBuffer.clear();
-
-		// Hydraulic conductivity are computed at time level n
-		//k_b = soilPar.hydraulicConductivity(bottomBC);
-		//for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
-		//	kappas[i] = soilPar.hydraulicConductivity(psis[i]);
-		//}
 		
 		sumTimeDelta = 0;
 		while(sumTimeDelta < tTimestep) {
