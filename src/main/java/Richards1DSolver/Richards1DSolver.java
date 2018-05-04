@@ -350,7 +350,7 @@ public class Richards1DSolver {
 			for(int i = 0; i < NUM_CONTROL_VOLUMES-1; i++) {
 				dx[i] = deltaZ[i];
 			}
-
+			
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
 			
 			// conversion from degree to radiant of slope angle
@@ -385,7 +385,7 @@ public class Richards1DSolver {
 			// Compute volumes and hydraulic conductivity
 			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
-				if(i==1) {
+				if(i==0) {
 					soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
 					volumes[i] = soilPar.waterContent(psis[i])*dx[i];
 					kappas[i] = soilPar.hydraulicConductivity(psis[i]);
@@ -507,7 +507,7 @@ public class Richards1DSolver {
 		outputToBuffer.add(psiIC);
 		outputToBuffer.add(velocities);
 		outputToBuffer.add(new double[] {errorVolume});
-		outputToBuffer.add(new double[] {topBC});
+		outputToBuffer.add(new double[] {topBC*tTimestep*1000}); // I want to have rainfall height instead of water flux
 		outputToBuffer.add(new double[] {bottomBC});
 		
 
