@@ -66,8 +66,14 @@ public class NestedNewton {
 	 * @param MAXITER_NEWT prefixed maximum number of iteration
 	 * @param NUM_CONTROL_VOLUMES number of control volumes
 	 * @param soilPar is the class to compute the soil hydraulic properties
+	 * @param totalDepth is the class to compute the total water depth
+	 * @param par1SWRC vector containing the first parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
+	 * @param par2SWRC vector containing the second parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
+	 * @param thetaR vector containing the adimensional residual water contentfor each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
+	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 */
-	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth){
+	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth,
+			double[] par1SWRC, double[] par2SWRC, double[] thetaR, double[] thetaS){
 		this.nestedNewton = nestedNewton;
 		this.newtonTolerance = newtonTolerance;
 		this.MAXITER_NEWT = MAXITER_NEWT;
@@ -76,6 +82,11 @@ public class NestedNewton {
 		this.totalDepth = totalDepth;
 		this.dx = dx;
 		
+		this.thetaS = thetaS;
+		this.thetaR = thetaR;
+		this.par1SWRC = par1SWRC;
+		this.par2SWRC = par2SWRC;
+
 		
 		soilMoistureJordanDecomposition = new JordanDecompositionSoilMoisture(this.soilPar);
 		totalDepthJordanDecomposition = new JordanDecompositionTotalDepth(this.totalDepth);
@@ -99,41 +110,15 @@ public class NestedNewton {
 	 * @param rhss right hand side term of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
 	 */
 	public void set(double[] psis, double[] mainDiagonal, double[] upperDiagonal, double[] lowerDiagonal, double[] rhss){
-		this.psis = psis;
-		this.mainDiagonal = mainDiagonal;
-		this.upperDiagonal = upperDiagonal;
-		this.lowerDiagonal = lowerDiagonal;
-		this.rhss = rhss;
-
-	}
-	
-	
-	
-	/**
-	 * @param psis vector contains the suction values, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param upperDiagonal upper diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param mainDiagonal main diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param lowerDiagonal lower diagonal of the coefficient matrix A of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param rhss right hand side term of the linear system, it is a vector of length NUM_CONTROL_VOLUMES
-	 * @param par1SWRC vector containing the first parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
-	 * @param par2SWRC vector containing the second parameter of the SWRC, it is a vector of length NUM_CONTROL_VOLUMES-1
-	 * @param thetaR vector containing the adimensional residual water contentfor each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
-	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
-	 */
-	public void set(double[] psis, double[] mainDiagonal, double[] upperDiagonal, double[] lowerDiagonal, double[] rhss, double[] par1SWRC, double[] par2SWRC, double[] thetaR, double[] thetaS){
-		this.psis = psis;
-		this.mainDiagonal = mainDiagonal;
-		this.upperDiagonal = upperDiagonal;
-		this.lowerDiagonal = lowerDiagonal;
-		this.rhss = rhss;
 		
-		this.thetaS = thetaS;
-		this.thetaR = thetaR;
-		this.par1SWRC = par1SWRC;
-		this.par2SWRC = par2SWRC;
+		this.psis = psis;
+		this.mainDiagonal = mainDiagonal;
+		this.upperDiagonal = upperDiagonal;
+		this.lowerDiagonal = lowerDiagonal;
+		this.rhss = rhss;
 
 	}
-	
+
 	
 	
 	public double[] solver(){
