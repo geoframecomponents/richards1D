@@ -46,7 +46,7 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/All_0.csv";
+		String pathTopBC ="resources/Input/Casulli_rainfall3.csv";
 		String pathBottomBC ="resources/Input/All_0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
@@ -58,7 +58,7 @@ public class TestRichards1DSolver {
 		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
 
-		readNetCDF.richardsGridFilename = "InputSoil4.nc";
+		readNetCDF.richardsGridFilename = "Casulli3In.nc";
 		
 		readNetCDF.read();
 		
@@ -74,11 +74,11 @@ public class TestRichards1DSolver {
 		R1DSolver.et = readNetCDF.et;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom Dirichlet";
+		R1DSolver.bottomBCType = "Bottom impervious";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
-		R1DSolver.timeDelta = 50;
-		R1DSolver.newtonTolerance = Math.pow(10,-14);
+		R1DSolver.timeDelta = 10;
+		R1DSolver.newtonTolerance = Math.pow(10,-11);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		
@@ -105,11 +105,11 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = R1DSolver.dir+"/TestWithReader1.nc";
-			writeNetCDF.briefDescritpion = "\n		ponding test\n		"
-					+ "Initial condition hydrostatic within soil, 20 cm ponding\n		"
-					+ "BC: top no rain, bottom free drainage\n		"
-					+ "Soil parameters: Ks = 0.000017 m/s, thetaS = 0.5, thetaR = 0.02, n = 1.16, alpha = 5.88 m, Van Genuchten\n\n\n";
+			writeNetCDF.fileName = "C:/Users/Niccolo/jupyter-workspace/Richards_1D/ProvaOutNEW.nc";
+			writeNetCDF.briefDescritpion = "\n		Test problem 3 with 2 layers (Casulli 2010)\n		"
+					+ "Initial condition constant -480m no ponding\n		"
+					+ "BC: top constant rain, bottom imperviuos\n		"
+					+ "Soil parameters: Casulli test problem 3\n\n\n";
 			writeNetCDF.myVariables = buffer.myVariable;
 			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
 			writeNetCDF.myDualSpatialCoordinate = buffer.myDualSpatialCoordinate;			
