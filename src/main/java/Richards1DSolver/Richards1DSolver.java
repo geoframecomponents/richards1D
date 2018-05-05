@@ -297,7 +297,7 @@ public class Richards1DSolver {
 
 	WriteNetCDFRichardsParameterization writeSoilPar;
 
-	//ComputeDerivedQuantities compute;
+	ComputeDerivedQuantities compute;
 	
     ///////////////////////////////
 	
@@ -352,10 +352,10 @@ public class Richards1DSolver {
 				dx[i] = deltaZ[i];
 			}
 
-			//compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, thetaR, thetaS, ks,
-			//																	soilPar, totalDepth, bottomBCType);
+			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, thetaR, thetaS, ks,
+																				soilPar, totalDepth, bottomBCType);
 			
-			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
+			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC, thetaR, thetaS);
 			
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
@@ -387,7 +387,7 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 
-			
+/*			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 				if(i==0) {
 					soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
@@ -404,15 +404,15 @@ public class Richards1DSolver {
 				kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 				}
 			}
-			
+*/			
 			// Compute volumes and hydraulic conductivity
-/*
+
 			compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
-			volumes = compute.computeWaterVolumes();
-			kappas = compute.computeKappas();
+			volumes = compute.computeWaterVolumes().clone();
+			kappas = compute.computeKappas().clone();
 			soilPar.set(par1SWRC[0],par2SWRC[0],thetaR[0],thetaS[0],ks[0]);
 			k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
-*/
+
 			
 			/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
@@ -463,7 +463,7 @@ public class Richards1DSolver {
 
 			//// NESTED NEWTON ALGORITHM ////
 			//nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
-			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss, par1SWRC, par2SWRC, thetaR, thetaS);
+			nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 			psis = nestedNewtonAlg.solver();
 
 			/* COMPUTE velocities AT CELL INTERFACES at time level n+1
@@ -471,7 +471,7 @@ public class Richards1DSolver {
 			 */ 
 			volume = 0.0;
 			volumeNew =0.0;
-			
+/*			
 			for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 				if( i == 0 ) {
 
@@ -515,16 +515,16 @@ public class Richards1DSolver {
 			errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
 			//System.out.println("    errorMass: "+errorVolume);
 			
-/*
+*/
 			compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
-			velocities = compute.computeVelocities();
-			volumesNew = compute.computeWaterVolumes();
+			velocities = compute.computeVelocities().clone();
+			volumesNew = compute.computeWaterVolumes().clone();
 			volume = compute.computeTotalWaterVolumes(volumes);
 			volumeNew = compute.computeTotalWaterVolumes(volumesNew);
-			thetasNew = compute.computeThetas();
+			thetasNew = compute.computeThetas().clone();
 			errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
-*/
+
 	
 		}
 		outputToBuffer.add(psis);
