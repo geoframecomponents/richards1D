@@ -81,7 +81,7 @@ public class TestRichards1DSolver {
 		R1DSolver.newtonTolerance = Math.pow(10,-11);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
-		
+		R1DSolver.interfaceHydraulicCondType = "max";
 		while( topBCReader.doProcess  ) {
 			
 			
@@ -105,7 +105,7 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "C:/Users/Niccolo/jupyter-workspace/Richards_1D/ProvaOutNEW.nc";
+			writeNetCDF.fileName = "C:/Users/Niccolo/jupyter-workspace/Richards_1D/ProvaOutNEW1.nc";
 			writeNetCDF.briefDescritpion = "\n		Test problem 3 with 2 layers (Casulli 2010)\n		"
 					+ "Initial condition constant -480m no ponding\n		"
 					+ "BC: top constant rain, bottom imperviuos\n		"
