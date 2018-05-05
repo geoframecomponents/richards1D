@@ -94,7 +94,14 @@ public class ComputeDerivedQuantities {
 
 
 
-
+	/**
+	 * This method is used to update the following variables at each time step.
+	 * 
+	 * @param psis vector containing all psi values
+	 * @param kappas vector containing all hydraulic conductivity values
+	 * @param bottomBC water head at the bottom
+	 * @param k_b hydraulic conductivity at the bottom
+	 */
 	public void setComputeDerivedQuantities(double[] psis, double[] kappas, double bottomBC, double k_b) {
 
 		this.bottomBC = bottomBC;
@@ -106,7 +113,12 @@ public class ComputeDerivedQuantities {
 
 
 
-
+	/**
+	 * This method computes the adimensional water content for those control volumes within the soil
+	 * and the total water depth at soil surface
+	 * 
+	 * @return thetas
+	 */
 	public double[] computeThetas() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
@@ -125,7 +137,11 @@ public class ComputeDerivedQuantities {
 	}	
 
 
-
+	/**
+	 * This method computes the hydraulic conductivity
+	 * 
+	 * @return kappas
+	 */
 	public double[] computeKappas() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
@@ -145,7 +161,12 @@ public class ComputeDerivedQuantities {
 
 
 
-
+	/**
+	 * This method computes the water volumes for each control volumes
+	 * note that for the 1D case the water volume is a length (volume per unit area)
+	 * 
+	 * @return volumes
+	 */
 	public double[] computeWaterVolumes() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
@@ -165,7 +186,12 @@ public class ComputeDerivedQuantities {
 
 
 
-
+	/**
+	 * This method computes total water volume 
+	 * note that for the 1D case the water volume is a length (volume per unit area)
+	 * 
+	 * @return volume
+	 */
 	public double computeTotalWaterVolumes(double[] volumes) {
 
 		volume = 0.0;
@@ -178,7 +204,12 @@ public class ComputeDerivedQuantities {
 
 
 
-
+	/**
+	 * This method computes velocities at each control volume interface
+	 * velocities are computed with Darcy's formula 
+	 * 
+	 * @return velocities
+	 */
 	public double[] computeVelocities() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
