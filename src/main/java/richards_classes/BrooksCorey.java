@@ -91,8 +91,7 @@ public class BrooksCorey extends SoilParametrization {
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
-		// DA CALCOLARE!!!
-		//this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
+		this.psiStar = this.psiD;
 	}
 	
 	
