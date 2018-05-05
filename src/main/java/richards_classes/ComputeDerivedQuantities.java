@@ -57,6 +57,7 @@ public class ComputeDerivedQuantities {
 
 	SoilParametrization soilPar;
 	TotalDepth totalDepth;
+	InterfaceHydraulicConductivity interfaceHydraulicConductivity;
 
 
 
@@ -72,7 +73,7 @@ public class ComputeDerivedQuantities {
 	 * @param totalDepth is the class to compute the total water depth
 	 */
 	public ComputeDerivedQuantities(int NUM_CONTROL_VOLUMES, double[] dx, double[] spaceDelta, double[] par1SWRC, double[] par2SWRC, double[] thetaR, double[] thetaS, double[] ks,
-			SoilParametrization soilPar, TotalDepth totalDepth, String bottomBCType){
+			SoilParametrization soilPar, TotalDepth totalDepth, InterfaceHydraulicConductivity interfaceHydraulicConductivity, String bottomBCType){
 
 		this.NUM_CONTROL_VOLUMES = NUM_CONTROL_VOLUMES;
 		this.spaceDelta = spaceDelta;
@@ -84,6 +85,7 @@ public class ComputeDerivedQuantities {
 		this.ks = ks;
 		this.soilPar = soilPar;
 		this.totalDepth = totalDepth;
+		this.interfaceHydraulicConductivity = interfaceHydraulicConductivity;
 		this.bottomBCType = bottomBCType; 
 
 		this.thetas = new double[NUM_CONTROL_VOLUMES];
@@ -215,7 +217,8 @@ public class ComputeDerivedQuantities {
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
+				//kP = 0.5*(kappas[i] + kappas[i+1]);
+				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 					kM = kappas[i];
 					velocities[i] =  -kM;
@@ -224,7 +227,8 @@ public class ComputeDerivedQuantities {
 
 				}
 				else {
-					kM = 0.5*(kappas[i] + k_b);
+					//kM = 0.5*(kappas[i] + k_b);
+					kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
 					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 
 				}
@@ -235,7 +239,8 @@ public class ComputeDerivedQuantities {
 
 			} else {
 
-				kP = 0.5*(kappas[i] + kappas[i+1]);
+				//kP = 0.5*(kappas[i] + kappas[i+1]);
+				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 
 			}
