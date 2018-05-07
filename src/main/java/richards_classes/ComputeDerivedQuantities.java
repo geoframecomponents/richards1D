@@ -241,7 +241,7 @@ public class ComputeDerivedQuantities {
 
 				//kP = 0.5*(kappas[i] + kappas[i+1]);
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
-				velocities[i+1] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
+				velocities[i] =  -kP * (psis[i+1]-psis[i])/spaceDelta[i+1] - kP;
 
 			}
 		}
