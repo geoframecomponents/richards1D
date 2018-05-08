@@ -41,13 +41,13 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-02 00:00";
+		String endDate = "2017-01-06 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Casulli_rainfall3.csv";
-		String pathBottomBC ="resources/Input/All_0.csv";
+		String pathTopBC ="resources/Input/TestAll_0.csv";
+		String pathBottomBC ="resources/Input/TestAll_0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -57,10 +57,13 @@ public class TestRichards1DSolver {
 		ReadNetCDFRichardsGrid1D readNetCDF = new ReadNetCDFRichardsGrid1D();
 		
 		Richards1DSolver R1DSolver = new Richards1DSolver();
-
-		readNetCDF.richardsGridFilename = "Casulli3In.nc";
+		
+		
+		
+		readNetCDF.richardsGridFilename = "C:\\Users\\Niccolo\\eclipse-workspace\\richards1D\\resources\\Input\\TestDatiProf\\Sand_noPonding.nc";
 		
 		readNetCDF.read();
+		
 		
 		R1DSolver.z = readNetCDF.z;
 		R1DSolver.spaceDeltaZ = readNetCDF.spaceDelta;
@@ -74,16 +77,16 @@ public class TestRichards1DSolver {
 		R1DSolver.et = readNetCDF.et;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom impervious";
+		R1DSolver.bottomBCType = "Bottom dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 10;
-		R1DSolver.newtonTolerance = Math.pow(10,-11);
+		R1DSolver.newtonTolerance = Math.pow(10,-13);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
-		R1DSolver.interfaceHydraulicCondType = "max";
+		R1DSolver.interfaceHydraulicCondType = "average";
 		while( topBCReader.doProcess  ) {
-			
+		
 			
 			topBCReader.nextRecord();	
 			HashMap<Integer, double[]> bCValueMap = topBCReader.outData;
@@ -97,6 +100,7 @@ public class TestRichards1DSolver {
 			R1DSolver.inCurrentDate = topBCReader.tCurrent;
 			
 			R1DSolver.solve();
+
 			
 			buffer.inputDate = R1DSolver.inCurrentDate;
 			buffer.inputSpatialCoordinate = readNetCDF.eta;
@@ -105,11 +109,13 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "C:/Users/Niccolo/jupyter-workspace/Richards_1D/ProvaOutNEW1.nc";
-			writeNetCDF.briefDescritpion = "\n		Test problem 3 with 2 layers (Casulli 2010)\n		"
-					+ "Initial condition constant -480m no ponding\n		"
-					+ "BC: top constant rain, bottom imperviuos\n		"
-					+ "Soil parameters: Casulli test problem 3\n\n\n";
+			writeNetCDF.fileName = "C:\\Users\\Niccolo\\eclipse-workspace\\richards1D\\resources\\Output\\Sand_noPonding_pp.nc";
+			writeNetCDF.briefDescritpion = "\n		Test problem 1 layer of sand\n		"
+					+ "Initial condition hydrostatic no ponding\n		"
+					+ "BC: top constant rainfall 0mm, bottom Dirichlet0m\n		"
+					+ "Soil parameters: ks=0.003697m/s, alpha= 1.47m-1, n=1.7, thetaR=0.02, thetaS=0.38\n"
+					+ "Grid input file: TestDatiProf/Sand_noPonding.nc\n"
+					+ "DeltaT: 10s\n\n\n";
 			writeNetCDF.myVariables = buffer.myVariable;
 			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
 			writeNetCDF.myDualSpatialCoordinate = buffer.myDualSpatialCoordinate;			
