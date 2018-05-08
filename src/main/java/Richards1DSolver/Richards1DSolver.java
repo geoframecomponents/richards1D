@@ -312,7 +312,6 @@ public class Richards1DSolver {
 
 		if(step==0){
 
-
 			
 			NUM_CONTROL_VOLUMES = z.length;
 
