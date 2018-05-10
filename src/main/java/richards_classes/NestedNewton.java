@@ -126,7 +126,7 @@ public class NestedNewton {
 		// Initial guess of psis
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if(i==NUM_CONTROL_VOLUMES-1) {
-				psis[i] = Math.min(psis[i],-1);
+				psis[i] = Math.max(psis[i],1);
 				//System.out.println(i +"   "+psis[i]);
 			} else {
 				soilPar.set(par1SWRC[i], par2SWRC[i], thetaR[i], thetaS[i], -999);
