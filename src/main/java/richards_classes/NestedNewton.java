@@ -143,13 +143,16 @@ public class NestedNewton {
 				if(j==0) {
 					soilPar.set(par1SWRC[j], par2SWRC[j], thetaR[j], thetaS[j], -999);
 					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					dis[j] = soilPar.dWaterContent(psis[j]);
 					//System.out.println(j+" "+fs[j]);
 				} else if(j==NUM_CONTROL_VOLUMES-1) {
 					fs[j] = totalDepth.totalDepth(psis[j]) - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
+					dis[j] = totalDepth.dTotalDepth(psis[j]);
 					//System.out.println(j+" "+fs[j]);
 				} else {
 					soilPar.set(par1SWRC[j], par2SWRC[j], thetaR[j], thetaS[j], -999);
 					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					dis[j] = soilPar.dWaterContent(psis[j]);
 					//System.out.println(j+" "+soilPar.waterContent(psis[j]));
 					//System.out.println(j+" "+fs[j]);
 				}
