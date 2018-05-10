@@ -417,7 +417,7 @@ public class Richards1DSolver {
 						k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
 					} else if(i==NUM_CONTROL_VOLUMES-1) {
 						volumes[i] = totalDepth.totalDepth(psis[i]);
-						//soilPar.set(par1SWRC[i-1],par2SWRC[i-1],thetaR[i-1],thetaS[i],ks[i-1]);
+						soilPar.set(par1SWRC[i-1],par2SWRC[i-1],thetaR[i-1],thetaS[i-1],ks[i-1]);
 						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 					} else {
 						soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
@@ -425,8 +425,8 @@ public class Richards1DSolver {
 						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 					}
 				}
-				soilPar.set(par1SWRC[0],par2SWRC[0],thetaR[0],thetaS[0],ks[0]);
-				k_b = soilPar.hydraulicConductivity(bottomBC);
+				//soilPar.set(par1SWRC[0],par2SWRC[0],thetaR[0],thetaS[0],ks[0]);
+				//k_b = soilPar.hydraulicConductivity(bottomBC);
 				// Compute volumes and hydraulic conductivity
 
 				//compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
@@ -494,7 +494,7 @@ public class Richards1DSolver {
 				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 					if( i == 0 ) {
 
-						kP = 0.5*(kappas[i] + kappas[i+1]);
+						
 						if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 							kM = kappas[i];
 							velocities[i] =  -kM;
@@ -505,7 +505,7 @@ public class Richards1DSolver {
 							thetasNew[i] = soilPar.waterContent(psis[i]);
 						}
 						else {
-							kM = 0.5*(kappas[i] + k_b);
+							kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
 							velocities[i] =  -kM * (psis[i]+z[i]-bottomBC-0)/spaceDelta[i];
 
 							soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
@@ -521,7 +521,7 @@ public class Richards1DSolver {
 						thetasNew[i] = totalDepth.totalDepth(psis[i]);
 					} else {
 
-						kP = 0.5*(kappas[i] + kappas[i+1]);
+						kP = interfaceHydraulicConductivity.compute(kappas[i+1],kappas[i],dx[i],dx[i-1]);
 						velocities[i+1] =  -kP * (psis[i+1]+z[i+1]-psis[i]-z[i])/spaceDelta[i+1];
 
 						soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
