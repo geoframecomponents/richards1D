@@ -41,12 +41,12 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-06 00:00";
+		String endDate = "2017-01-02 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/TestAll_0.csv";
+		String pathTopBC ="resources/Input/TestAll_2gradino.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
 
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
@@ -60,7 +60,7 @@ public class TestRichards1DSolver {
 		
 		
 		
-		readNetCDF.richardsGridFilename = "C:\\Users\\Niccolo\\eclipse-workspace\\richards1D\\resources\\Input\\TestDatiProf\\Sand_noPonding.nc";
+		readNetCDF.richardsGridFilename = "resources\\Input\\TestDatiProf\\Clay_noPonding.nc";
 		
 		readNetCDF.read();
 		
@@ -76,15 +76,16 @@ public class TestRichards1DSolver {
 		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
 		R1DSolver.et = readNetCDF.et;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
+		R1DSolver.interfaceHydraulicCondType = "max";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom dirichlet";
+		R1DSolver.bottomBCType = "Bottom impervious";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 10;
 		R1DSolver.newtonTolerance = Math.pow(10,-13);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
-		R1DSolver.interfaceHydraulicCondType = "average";
+		R1DSolver.picardIteration = 1;
 		while( topBCReader.doProcess  ) {
 		
 			
@@ -109,13 +110,14 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "C:\\Users\\Niccolo\\eclipse-workspace\\richards1D\\resources\\Output\\Sand_noPonding_pp.nc";
-			writeNetCDF.briefDescritpion = "\n		Test problem 1 layer of sand\n		"
+			writeNetCDF.fileName = "resources\\Output\\Clay_noPonding_2mm1DayRain_Impervious.nc";
+			writeNetCDF.briefDescritpion = "\n		Test problem 1 layer of clay\n		"
 					+ "Initial condition hydrostatic no ponding\n		"
-					+ "BC: top constant rainfall 0mm, bottom Dirichlet0m\n		"
-					+ "Soil parameters: ks=0.003697m/s, alpha= 1.47m-1, n=1.7, thetaR=0.02, thetaS=0.38\n"
-					+ "Grid input file: TestDatiProf/Sand_noPonding.nc\n"
-					+ "DeltaT: 10s\n\n\n";
+					+ "BC: top constant rainfall 2mm for 1 day, bottom Impervious\n		"
+					+ "Clay parameters: ks=0.000023m/s, alpha= 5.88m-1, n=1.16, thetaR=0.07, thetaS=0.5\n"
+					+ "Grid input file: TestDatiProf/Clay_noPonding.nc\n"
+					+ "DeltaT: 10s\n"
+					+ "Picard iteration: 1";
 			writeNetCDF.myVariables = buffer.myVariable;
 			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
 			writeNetCDF.myDualSpatialCoordinate = buffer.myDualSpatialCoordinate;			
