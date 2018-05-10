@@ -391,7 +391,7 @@ public class Richards1DSolver {
 		//time = time + tTimestep;
 
 		topBC = 0.0;
-		topBC = (inTopBC.get(1)[0]/1000)/tTimestep;
+		topBC = (inTopBC.get(1)[0]*25/1000)/tTimestep;
 
 		bottomBC = 0.0;
 		if(inBottomBC != null)
@@ -408,7 +408,7 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 			for(int picard=0; picard<picardIteration; picard++) {
-
+				
 				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 					if(i==0) {
 						soilPar.set(par1SWRC[i],par2SWRC[i],thetaR[i],thetaS[i],ks[i]);
