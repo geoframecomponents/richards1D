@@ -36,15 +36,22 @@ repositories {
 
     mavenCentral() //jgt
     
+    
+    flatDir {
+        dirs 'lib'
+	}	
+	
     // to write NetCDF
     maven {
         url "https://artifacts.unidata.ucar.edu/repository/unidata-all/"
     }
-
+    
 }
 
 dependencies {
 
+	compile name: 'NetCDF'
+	
     compile 'org.slf4j:slf4j-api:1.7.21'
 
     compile group: 'javax.media', name: 'jai_codec', version: '1.1.3'
