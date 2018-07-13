@@ -21,7 +21,7 @@ package richards_classes;
 /**
  * Compute hydraulic conductivity at control volume interface as the weighted average of k[i] and k[i+1],
  * weights are control volumes lengths
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 
 public class InterfaceHydraulicConductivityWeightedAverage extends InterfaceHydraulicConductivity {

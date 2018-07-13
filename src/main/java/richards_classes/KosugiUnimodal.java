@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * Kosugi's two-parameter lognormal distribution SWRC model
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 
 import org.apache.commons.math3.special.Erf;

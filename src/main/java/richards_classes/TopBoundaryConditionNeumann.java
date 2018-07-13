@@ -21,7 +21,7 @@ package richards_classes;
 /**
  * This class compute the element of the coefficient matrix and the right-hand side
  * when a Neumann boundary condition is applied at the top of the domain.
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 

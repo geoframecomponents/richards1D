@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * The boundary condition abstract class 
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 public abstract class BoundaryCondition {

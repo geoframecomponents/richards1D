@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * Compute hydraulic conductivity at control volume interface as the minimum between k[i] and k[i+1]
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 
 public class InterfaceHydraulicConductivityMin extends InterfaceHydraulicConductivity{

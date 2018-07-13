@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * Brooks and Corey' SWRC model
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 

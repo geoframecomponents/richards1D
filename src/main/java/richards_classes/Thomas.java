@@ -26,7 +26,7 @@ package richards_classes;
  * elimination and one back-substitution.
  * (Numerical Methods for Free Surface Hydrodynamics Solution of linear algebraic equation systems, Dumbser, M., Università degli studi di Trento)
  * 
- * @author Niccolò
+ * @author Niccolo' Tubini
  */
 
 public class Thomas {

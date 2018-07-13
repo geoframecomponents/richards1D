@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * Gardner's SWRC model
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 

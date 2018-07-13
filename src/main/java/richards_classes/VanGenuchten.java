@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * Van Genuchten's SWRC model
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 
 public class VanGenuchten extends SoilParametrization {

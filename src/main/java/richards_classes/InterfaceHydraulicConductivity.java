@@ -25,7 +25,7 @@ package richards_classes;
  * - max(k[i],k[i+1])
  * - min(k[i],k[i+1])
  * - weighted average of k[i] and k[i+1]
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 public abstract class InterfaceHydraulicConductivity {
 	

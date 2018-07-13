@@ -22,7 +22,7 @@ package richards_classes;
 /**
  * This class compute the element of the coefficient matrix and the right-hand side
  * when a no-flux boundary condition is applied at the bottom of the domain (impervious bottom).
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 public class BottomBoundaryConditionImpervious extends BoundaryCondition {

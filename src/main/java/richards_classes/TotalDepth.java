@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * The soil prametrization abstract class.
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 

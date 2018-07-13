@@ -20,7 +20,7 @@ package richards_classes;
 
 /**
  * A simple design factory to create an InterfaceHydraulicConductivity object.
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  */
 
 public class SimpleInterfaceHydraulicConductivityFactory {

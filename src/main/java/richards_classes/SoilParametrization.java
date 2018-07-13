@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 
 /**
  * The soil prametrization abstract class.
- * @author Niccolò Tubini
+ * @author Niccolo' Tubini
  *
  */
 
