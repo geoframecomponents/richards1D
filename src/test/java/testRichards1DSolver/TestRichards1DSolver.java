@@ -46,9 +46,10 @@ public class TestRichards1DSolver {
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/TestAll_2gradino.csv";
+		String pathTopBC ="resources/Input/TestAll_2.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
-
+		String pathGrid =  "resources\\Input\\Sand_noPonding.nc";
+		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
@@ -60,7 +61,7 @@ public class TestRichards1DSolver {
 		
 		
 		
-		readNetCDF.richardsGridFilename = "resources\\Input\\TestDatiProf\\Clay_noPonding.nc";
+		readNetCDF.richardsGridFilename = pathGrid;
 		
 		readNetCDF.read();
 		
@@ -74,18 +75,20 @@ public class TestRichards1DSolver {
 		R1DSolver.thetaR = readNetCDF.thetaR;
 		R1DSolver.par1SWRC = readNetCDF.par1SWRC;
 		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
+		R1DSolver.alphaSpecificStorage = readNetCDF.par3SWRC;
+		R1DSolver.betaSpecificStorage = readNetCDF.par4SWRC;
 		R1DSolver.et = readNetCDF.et;
 		R1DSolver.soilHydraulicModel = "VanGenuchten";
-		R1DSolver.interfaceHydraulicCondType = "max";
+		R1DSolver.interfaceHydraulicCondType = "mean";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom impervious";
+		R1DSolver.bottomBCType = "Bottom dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
-		R1DSolver.timeDelta = 10;
+		R1DSolver.timeDelta = 300;
 		R1DSolver.newtonTolerance = Math.pow(10,-13);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
-		R1DSolver.picardIteration = 1;
+		//R1DSolver.picardIteration = 1;
 		while( topBCReader.doProcess  ) {
 		
 			
@@ -110,14 +113,19 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "resources\\Output\\Clay_noPonding_2mm1DayRain_Impervious.nc";
-			writeNetCDF.briefDescritpion = "\n		Test problem 1 layer of clay\n		"
+			writeNetCDF.fileName = "resources\\Output\\T_eclipse.nc";
+			//writeNetCDF.fileName = "C:\\Users\\Niccolo\\Desktop\\Clay_noPondingBC_Eclipse.nc";
+			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity\n		"
 					+ "Initial condition hydrostatic no ponding\n		"
-					+ "BC: top constant rainfall 2mm for 1 day, bottom Impervious\n		"
-					+ "Clay parameters: ks=0.000023m/s, alpha= 5.88m-1, n=1.16, thetaR=0.07, thetaS=0.5\n"
-					+ "Grid input file: TestDatiProf/Clay_noPonding.nc\n"
-					+ "DeltaT: 10s\n"
-					+ "Picard iteration: 1";
+					+ "BC: top 2mm rainfall each 5min, bottom Dirichlet\n		"
+					+ "Clay parameters BC: ks=0.0000981m/s, psiD= -34m, n=1.5, thetaR=0.07, thetaS=0.35, alphaStorativity= 0 1/Pa, betaStorativity=0 1/Pa \n		"
+					//+ "Sand parameters: ks=0.003697m/s, alpha= 1.47m-1, n=1.7, thetaR=0.02, thetaS=0.38, alphaStorativity= 0 1/Pa, betaStorativity= 0 1/Pa\n		"
+					+ "Grid input file: " + pathGrid +"\n		"
+					+ "TopBC input file: " + pathTopBC +"\n		"
+					+ "BottomBC input file: " + pathBottomBC +"\n		"
+					+ "DeltaT: 10s\n		"
+					+ "Picard iteration: 1\n		"
+				    + "Interface k: mean";
 			writeNetCDF.myVariables = buffer.myVariable;
 			writeNetCDF.mySpatialCoordinate = buffer.mySpatialCoordinate;
 			writeNetCDF.myDualSpatialCoordinate = buffer.myDualSpatialCoordinate;			

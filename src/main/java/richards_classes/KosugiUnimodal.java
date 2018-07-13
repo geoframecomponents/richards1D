@@ -89,13 +89,15 @@ public class KosugiUnimodal extends SoilParametrization {
 	
 	
 	
-	public void set(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double rMedian, double sigma, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.alphaSpecificStorage = alphaSpecificStorage;
+		super.betaSpecificStorage = betaSpecificStorage;
 		
 		this.psiStar = -1.49*Math.pow(10, -5)/this.rMedian/Math.exp(Math.pow(this.sigma,2));  // see Brutsaert, 1996
 	}
@@ -110,7 +112,7 @@ public class KosugiUnimodal extends SoilParametrization {
 		if(suction <= 0) {
 		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian)/(this.sigma*Math.pow(2,0.5))) ) ; // ho medificato la parte relativa al sigma dentro il logaritmo
 		} else {
-		    this.theta = this.thetaS;
+		    this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
 		}
 
 		return this.theta;
@@ -127,7 +129,7 @@ public class KosugiUnimodal extends SoilParametrization {
 		if (suction < 0) {
 		    this.dTheta = (this.thetaS-this.thetaR)/(Math.sqrt(2*Math.PI)*this.sigma*(-suction)) * Math.exp(-Math.pow(Math.log(suction/this.psiMedian),2)/(2*Math.pow(this.sigma,2)));
 		} else {
-		    this.dTheta = 0;
+		    this.dTheta =  + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
 		}
 		
 		return this.dTheta;
@@ -144,8 +146,12 @@ public class KosugiUnimodal extends SoilParametrization {
 		final double gamma = 2; // Mualem model (Kosugi, 1996)
  		final double eta = 1;   // Mualem model (Kosugi, 1996)
 		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR); 
-		this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*Erf.erfc( Erf.erfcInv(2*this.saturationDegree) + eta*this.sigma/Math.sqrt(2)  ) ),gamma );
-		
+		if(this.saturationDegree<1) {
+			this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*Erf.erfc( Erf.erfcInv(2*this.saturationDegree) + eta*this.sigma/Math.sqrt(2)  ) ),gamma );
+		} else {
+			this.kappa = this.kappaSaturation;
+		}
+			
 		return this.kappa;
 	}
 }

@@ -33,6 +33,8 @@ public abstract class SoilParametrization {
 	protected double thetaR;  // residual water content 
 	protected double thetaS;  // water content at saturation
 	protected double kappaSaturation; // hydraulic conductivity at saturation
+	protected double alphaSpecificStorage;
+	protected double betaSpecificStorage;
 	
 	protected double theta; // water content
 	protected double dTheta;// first derivative of theta with respect of suction
@@ -49,7 +51,7 @@ public abstract class SoilParametrization {
 	 * @param kappaSaturation hydraulic conductivity at saturation
 	 * 
 	 */
-	public abstract void set(double par1, double par2, double thetaR, double thetaS, double kappaSaturation);
+	public abstract void set(double par1, double par2, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation);
 	
 	
 	/**

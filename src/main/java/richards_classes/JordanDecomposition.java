@@ -23,7 +23,7 @@ public abstract class JordanDecomposition {
 	//	this.myFunction = myFunction;
 	//}
 	
-	public abstract void setSoilParametrization (double par1SWRC, double par2SWRC, double thetaR, double thetaS);
+	public abstract void setSoilParametrization (double par1SWRC, double par2SWRC, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS);
 	
 	/**
 	 * @param variable

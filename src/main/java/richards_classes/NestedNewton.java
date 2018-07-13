@@ -45,6 +45,8 @@ public class NestedNewton {
 	double[] thetaR;
 	double[] par1SWRC;
 	double[] par2SWRC;
+	double[] alphaSpecificStorage;
+	double[] betaSpecificStorage;
 	
 	double[] fs;
 	double[] fks;
@@ -73,7 +75,7 @@ public class NestedNewton {
 	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 */
 	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth,
-			double[] par1SWRC, double[] par2SWRC, double[] thetaR, double[] thetaS){
+			double[] par1SWRC, double[] par2SWRC, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS){
 		this.nestedNewton = nestedNewton;
 		this.newtonTolerance = newtonTolerance;
 		this.MAXITER_NEWT = MAXITER_NEWT;
@@ -86,6 +88,8 @@ public class NestedNewton {
 		this.thetaR = thetaR;
 		this.par1SWRC = par1SWRC;
 		this.par2SWRC = par2SWRC;
+		this.alphaSpecificStorage = alphaSpecificStorage;
+		this.betaSpecificStorage = betaSpecificStorage;
 
 		
 		soilMoistureJordanDecomposition = new JordanDecompositionSoilMoisture(this.soilPar);
@@ -129,7 +133,7 @@ public class NestedNewton {
 				psis[i] = Math.max(psis[i],1);
 				//System.out.println(i +"   "+psis[i]);
 			} else {
-				soilPar.set(par1SWRC[i], par2SWRC[i], thetaR[i], thetaS[i], -999);
+				soilPar.set(par1SWRC[i], par2SWRC[i], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[i], thetaS[i], -999);
 				psis[i] = Math.min(psis[i], soilPar.getPsiStar());
 				//System.out.println(i +"   "+psis[i]);
 			}
@@ -141,7 +145,7 @@ public class NestedNewton {
 			outerResidual = 0.0;
 			for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 				if(j==0) {
-					soilPar.set(par1SWRC[j], par2SWRC[j], thetaR[j], thetaS[j], -999);
+					soilPar.set(par1SWRC[j], par2SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999);
 					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 					dis[j] = soilPar.dWaterContent(psis[j]);
 					//System.out.println(j+" "+fs[j]);
@@ -150,7 +154,7 @@ public class NestedNewton {
 					dis[j] = totalDepth.dTotalDepth(psis[j]);
 					//System.out.println(j+" "+fs[j]);
 				} else {
-					soilPar.set(par1SWRC[j], par2SWRC[j], thetaR[j], thetaS[j], -999);
+					soilPar.set(par1SWRC[j], par2SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999);
 					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 					dis[j] = soilPar.dWaterContent(psis[j]);
 					//System.out.println(j+" "+soilPar.waterContent(psis[j]));
@@ -186,7 +190,7 @@ public class NestedNewton {
 					if(j==NUM_CONTROL_VOLUMES-1) {
 						psis[j] = Math.max(psis[j],1);
 					} else {
-					soilPar.set(par1SWRC[j], par2SWRC[j], thetaR[j], thetaS[j], -999);
+					soilPar.set(par1SWRC[j], par2SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999) ;
 					psis[j] = Math.max(psis[j], soilPar.getPsiStar());
 					}
 				}
@@ -197,7 +201,7 @@ public class NestedNewton {
 					innerResidual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 						if(l==0) {
-							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[l], par2SWRC[l], thetaR[l], thetaS[l]);
+							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[l], par2SWRC[l],alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l]);
 							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
 							//System.out.println(l+" "+fks[l]);
@@ -208,7 +212,7 @@ public class NestedNewton {
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
 						} else {
-							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[l], par2SWRC[l], thetaR[l], thetaS[l]);
+							soilMoistureJordanDecomposition.setSoilParametrization(par1SWRC[l], par2SWRC[l], alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l]);
 							fks[l] = soilMoistureJordanDecomposition.pIntegral(psis[l])*dx[l] - ( soilMoistureJordanDecomposition.qIntegral(psis_outer[l]) + soilMoistureJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
 							dis[l] = ( soilMoistureJordanDecomposition.p(psis[l]) - soilMoistureJordanDecomposition.q(psis_outer[l]) )*dx[l];
 							//System.out.println(l+" "+fks[l]);

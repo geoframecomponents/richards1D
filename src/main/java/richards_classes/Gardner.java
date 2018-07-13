@@ -80,12 +80,15 @@ public class Gardner extends SoilParametrization {
 	
 	
 	
-	public void set(double n, double alpha, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double n, double alpha, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.alpha = alpha; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.alphaSpecificStorage = alphaSpecificStorage;
+		super.betaSpecificStorage = betaSpecificStorage;
+		
 		// DA CONTROLLARE
 		this.psiStar = 0;
 	}
@@ -100,7 +103,7 @@ public class Gardner extends SoilParametrization {
 		if(suction <= 0) {
 		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*Math.exp(this.alpha*suction);
 		} else {
-		    this.theta = this.thetaS;
+		    this.theta = this.thetaS + + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
 		}
 
 		return this.theta;
@@ -117,7 +120,7 @@ public class Gardner extends SoilParametrization {
 		if (suction <= 0) {
 		    this.dTheta = this.alpha*(this.thetaS - this.thetaR)*Math.exp(this.alpha*suction);
 		} else {
-		    this.dTheta = 0;
+		    this.dTheta = + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
 		}
 		
 		return this.dTheta;

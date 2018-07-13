@@ -84,13 +84,16 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	
-	public void set(double n, double psiD, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double n, double psiD, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.n = n;
 		this.psiD = psiD; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
+		super.alphaSpecificStorage = alphaSpecificStorage;
+		super.betaSpecificStorage = betaSpecificStorage;
+		
 		this.psiStar = this.psiD;
 	}
 	
@@ -106,7 +109,7 @@ public class BrooksCorey extends SoilParametrization {
 		if(suction <= this.psiD) {
 			this.theta = this.thetaR + (this.thetaS-this.thetaR) * Math.pow((this.psiD/suction), this.n);
 		} else {
-			this.theta = this.thetaS;
+			this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
 		}
 		return this.theta;
 	}
@@ -122,7 +125,7 @@ public class BrooksCorey extends SoilParametrization {
 		if (suction <= this.psiD) {
 		    this.dTheta = this.n*(this.thetaS - this.thetaR) /Math.abs(this.psiD) * Math.pow(this.psiD/suction,this.n+1);
 		} else {
-		    this.dTheta = 0;
+		    this.dTheta = + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
 		}
 		
 		return this.dTheta;
@@ -137,7 +140,12 @@ public class BrooksCorey extends SoilParametrization {
 	public double hydraulicConductivity(double suction){
 		
 		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR);
-		this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, 3+2/this.n);
+		if(this.saturationDegree<1) {
+			this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, 3+2/this.n);
+		} else {
+			this.kappa = this.kappaSaturation;
+		}
+		
 		return this.kappa;
 	}
 }

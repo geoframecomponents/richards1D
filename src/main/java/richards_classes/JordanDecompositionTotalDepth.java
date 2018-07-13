@@ -22,7 +22,7 @@ public class JordanDecompositionTotalDepth extends JordanDecomposition {
 	
 	
 	@Override
-	public void setSoilParametrization(double par1SWRC, double par2SWRC, double thetaR, double thetaS) {
+	public void setSoilParametrization(double par1SWRC, double par2SWRC, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS) {
 		// TODO Auto-generated method stub
 		
 	}

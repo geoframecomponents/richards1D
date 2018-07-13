@@ -87,7 +87,7 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	
-	public void set(double n, double alpha, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double n, double alpha, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.n = n;
 		this.alpha = alpha; 
@@ -95,6 +95,9 @@ public class VanGenuchten extends SoilParametrization {
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
 		this.m = 1-1/this.n;
+		super.alphaSpecificStorage = alphaSpecificStorage;
+		super.betaSpecificStorage = betaSpecificStorage;
+		
 		this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
 	}
 	
@@ -109,7 +112,7 @@ public class VanGenuchten extends SoilParametrization {
 		if(suction <= 0) {
 		    this.theta = this.thetaR + (this.thetaS - this.thetaR) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha*suction), this.n), this.m);
 		} else {
-		    this.theta = this.thetaS;
+		    this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
 		}
 
 		return this.theta;
@@ -126,7 +129,7 @@ public class VanGenuchten extends SoilParametrization {
 		if (suction <= 0) {
 		    this.dTheta = this.alpha*this.n*this.m*(this.thetaS - this.thetaR) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha*suction), this.n), this.m + 1.0)*Math.pow(Math.abs(this.alpha*suction), this.n - 1.0);
 		} else {
-		    this.dTheta = 0;
+		    this.dTheta =  9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
 		}
 		
 		return this.dTheta;
@@ -141,8 +144,11 @@ public class VanGenuchten extends SoilParametrization {
 	public double hydraulicConductivity(double suction){
 		
 		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR); 
-		this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(this.saturationDegree, 1.0/this.m), this.m), 2.0);
-		
+		if(this.saturationDegree<1) {
+			this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(this.saturationDegree, 1.0/this.m), this.m), 2.0);
+		} else {
+			this.kappa = this.kappaSaturation;
+		}
 		return this.kappa;
 	}
 }

@@ -49,6 +49,10 @@ public class SimpleBoundaryConditionFactory {
 		else if(type.equalsIgnoreCase("Bottom Impervious") || type.equalsIgnoreCase("BottomImpervious")){
 			boundaryCondition = new BottomBoundaryConditionImpervious();
 		}
+		else if(type.equalsIgnoreCase("Bottom Neumann") || type.equalsIgnoreCase("BottomNeumann")){
+			boundaryCondition = new BottomBoundaryConditionNeumann();
+		}
+
 
 		return boundaryCondition;
 		}
