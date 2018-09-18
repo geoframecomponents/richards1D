@@ -82,12 +82,12 @@ public class VanGenuchten extends SoilParametrization {
 		}
 		
 		this.m = 1-1/this.n;
-		this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
+		this.psiStar1 = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
 	}
 	
 	
 	
-	public void set(double n, double alpha, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double n, double alpha, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.n = n;
 		this.alpha = alpha; 
@@ -98,7 +98,7 @@ public class VanGenuchten extends SoilParametrization {
 		super.alphaSpecificStorage = alphaSpecificStorage;
 		super.betaSpecificStorage = betaSpecificStorage;
 		
-		this.psiStar = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
+		this.psiStar1 = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
 	}
 	
 
@@ -151,4 +151,64 @@ public class VanGenuchten extends SoilParametrization {
 		}
 		return this.kappa;
 	}
+
+	
+	
+	/**
+	 * @param suction
+	 * @return theta1 
+	 */
+	public double pIntegral(double suction){
+		if(suction <= this.psiStar1) {
+			super.f1 = this.waterContent(suction);
+		} else {
+			this.f1 = this.waterContent(this.psiStar1) + this.dWaterContent(this.psiStar1)*(suction - this.psiStar1);
+		}
+
+		return this.f1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return theta2
+	 */
+	public double qIntegral(double suction){
+		super.f2 = pIntegral(suction) - this.waterContent(suction);
+
+		return super.f2;
+	}
+	
+	/**
+	 * @param suction
+	 * @return dtheta1
+	 */
+	public double p(double suction){
+		if (suction <= this.psiStar1) {
+		    // left of critical value, take the original derivative
+			super.df1 = this.dWaterContent(suction);
+		}
+		else {
+		    // on the right of the critical value, keep the maximum derivative
+			super.df1 = this.dWaterContent(this.psiStar1);
+		}
+
+		return super.df1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return dtheta2
+	 */
+	public double q(double suction){
+		super.df2 = p(suction) - this.dWaterContent(suction);
+
+		return super.df2;
+	}
+
+
+
 }
