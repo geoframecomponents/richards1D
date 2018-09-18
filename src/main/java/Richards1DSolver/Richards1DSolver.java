@@ -401,7 +401,7 @@ public class Richards1DSolver {
 			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks,
 					soilPar, totalDepth, interfaceHydraulicConductivity, bottomBCType);
 
-			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
+			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC,, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
 
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
