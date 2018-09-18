@@ -29,7 +29,9 @@ import java.util.LinkedHashMap;
 
 public abstract class SoilParametrization {
 	
-	protected double psiStar; // suction value at which the derivative of hydraulic capacity is null
+	protected double psiStar1; // suction value at which the derivative of hydraulic capacity is null
+	protected double psiStar2; // suction value at which the derivative of hydraulic capacity is null
+	protected double psiStar3; // suction value at which the derivative of hydraulic capacity is null
 	protected double thetaR;  // residual water content 
 	protected double thetaS;  // water content at saturation
 	protected double kappaSaturation; // hydraulic conductivity at saturation
@@ -40,27 +42,44 @@ public abstract class SoilParametrization {
 	protected double dTheta;// first derivative of theta with respect of suction
 	protected double saturationDegree; 
 	protected double kappa; // hydraulic conductivity
+	protected double f1;
+	protected double f2;
+	protected double df1;
+	protected double df2;
 	
 	
 	/**
 	 * This method set SWRC parameters
 	 * @param par1
 	 * @param par2
+	 * @param par3
+	 * @param par4
+	 * @param par5
 	 * @param thetaR adimensional residual water content
 	 * @param thetaS adimensional water content at saturation
 	 * @param kappaSaturation hydraulic conductivity at saturation
 	 * 
 	 */
-	public abstract void set(double par1, double par2, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation);
+	public abstract void set(double par1, double par2, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation);
 	
 	
 	/**
 	 * This method return the value of suction at which the derivative
-	 * of theta with respect of suction has its maximum.
+	 * of moisture capacity with respect of suction has its maximum.
 	 * @return
 	 */
-	public double getPsiStar(){
-		return this.psiStar;
+	public double getPsiStar1(){
+		return this.psiStar1;
+	}
+	
+	
+	/**
+	 * This method return the value of suction at which the derivative
+	 * of moisture capacity with respect of suction has its maximum.
+	 * @return
+	 */
+	public double getPsiStar2(){
+		return this.psiStar2;
 	}
 	
 	
