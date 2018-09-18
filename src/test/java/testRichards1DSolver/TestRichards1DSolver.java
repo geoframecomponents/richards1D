@@ -75,6 +75,9 @@ public class TestRichards1DSolver {
 		R1DSolver.thetaR = readNetCDF.thetaR;
 		R1DSolver.par1SWRC = readNetCDF.par1SWRC;
 		R1DSolver.par2SWRC = readNetCDF.par2SWRC;
+		R1DSolver.par3SWRC = readNetCDF.par2SWRC;
+		R1DSolver.par4SWRC = readNetCDF.par2SWRC;
+		R1DSolver.par5SWRC = readNetCDF.par2SWRC;
 		R1DSolver.alphaSpecificStorage = readNetCDF.par3SWRC;
 		R1DSolver.betaSpecificStorage = readNetCDF.par4SWRC;
 		R1DSolver.et = readNetCDF.et;
