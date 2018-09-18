@@ -108,6 +108,37 @@ public abstract class SoilParametrization {
 	
 	
 	/**
+	 * This method compute the integral of p function.
+	 * @param suction
+	 * @return
+	 */
+	public abstract double pIntegral(double suction);
+	
+	
+	/**
+	 * This method compute the integral of q function.
+	 * @param suction
+	 * @return
+	 */
+	public abstract double qIntegral(double suction);
+	
+	
+	/**
+	 * This method compute the p function.
+	 * @param suction
+	 * @return
+	 */
+	public abstract double p(double suction);
+	
+	
+	/**
+	 * This method compute the q function.
+	 * @param suction
+	 * @return
+	 */
+	public abstract double q(double suction);
+	
+	/**
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
 	 */
