@@ -26,8 +26,15 @@ package richards_classes;
 
 public class TotalDepth {
 
-	public double H;
-	public double dH;
+	protected double H;
+	protected double dH;
+	protected double f1;
+	protected double f2;
+	protected double df1;
+	protected double df2;
+	
+	
+	
 	/**
 	 * This method compute the total water depth given the suction value 
 	 * @param suction
@@ -43,6 +50,7 @@ public class TotalDepth {
 		
 		return H;
 	};
+	
 	
 	
 	/**
@@ -62,5 +70,52 @@ public class TotalDepth {
 	}
 	
 	
+	
+	/**
+	 * @param suction
+	 * @return H1 
+	 */
+	public double pIntegral(double suction){
+		this.f1 = totalDepth(suction);
 
+		return this.f1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return H2
+	 */
+	public double qIntegral(double suction){
+		this.f2 = 0;
+
+		return this.f2;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return dH1
+	 */
+	public double p(double suction){
+		this.df1 = dTotalDepth(suction);
+
+		return this.df1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return dH2
+	 */
+	public double q(double suction){
+		this.df2 = 0;
+
+		return this.df2;
+	}
+
+	
 }
