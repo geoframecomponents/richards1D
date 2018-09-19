@@ -63,7 +63,7 @@ public class NestedNewton {
 	TotalDepth totalDepth;
 	Thomas thomasAlg = new Thomas();
 	//JordanDecomposition soilMoistureJordanDecomposition;
-	JordanDecomposition totalDepthJordanDecomposition;
+	//JordanDecomposition totalDepthJordanDecomposition;
 	
 	/**
 	 * @param nestedNewton control parameter to choose between simple Newton method (0), or the nested Newton one (1)
@@ -99,7 +99,7 @@ public class NestedNewton {
 
 		
 		//soilMoistureJordanDecomposition = new JordanDecompositionSoilMoisture(this.soilPar);
-		totalDepthJordanDecomposition = new JordanDecompositionTotalDepth(this.totalDepth);
+		//totalDepthJordanDecomposition = new JordanDecompositionTotalDepth(this.totalDepth);
 		
 		fs			  = new double[this.NUM_CONTROL_VOLUMES];
 		fks			  = new double[this.NUM_CONTROL_VOLUMES];
@@ -213,7 +213,7 @@ public class NestedNewton {
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+dis[l]);
 						} else if(l==NUM_CONTROL_VOLUMES-1) {
-							fks[l] = totalDepthJordanDecomposition.pIntegral(psis[l]) - ( totalDepthJordanDecomposition.qIntegral(psis_outer[l]) + totalDepthJordanDecomposition.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
+							fks[l] = totalDepth.pIntegral(psis[l]) - ( totalDepth.qIntegral(psis_outer[l]) + totalDepth.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
 							dis[l] = totalDepthJordanDecomposition.p(psis[l]) - totalDepthJordanDecomposition.q(psis_outer[l]);
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
