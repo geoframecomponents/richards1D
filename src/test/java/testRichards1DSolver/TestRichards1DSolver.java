@@ -41,14 +41,14 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-02 00:00";
+		String endDate = "2017-01-01 12:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
 		String pathTopBC ="resources/Input/TestAll_2.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
-		String pathGrid =  "resources\\Input\\Sand_noPonding.nc";
+		String pathGrid =  "resources\\Input\\Clay_noPonding_Kosugi_Check.nc";
 		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -81,10 +81,10 @@ public class TestRichards1DSolver {
 		R1DSolver.alphaSpecificStorage = readNetCDF.par3SWRC;
 		R1DSolver.betaSpecificStorage = readNetCDF.par4SWRC;
 		R1DSolver.et = readNetCDF.et;
-		R1DSolver.soilHydraulicModel = "VanGenuchten";
+		R1DSolver.soilHydraulicModel = "Kosugi";
 		R1DSolver.interfaceHydraulicCondType = "mean";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom dirichlet";
+		R1DSolver.bottomBCType = "Bottom Dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 300;
@@ -116,7 +116,7 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "resources\\Output\\T_eclipse.nc";
+			writeNetCDF.fileName = "resources\\Output\\T_eclipseKosugi.nc";
 			//writeNetCDF.fileName = "C:\\Users\\Niccolo\\Desktop\\Clay_noPondingBC_Eclipse.nc";
 			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity\n		"
 					+ "Initial condition hydrostatic no ponding\n		"
