@@ -214,7 +214,7 @@ public class NestedNewton {
 							//System.out.println(l+" "+dis[l]);
 						} else if(l==NUM_CONTROL_VOLUMES-1) {
 							fks[l] = totalDepth.pIntegral(psis[l]) - ( totalDepth.qIntegral(psis_outer[l]) + totalDepth.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
-							dis[l] = totalDepthJordanDecomposition.p(psis[l]) - totalDepthJordanDecomposition.q(psis_outer[l]);
+							dis[l] = totalDepth.p(psis[l]) - totalDepth.q(psis_outer[l]);
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
 						} else {
