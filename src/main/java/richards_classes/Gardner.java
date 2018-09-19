@@ -75,12 +75,12 @@ public class Gardner extends SoilParametrization {
 			throw new IllegalArgumentException( "ERROR: Check the value of hydraulic conductivity at saturation \n");
 		}
 		
-		this.psiStar = 0;
+		this.psiStar1 = 0;
 	}
 	
 	
 	
-	public void set(double n, double alpha, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double n, double alpha, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.alpha = alpha; 
 		this.thetaR = thetaR;
@@ -90,7 +90,7 @@ public class Gardner extends SoilParametrization {
 		super.betaSpecificStorage = betaSpecificStorage;
 		
 		// DA CONTROLLARE
-		this.psiStar = 0;
+		this.psiStar1 = 0;
 	}
 	
 	
@@ -142,4 +142,51 @@ public class Gardner extends SoilParametrization {
 		
 		return this.kappa;
 	}
+
+	
+	
+	/**
+	 * @param suction
+	 * @return theta1 
+	 */
+	public double pIntegral(double suction){
+		if(suction <= this.psiStar1) {
+			super.f1 = this.waterContent(suction);
+		} else {
+			this.f1 = this.waterContent(this.psiStar1) + this.dWaterContent(this.psiStar1)*(suction - this.psiStar1);
+		}
+
+		return this.f1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return theta2
+	 */
+	public double qIntegral(double suction){
+		super.f2 = pIntegral(suction) - this.waterContent(suction);
+
+		return super.f2;
+	}
+	
+	/**
+	 * @param suction
+	 * @return dtheta1
+	 */
+	public double p(double suction){
+		if (suction <= this.psiStar1) {
+		    // left of critical value, take the original derivative
+			super.df1 = this.dWaterContent(suction);
+		}
+		else {
+		    // on the right of the critical value, keep the maximum derivative
+			super.df1 = this.dWaterContent(this.psiStar1);
+		}
+
+		return super.df1;
+	}
+	
+	
 }
