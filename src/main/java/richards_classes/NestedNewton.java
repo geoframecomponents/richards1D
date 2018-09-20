@@ -77,8 +77,10 @@ public class NestedNewton {
 	 * @param thetaR vector containing the adimensional residual water contentfor each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 * @param thetaS vector containing the adimensional water content at saturation for each control volume, it is a vector of length NUM_CONTROL_VOLUMES-1
 	 */
-	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth,
-			double[] par1SWRC, double[] par2SWRC, double[] par3SWRC, double[] par4SWRC, double[] par5SWRC, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS){
+	//public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth,
+	//		double[] par1SWRC, double[] par2SWRC, double[] par3SWRC, double[] par4SWRC, double[] par5SWRC, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS){
+	public NestedNewton(int nestedNewton, double newtonTolerance, int MAXITER_NEWT, int NUM_CONTROL_VOLUMES, double[] dx, SoilParametrization soilPar, TotalDepth totalDepth){
+		
 		this.nestedNewton = nestedNewton;
 		this.newtonTolerance = newtonTolerance;
 		this.MAXITER_NEWT = MAXITER_NEWT;
@@ -87,15 +89,15 @@ public class NestedNewton {
 		this.totalDepth = totalDepth;
 		this.dx = dx;
 		
-		this.thetaS = thetaS;
-		this.thetaR = thetaR;
-		this.par1SWRC = par1SWRC;
-		this.par2SWRC = par2SWRC;
-		this.par3SWRC = par3SWRC;
-		this.par4SWRC = par4SWRC;
-		this.par5SWRC = par5SWRC;
-		this.alphaSpecificStorage = alphaSpecificStorage;
-		this.betaSpecificStorage = betaSpecificStorage;
+		//this.thetaS = thetaS;
+		//this.thetaR = thetaR;
+		//this.par1SWRC = par1SWRC;
+		//this.par2SWRC = par2SWRC;
+		//this.par3SWRC = par3SWRC;
+		//this.par4SWRC = par4SWRC;
+		//this.par5SWRC = par5SWRC;
+		//this.alphaSpecificStorage = alphaSpecificStorage;
+		//this.betaSpecificStorage = betaSpecificStorage;
 
 		
 		//soilMoistureJordanDecomposition = new JordanDecompositionSoilMoisture(this.soilPar);
@@ -139,8 +141,8 @@ public class NestedNewton {
 				psis[i] = Math.max(psis[i],1);
 				//System.out.println(i +"   "+psis[i]);
 			} else {
-				soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999.0);
-				psis[i] = Math.min(psis[i], soilPar.getPsiStar1() );
+				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999.0);
+				psis[i] = Math.min(psis[i], soilPar.getPsiStar1(i) );
 				//System.out.println(i +"   "+psis[i]);
 			}
 		}
@@ -151,18 +153,18 @@ public class NestedNewton {
 			outerResidual = 0.0;
 			for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
 				if(j==0) {
-					soilPar.set(par1SWRC[j],par2SWRC[j],par3SWRC[j],par4SWRC[j],par5SWRC[j],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[j],thetaS[j],-999.0);
-					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
-					dis[j] = soilPar.dWaterContent(psis[j]);
+					//soilPar.set(par1SWRC[j],par2SWRC[j],par3SWRC[j],par4SWRC[j],par5SWRC[j],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[j],thetaS[j],-999.0);
+					fs[j] = soilPar.waterContent(psis[j],j)*dx[j] - rhss[j] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					dis[j] = soilPar.dWaterContent(psis[j],j);
 					//System.out.println(j+" "+fs[j]);
 				} else if(j==NUM_CONTROL_VOLUMES-1) {
 					fs[j] = totalDepth.totalDepth(psis[j]) - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j];
 					dis[j] = totalDepth.dTotalDepth(psis[j]);
 					//System.out.println(j+" "+fs[j]);
 				} else {
-					soilPar.set(par1SWRC[j],par2SWRC[j],par3SWRC[j],par4SWRC[j],par5SWRC[j],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[j],thetaS[j],-999.0);
-					fs[j] = soilPar.waterContent(psis[j])*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
-					dis[j] = soilPar.dWaterContent(psis[j]);
+					//soilPar.set(par1SWRC[j],par2SWRC[j],par3SWRC[j],par4SWRC[j],par5SWRC[j],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[j],thetaS[j],-999.0);
+					fs[j] = soilPar.waterContent(psis[j],j)*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
+					dis[j] = soilPar.dWaterContent(psis[j],j);
 					//System.out.println(j+" "+soilPar.waterContent(psis[j]));
 					//System.out.println(j+" "+fs[j]);
 				}
@@ -196,8 +198,8 @@ public class NestedNewton {
 					if(j==NUM_CONTROL_VOLUMES-1) {
 						psis[j] = Math.max(psis[j],1);
 					} else {
-					soilPar.set(par1SWRC[j], par2SWRC[j], par3SWRC[j], par4SWRC[j], par5SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999.0) ;
-					psis[j] = Math.max(psis[j], soilPar.getPsiStar1());
+					//soilPar.set(par1SWRC[j], par2SWRC[j], par3SWRC[j], par4SWRC[j], par5SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999.0) ;
+					psis[j] = Math.max(psis[j], soilPar.getPsiStar1(j));
 					}
 				}
 
@@ -207,9 +209,9 @@ public class NestedNewton {
 					innerResidual = 0.0; 
 					for(int l=0; l < NUM_CONTROL_VOLUMES; l++) {
 						if(l==0) {
-							soilPar.set(par1SWRC[l], par2SWRC[l], par3SWRC[l], par4SWRC[l], par5SWRC[l], alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l], -999.0);
-							fks[l] = soilPar.pIntegral(psis[l])*dx[l] - ( soilPar.qIntegral(psis_outer[l]) + soilPar.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
-							dis[l] = ( soilPar.p(psis[l]) - soilPar.q(psis_outer[l]) )*dx[l];
+							//soilPar.set(par1SWRC[l], par2SWRC[l], par3SWRC[l], par4SWRC[l], par5SWRC[l], alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l], -999.0);
+							fks[l] = soilPar.pIntegral(psis[l],l)*dx[l] - ( soilPar.qIntegral(psis_outer[l],l) + soilPar.q(psis_outer[l],l)*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+							dis[l] = ( soilPar.p(psis[l],l) - soilPar.q(psis_outer[l],l) )*dx[l];
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+dis[l]);
 						} else if(l==NUM_CONTROL_VOLUMES-1) {
@@ -218,9 +220,9 @@ public class NestedNewton {
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
 						} else {
-							soilPar.set(par1SWRC[l], par2SWRC[l], par3SWRC[l], par4SWRC[l], par5SWRC[l], alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l], -999.0);
-							fks[l] = soilPar.pIntegral(psis[l])*dx[l] - ( soilPar.qIntegral(psis_outer[l]) + soilPar.q(psis_outer[l])*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
-							dis[l] = ( soilPar.p(psis[l]) - soilPar.q(psis_outer[l]) )*dx[l];
+							//soilPar.set(par1SWRC[l], par2SWRC[l], par3SWRC[l], par4SWRC[l], par5SWRC[l], alphaSpecificStorage[i], betaSpecificStorage[i],  thetaR[l], thetaS[l], -999.0);
+							fks[l] = soilPar.pIntegral(psis[l],l)*dx[l] - ( soilPar.qIntegral(psis_outer[l],l) + soilPar.q(psis_outer[l],l)*(psis[l] - psis_outer[l]) )*dx[l] - this.rhss[l]  + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l] + upperDiagonal[l]*psis[l+1];
+							dis[l] = ( soilPar.p(psis[l],l) - soilPar.q(psis_outer[l],l) )*dx[l];
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+dis[l]);
 						}
