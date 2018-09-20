@@ -85,9 +85,9 @@ public abstract class SoilParametrization {
 	 * of moisture capacity with respect of suction has its maximum.
 	 * @return
 	 */
-	//public double getPsiStar1(){
-	//	return this.psiStar1;
-	//}
+	public double getPsiStar1(int i){
+		return this.psiStar1[i];
+	}
 	
 	
 	/**
