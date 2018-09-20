@@ -29,14 +29,14 @@ import java.util.LinkedHashMap;
 
 public abstract class SoilParametrization {
 	
-	protected double psiStar1; // suction value at which the derivative of hydraulic capacity is null
+	protected double[] psiStar1; // suction value at which the derivative of hydraulic capacity is null
 	protected double psiStar2; // suction value at which the derivative of hydraulic capacity is null
 	protected double psiStar3; // suction value at which the derivative of hydraulic capacity is null
-	protected double thetaR;  // residual water content 
-	protected double thetaS;  // water content at saturation
-	protected double kappaSaturation; // hydraulic conductivity at saturation
-	protected double alphaSpecificStorage;
-	protected double betaSpecificStorage;
+	protected double[] thetaR;  // residual water content 
+	protected double[] thetaS;  // water content at saturation
+	protected double[] kappaSaturation; // hydraulic conductivity at saturation
+	protected double[] alphaSpecificStorage;
+	protected double[] betaSpecificStorage;
 	
 	protected double theta; // water content
 	protected double dTheta;// first derivative of theta with respect of suction
@@ -60,7 +60,24 @@ public abstract class SoilParametrization {
 	 * @param kappaSaturation hydraulic conductivity at saturation
 	 * 
 	 */
-	public abstract void set(double par1, double par2, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation);
+	//public abstract void set(double par1, double par2, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation);
+	
+	
+	
+	/**
+	 * This method set SWRC parameters
+	 * @param par1
+	 * @param par2
+	 * @param par3
+	 * @param par4
+	 * @param par5
+	 * @param thetaR adimensional residual water content
+	 * @param thetaS adimensional water content at saturation
+	 * @param kappaSaturation hydraulic conductivity at saturation
+	 * 
+	 */
+	public abstract void set(double[] par1, double[] par2, double[] par3, double[] par4, double[] par5, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation);
+	
 	
 	
 	/**
@@ -68,9 +85,9 @@ public abstract class SoilParametrization {
 	 * of moisture capacity with respect of suction has its maximum.
 	 * @return
 	 */
-	public double getPsiStar1(){
-		return this.psiStar1;
-	}
+	//public double getPsiStar1(){
+	//	return this.psiStar1;
+	//}
 	
 	
 	/**
@@ -78,9 +95,9 @@ public abstract class SoilParametrization {
 	 * of moisture capacity with respect of suction has its maximum.
 	 * @return
 	 */
-	public double getPsiStar2(){
-		return this.psiStar2;
-	}
+	//public double getPsiStar2(){
+	//	return this.psiStar2;
+	//}
 	
 	
 	/**
@@ -88,7 +105,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double waterContent(double suction);
+	public abstract double waterContent(double suction, int i);
 	
 	
 	/**
@@ -96,7 +113,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double dWaterContent(double suction);
+	public abstract double dWaterContent(double suction, int i);
 	
 	
 	/**
@@ -104,7 +121,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double hydraulicConductivity(double suction);
+	public abstract double hydraulicConductivity(double suction, int i);
 	
 	
 	/**
@@ -112,7 +129,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double pIntegral(double suction);
+	public abstract double pIntegral(double suction, int i);
 	
 	
 	/**
@@ -120,7 +137,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double qIntegral(double suction);
+	public abstract double qIntegral(double suction, int i);
 	
 	
 	/**
@@ -128,7 +145,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double p(double suction);
+	public abstract double p(double suction, int i);
 	
 	
 	/**
@@ -136,7 +153,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double q(double suction);
+	public abstract double q(double suction, int i);
 	
 	/**
 	 * This method creates a data set to plot the hydraulic properties of the soil
@@ -169,6 +186,7 @@ public abstract class SoilParametrization {
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
 	 */
+	/*
 	public LinkedHashMap<String, double[]> hydraulicModelCurves1(){
 		
 		LinkedHashMap<String, double[]> result  = new LinkedHashMap<String, double[]>();
@@ -204,4 +222,5 @@ public abstract class SoilParametrization {
 		
 	return result;
 	} 
+	*/
 }
