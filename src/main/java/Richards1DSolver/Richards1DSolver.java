@@ -82,14 +82,29 @@ public class Richards1DSolver {
 	@Unit ("-")
 	public double[] par5SWRC;
 	
-	@Description("First parameter of SWRC")
+	@Description("Critical value of psi for which the moisture capacity is null")
 	@In 
-	@Unit ("-")
+	@Unit ("m")
+	public double[] psiStar1;
+	
+	@Description("Critical value of psi for which the moisture capacity is null")
+	@In 
+	@Unit ("m")
+	public double[] psiStar2;
+	
+	@Description("Critical value of psi for which the moisture capacity is null")
+	@In 
+	@Unit ("m")
+	public double[] psiStar3;
+	
+	@Description("Aquitard compressibility")
+	@In 
+	@Unit ("1/Pa")
 	public double[] alphaSpecificStorage;
 
-	@Description("Second parameter of SWRC")
+	@Description("Water compressibility")
 	@In 
-	@Unit ("-")
+	@Unit ("1/Pa")
 	public double[] betaSpecificStorage;
 
 	@Description("It is possibile to chose between 3 different models to compute "
@@ -398,10 +413,10 @@ public class Richards1DSolver {
 				dx[i] = deltaZ[i];
 			}
 
-			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks,
+			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks,
 					soilPar, totalDepth, interfaceHydraulicConductivity, bottomBCType);
 
-			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC,, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
+			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
 
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
@@ -453,14 +468,14 @@ public class Richards1DSolver {
 						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
 					}
 				}
-				//soilPar.set(par1SWRC[0],par2SWRC[0],thetaR[0],thetaS[0],ks[0]);
+				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
 				//k_b = soilPar.hydraulicConductivity(bottomBC);
 				// Compute volumes and hydraulic conductivity
 
 				//compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 				//volumes = compute.computeWaterVolumes().clone();
 				//kappas = compute.computeKappas().clone();
-				//soilPar.set(par1SWRC[0],par2SWRC[0],thetaR[0],thetaS[0],ks[0]);
+				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
 				//k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
 
 
