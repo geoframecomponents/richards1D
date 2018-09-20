@@ -394,6 +394,7 @@ public class Richards1DSolver {
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
 			//soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel);
+			soilPar.set(par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, psiStar1, psiStar2, psiStar3, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks);
 			totalDepth = new TotalDepth();
 
 
@@ -454,18 +455,18 @@ public class Richards1DSolver {
 				
 				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 					if(i==0) {
-						soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumes[i] = soilPar.waterContent(psis[i])*dx[i];
-						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
-						k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
+						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+						volumes[i] = soilPar.waterContent(psis[i],i)*dx[i];
+						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
+						k_b = soilPar.hydraulicConductivity(bottomBC,i);  // I use the same parameters of the bottom cell
 					} else if(i==NUM_CONTROL_VOLUMES-1) {
 						volumes[i] = totalDepth.totalDepth(psis[i]);
-						soilPar.set(par1SWRC[i-1],par2SWRC[i-1],par3SWRC[i-1],par4SWRC[i-1],par5SWRC[i-1],alphaSpecificStorage[i-1],betaSpecificStorage[i-1],thetaR[i-1],thetaS[i-1],ks[i-1]);
-						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+						//soilPar.set(par1SWRC[i-1],par2SWRC[i-1],par3SWRC[i-1],par4SWRC[i-1],par5SWRC[i-1],alphaSpecificStorage[i-1],betaSpecificStorage[i-1],thetaR[i-1],thetaS[i-1],ks[i-1]);
+						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
 					} else {
-						soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumes[i] = soilPar.waterContent(psis[i])*dx[i];
-						kappas[i] = soilPar.hydraulicConductivity(psis[i]);
+						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+						volumes[i] = soilPar.waterContent(psis[i],i)*dx[i];
+						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
 					}
 				}
 				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
@@ -545,28 +546,28 @@ public class Richards1DSolver {
 							kM = kappas[i];
 							velocities[i] =  -kM;
 
-							soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i]);
+							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
+							thetasNew[i] = soilPar.waterContent(psis[i],i);
 						} else if (bottomBCType.equalsIgnoreCase("Bottom Neumann") || bottomBCType.equalsIgnoreCase("BottomNeumann")) {
 							velocities[i] =  bottomBC;
 
-							soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i]);
+							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
+							thetasNew[i] = soilPar.waterContent(psis[i],i);
 						} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
 							velocities[i] = + 0;
-							soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i]);
+							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
+							thetasNew[i] = soilPar.waterContent(psis[i],i);
 						}
 						else {
 							kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
 							velocities[i] =  -kM * (psis[i]+z[i]-bottomBC-0)/spaceDelta[i];
 
-							soilPar.set(par1SWRC[i],par2SWRC[i],par5SWRC[i],par5SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i]);
+							//soilPar.set(par1SWRC[i],par2SWRC[i],par5SWRC[i],par5SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
+							thetasNew[i] = soilPar.waterContent(psis[i],i);
 						}
 
 					} else if(i == NUM_CONTROL_VOLUMES-1) {
@@ -580,9 +581,9 @@ public class Richards1DSolver {
 						kP = interfaceHydraulicConductivity.compute(kappas[i+1],kappas[i],dx[i],dx[i-1]);
 						velocities[i+1] =  -kP * (psis[i+1]+z[i+1]-psis[i]-z[i])/spaceDelta[i+1];
 
-						soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumesNew[i] = soilPar.waterContent(psis[i])*dx[i];
-						thetasNew[i] = soilPar.waterContent(psis[i]);
+						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
+						volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
+						thetasNew[i] = soilPar.waterContent(psis[i],i);
 					}
 					volume +=volumes[i];
 					volumeNew +=volumesNew[i];
