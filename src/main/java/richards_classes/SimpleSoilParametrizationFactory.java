@@ -76,6 +76,7 @@ public class SimpleSoilParametrizationFactory {
 	 * @param ks hydraulic conductivity at saturation
 	 * @return soilPar
 	 */
+	/*
 	public SoilParametrization createSoilParametrization (String type, double alpha, double n, double psi_e, double lambda, double rMedian, double sigma, double theta_r, double theta_s, double ks) {
 
 		SoilParametrization soilPar = null;
@@ -93,4 +94,5 @@ public class SimpleSoilParametrizationFactory {
 		}
 		return soilPar;
 		}
+	*/
 }
