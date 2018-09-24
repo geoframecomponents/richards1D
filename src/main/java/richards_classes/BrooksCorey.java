@@ -27,8 +27,8 @@ package richards_classes;
 public class BrooksCorey extends SoilParametrization {
 	
 	// Brooks - Corey's parameters
-	private double n;
-	private double psiD;
+	private double[] n;
+	private double[] psiD;
 	
 	
 	/**
@@ -54,6 +54,7 @@ public class BrooksCorey extends SoilParametrization {
 	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
 	 * @exception if kappaSaturation <0 check the value
 	 */
+	/*
 	public BrooksCorey(double n, double psiD, double thetaR, double thetaS, double kappaSaturation){
 		this.n = n;
 		this.psiD = psiD; 
@@ -81,10 +82,11 @@ public class BrooksCorey extends SoilParametrization {
 		}
 		
 	}
+	*/
 	
 	
 	
-	public void set(double n, double psiD, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double[] n, double[] psiD, double[] par3, double[] par4, double[] par5, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.n = n;
 		this.psiD = psiD; 
@@ -105,12 +107,12 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
-	public double waterContent(double suction){
+	public double waterContent(double suction, int i){
 				
-		if(suction <= this.psiD) {
-			this.theta = this.thetaR + (this.thetaS-this.thetaR) * Math.pow((this.psiD/suction), this.n);
+		if(suction <= this.psiD[i]) {
+			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * Math.pow((this.psiD[i]/suction), this.n[i]);
 		} else {
-			this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
+			this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 		return this.theta;
 	}
@@ -121,12 +123,12 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction
 	 * @return dTheta the value of the moisture capacity
 	 */
-	public double dWaterContent(double suction){
+	public double dWaterContent(double suction,int i){
 		
-		if (suction <= this.psiD) {
-		    this.dTheta = this.n*(this.thetaS - this.thetaR) /Math.abs(this.psiD) * Math.pow(this.psiD/suction,this.n+1);
+		if (suction <= this.psiD[i]) {
+		    this.dTheta = this.n[i]*(this.thetaS[i] - this.thetaR[i]) /Math.abs(this.psiD[i]) * Math.pow(this.psiD[i]/suction,this.n[i]+1);
 		} else {
-		    this.dTheta = + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
+		    this.dTheta = + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
@@ -138,13 +140,13 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction 
 	 * @return kappa hydraulic conductivity at suction value
 	 */
-	public double hydraulicConductivity(double suction){
+	public double hydraulicConductivity(double suction,int i){
 		
-		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR);
+		this.saturationDegree = (waterContent(suction,i) - thetaR[i]) / (thetaS[i] - thetaR[i]);
 		if(this.saturationDegree<1) {
-			this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, 3+2/this.n);
+			this.kappa = this.kappaSaturation[i] * Math.pow(this.saturationDegree, 3+2/this.n[i]);
 		} else {
-			this.kappa = this.kappaSaturation;
+			this.kappa = this.kappaSaturation[i];
 		}
 		
 		return this.kappa;
@@ -156,11 +158,11 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction
 	 * @return theta1 
 	 */
-	public double pIntegral(double suction){
-		if(suction <= this.psiStar1) {
-			super.f1 = this.waterContent(suction);
+	public double pIntegral(double suction,int i){
+		if(suction <= this.psiStar1[i]) {
+			super.f1 = this.waterContent(suction,i);
 		} else {
-			this.f1 = this.waterContent(this.psiStar1) + this.dWaterContent(this.psiStar1)*(suction - this.psiStar1);
+			this.f1 = this.waterContent(this.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
 		}
 
 		return this.f1;
@@ -172,8 +174,8 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction
 	 * @return theta2
 	 */
-	public double qIntegral(double suction){
-		super.f2 = pIntegral(suction) - this.waterContent(suction);
+	public double qIntegral(double suction,int i){
+		super.f2 = pIntegral(suction,i) - this.waterContent(suction,i);
 
 		return super.f2;
 	}
@@ -182,14 +184,14 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta1
 	 */
-	public double p(double suction){
-		if (suction <= this.psiStar1) {
+	public double p(double suction,int i){
+		if (suction <= this.psiStar1[i]) {
 		    // left of critical value, take the original derivative
-			super.df1 = this.dWaterContent(suction);
+			super.df1 = this.dWaterContent(suction,i);
 		}
 		else {
 		    // on the right of the critical value, keep the maximum derivative
-			super.df1 = this.dWaterContent(this.psiStar1);
+			super.df1 = this.dWaterContent(this.psiStar1[i],i);
 		}
 
 		return super.df1;
@@ -201,8 +203,8 @@ public class BrooksCorey extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta2
 	 */
-	public double q(double suction){
-		super.df2 = p(suction) - this.dWaterContent(suction);
+	public double q(double suction,int i){
+		super.df2 = p(suction,i) - this.dWaterContent(suction,i);
 
 		return super.df2;
 	}
