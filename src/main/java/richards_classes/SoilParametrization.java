@@ -30,8 +30,8 @@ import java.util.LinkedHashMap;
 public abstract class SoilParametrization {
 	
 	protected double[] psiStar1; // suction value at which the derivative of hydraulic capacity is null
-	protected double psiStar2; // suction value at which the derivative of hydraulic capacity is null
-	protected double psiStar3; // suction value at which the derivative of hydraulic capacity is null
+	protected double[] psiStar2; // suction value at which the derivative of hydraulic capacity is null
+	protected double[] psiStar3; // suction value at which the derivative of hydraulic capacity is null
 	protected double[] thetaR;  // residual water content 
 	protected double[] thetaS;  // water content at saturation
 	protected double[] kappaSaturation; // hydraulic conductivity at saturation
