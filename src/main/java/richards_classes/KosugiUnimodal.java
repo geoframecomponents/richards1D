@@ -27,9 +27,9 @@ import org.apache.commons.math3.special.Erf;
 
 public class KosugiUnimodal extends SoilParametrization {
 	
-	private double rMedian; // radius median of pore-size distribution
-	private double sigma;   // standard deviation of pore-size distribution
-	private double psiMedian; // suction value related to rMedian by Young-Laplace equation
+	//private double[] rMedian; // radius median of pore-size distribution
+	private double[] sigma;   // standard deviation of pore-size distribution
+	private double[] psiMedian; // suction value related to rMedian by Young-Laplace equation
 
 	
 	
@@ -56,8 +56,8 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
 	 * @exception if kappaSaturation <0 check the value
 	 */
-	
-	public KosugiUnimodal(double rMedian, double sigma, double thetaR, double thetaS, double kappaSaturation){
+	/*
+	public KosugiUnimodal(double[] rMedian, double[] sigma, double[] thetaR, double[] thetaS, double[] kappaSaturation){
 		this.rMedian = rMedian;
 		this.sigma = sigma; 
 		this.thetaR = thetaR;
@@ -86,12 +86,12 @@ public class KosugiUnimodal extends SoilParametrization {
 		this.psiStar1 = -1.49*Math.pow(10, -5)/this.rMedian/Math.exp(Math.pow(this.sigma,2));  // see Brutsaert, 1996
 		this.psiMedian = -1.49*Math.pow(10, -5)/this.rMedian;
 	}
+	*/
 	
 	
-	
-	public void set(double rMedian, double sigma, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double[] psiMedian, double[] sigma, double[] par3, double[] par4, double[] par5, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
-		this.rMedian = rMedian;
+		//this.rMedian = rMedian;
 		this.sigma = sigma; 
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
@@ -99,8 +99,8 @@ public class KosugiUnimodal extends SoilParametrization {
 		super.alphaSpecificStorage = alphaSpecificStorage;
 		super.betaSpecificStorage = betaSpecificStorage;
 		
-		this.psiStar1 = -1.49*Math.pow(10, -5)/this.rMedian/Math.exp(Math.pow(this.sigma,2));  // see Brutsaert, 1996
-		this.psiMedian = -1.49*Math.pow(10, -5)/this.rMedian;
+		this.psiStar1 = psiStar1;
+		this.psiMedian = psiMedian;
 	}
 	
 	
@@ -108,12 +108,12 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
-	public double waterContent(double suction){
+	public double waterContent(double suction, int i){
 				
 		if(suction <= 0) {
-		    this.theta = this.thetaR + (this.thetaS - this.thetaR)*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian)/(this.sigma*Math.pow(2,0.5))) ) ; // ho medificato la parte relativa al sigma dentro il logaritmo
+		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i])*0.5*( 1-Erf.erf(Math.log(suction/this.psiMedian[i])/(this.sigma[i]*Math.pow(2,0.5))) ) ; // ho medificato la parte relativa al sigma dentro il logaritmo
 		} else {
-		    this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
+		    this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 
 		return this.theta;
@@ -125,12 +125,12 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return dTheta the value of the moisture capacity 
 	 */
-	public double dWaterContent(double suction){
+	public double dWaterContent(double suction,int i){
 		
 		if (suction < 0) {
-		    this.dTheta = (this.thetaS-this.thetaR)/(Math.sqrt(2*Math.PI)*this.sigma*(-suction)) * Math.exp(-Math.pow(Math.log(suction/this.psiMedian),2)/(2*Math.pow(this.sigma,2)));
+		    this.dTheta = (this.thetaS[i]-this.thetaR[i])/(Math.sqrt(2*Math.PI)*this.sigma[i]*(-suction)) * Math.exp(-Math.pow(Math.log(suction/this.psiMedian[i]),2)/(2*Math.pow(this.sigma[i],2)));
 		} else {
-		    this.dTheta =  + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
+		    this.dTheta =  + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
@@ -142,15 +142,15 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
 	 */
-	public double hydraulicConductivity(double suction){
+	public double hydraulicConductivity(double suction,int i){
 		final double l = 0.5;   // (Kosugi, 1996)
 		final double gamma = 2; // Mualem model (Kosugi, 1996)
  		final double eta = 1;   // Mualem model (Kosugi, 1996)
-		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR); 
+		this.saturationDegree = (waterContent(suction,i) - thetaR[i]) / (thetaS[i] - thetaR[i]); 
 		if(this.saturationDegree<1) {
-			this.kappa = this.kappaSaturation * Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*Erf.erfc( Erf.erfcInv(2*this.saturationDegree) + eta*this.sigma/Math.sqrt(2)  ) ),gamma );
+			this.kappa = this.kappaSaturation[i] * Math.pow(this.saturationDegree, l)*Math.pow( ( 0.5*Erf.erfc( Erf.erfcInv(2*this.saturationDegree) + eta*this.sigma[i]/Math.sqrt(2)  ) ),gamma );
 		} else {
-			this.kappa = this.kappaSaturation;
+			this.kappa = this.kappaSaturation[i];
 		}
 			
 		return this.kappa;
@@ -162,11 +162,11 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return theta1 
 	 */
-	public double pIntegral(double suction){
-		if(suction <= this.psiStar1) {
-			super.f1 = this.waterContent(suction);
+	public double pIntegral(double suction,int i){
+		if(suction <= this.psiStar1[i]) {
+			super.f1 = this.waterContent(suction,i);
 		} else {
-			this.f1 = this.waterContent(this.psiStar1) + this.dWaterContent(this.psiStar1)*(suction - this.psiStar1);
+			this.f1 = this.waterContent(this.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
 		}
 
 		return this.f1;
@@ -178,8 +178,8 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return theta2
 	 */
-	public double qIntegral(double suction){
-		super.f2 = pIntegral(suction) - this.waterContent(suction);
+	public double qIntegral(double suction,int i){
+		super.f2 = pIntegral(suction,i) - this.waterContent(suction,i);
 
 		return super.f2;
 	}
@@ -188,14 +188,14 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta1
 	 */
-	public double p(double suction){
-		if (suction <= this.psiStar1) {
+	public double p(double suction,int i){
+		if (suction <= this.psiStar1[i]) {
 		    // left of critical value, take the original derivative
-			super.df1 = this.dWaterContent(suction);
+			super.df1 = this.dWaterContent(suction,i);
 		}
 		else {
 		    // on the right of the critical value, keep the maximum derivative
-			super.df1 = this.dWaterContent(this.psiStar1);
+			super.df1 = this.dWaterContent(this.psiStar1[i],i);
 		}
 
 		return super.df1;
@@ -207,8 +207,8 @@ public class KosugiUnimodal extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta2
 	 */
-	public double q(double suction){
-		super.df2 = p(suction) - this.dWaterContent(suction);
+	public double q(double suction,int i){
+		super.df2 = p(suction,i) - this.dWaterContent(suction,i);
 
 		return super.df2;
 	}
