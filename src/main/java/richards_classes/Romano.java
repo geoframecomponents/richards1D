@@ -29,11 +29,11 @@ import org.apache.commons.math3.special.Erf;
 public class Romano extends SoilParametrization {
 	
 	// Romano parameters
-	private double w;
-	private double psiM1;
-	private double psiM2;
-	private double sigma1;
-	private double sigma2;
+	private double[] w;
+	private double[] psiM1;
+	private double[] psiM2;
+	private double[] sigma1;
+	private double[] sigma2;
 	
 	private double gamma1;
 	private double gamma2;
@@ -58,6 +58,7 @@ public class Romano extends SoilParametrization {
 	 * @param sigma2 h
 	 * @param kappaSaturation hydraulic conductivity at saturation >0
 	 */
+	/*
 	public Romano(double w, double psiM1, double psiM2, double sigma1, double sigma2, double thetaR, double thetaS, double kappaSaturation){
 		this.w = w;
 		this.psiM1 = psiM1; 
@@ -86,26 +87,29 @@ public class Romano extends SoilParametrization {
 		if(this.kappaSaturation <0){
 			throw new IllegalArgumentException( "ERROR: Check the value of hydraulic conductivity at saturation \n");
 		}
-		*/
+		
 		
 	}
+	*/
 	
 	
 	
-	public void set(double w, double psiM1, double psiM2, double sigma1, double sigma2, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
+	public void set(double[] w, double[] psiM1, double[] psiM2, double[] sigma1, double[] sigma2, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.w = w;
 		this.psiM1 = psiM1; 
 		this.psiM2 = psiM2;
 		this.sigma1 = sigma1;
 		this.sigma2 = sigma2;
-		this.thetaR = thetaR;
-		this.thetaS = thetaS;
-		this.kappaSaturation = kappaSaturation;
+		super.psiStar1 = psiStar1;
+		super.psiStar2 = psiStar2;
+		super.psiStar3 = psiStar3;
+		super.thetaR = thetaR;
+		super.thetaS = thetaS;
+		super.kappaSaturation = kappaSaturation;
 		super.alphaSpecificStorage = alphaSpecificStorage;
 		super.betaSpecificStorage = betaSpecificStorage;
 		
-		//this.psiStar = this.psiD;
 	}
 	
 	
@@ -115,12 +119,12 @@ public class Romano extends SoilParametrization {
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
-	public double waterContent(double suction){
+	public double waterContent(double suction,int i){
 				
 		if(suction <= 0) {
-			this.theta = this.thetaR + (this.thetaS-this.thetaR) * (this.w/2 * Erf.erfc(Math.log(suction/this.psiM1)/(this.sigma1*Math.sqrt(2)) ) + (1-w)/2* Erf.erfc(Math.log(suction/this.psiM2)/(this.sigma2*Math.sqrt(2)) ) );
+			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * (this.w[i]/2 * Erf.erfc(Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2)) ) + (1-w[i])/2* Erf.erfc(Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2)) ) );
 		} else {
-			this.theta = this.thetaS + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage)*suction;
+			this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 		return this.theta;
 	}
@@ -131,14 +135,14 @@ public class Romano extends SoilParametrization {
 	 * @param suction
 	 * @return dTheta the value of the moisture capacity
 	 */
-	public double dWaterContent(double suction){
+	public double dWaterContent(double suction,int i){
 		
 		if (suction <= 0) {
-			this.gamma1 = Math.exp( -( Math.log(suction/this.psiM1)/(this.sigma1*Math.sqrt(2))) );
-			this.gamma2 = Math.exp( -( Math.log(suction/this.psiM2)/(this.sigma2*Math.sqrt(2))) );
-		    this.dTheta = 1/(Math.sqrt(2*Math.PI)*suction/this.psiM1)*(this.thetaS - this.thetaR) * ( this.w/this.sigma1*this.gamma1 + (1-w)/this.sigma2*this.gamma2 );
+			this.gamma1 = Math.exp( -( Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2))) );
+			this.gamma2 = Math.exp( -( Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2))) );
+		    this.dTheta = 1/(Math.sqrt(2*Math.PI)*suction/this.psiM1[i])*(this.thetaS[i] - this.thetaR[i]) * ( this.w[i]/this.sigma1[i]*this.gamma1 + (1-this.w[i])/this.sigma2[i]*this.gamma2 );
 		} else {
-		    this.dTheta = + 9.81*( this.alphaSpecificStorage + this.thetaS*this.betaSpecificStorage);
+		    this.dTheta = + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
@@ -150,18 +154,80 @@ public class Romano extends SoilParametrization {
 	 * @param suction 
 	 * @return kappa hydraulic conductivity at suction value
 	 */
-	public double hydraulicConductivity(double suction){
+	public double hydraulicConductivity(double suction,int i){
 		
-		this.saturationDegree = (waterContent(suction) - thetaR) / (thetaS - thetaR);
+		this.saturationDegree = (waterContent(suction,i) - super.thetaR[i]) / (super.thetaS[i] - super.thetaR[i]);
 		if(this.saturationDegree<1) {
-			this.aa = ( Math.pow(this.sigma1, 2) + Math.log(suction/psiM1)) / ( this.sigma1*Math.sqrt(2) );
-			this.aa = ( Math.pow(this.sigma2, 2) + Math.log(suction/psiM2)) / ( this.sigma2*Math.sqrt(2) );
-			this.r = this.psiM1/this.psiM2 * (1-w)/w * Math.exp(0.5*(Math.pow(this.sigma1,2)-Math.pow(this.sigma2,2)))
-			this.kappa = this.kappaSaturation*Math.sqrt(this.saturationDegree)*Math.pow( 0.5*Erf.erfc(this.aa)/(1+this.r) + 0.5*Erf.erfc(this.bb)/(1+this.r),2);
+			this.aa = ( Math.pow(this.sigma1[i], 2) + Math.log(suction/this.psiM1[i])) / ( this.sigma1[i]*Math.sqrt(2) );
+			this.aa = ( Math.pow(this.sigma2[i], 2) + Math.log(suction/this.psiM2[i])) / ( this.sigma2[i]*Math.sqrt(2) );
+			this.r = this.psiM1[i]/this.psiM2[i] * (1-this.w[i])/this.w[i] * Math.exp(0.5*(Math.pow(this.sigma1[i],2)-Math.pow(this.sigma2[i],2)));
+			this.kappa = this.kappaSaturation[i]*Math.sqrt(this.saturationDegree)*Math.pow( 0.5*Erf.erfc(this.aa)/(1+this.r) + 0.5*Erf.erfc(this.bb)/(1+this.r),2);
 		} else {
-			this.kappa = this.kappaSaturation;
+			this.kappa = this.kappaSaturation[i];
 		}
 		
 		return this.kappa;
 	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return theta1 
+	 */
+	public double pIntegral(double suction,int i){
+		if(suction <= this.psiStar1[i]) {
+			super.f1 = this.waterContent(suction,i);
+		} else if(super.psiStar1[i]<suction && suction<=super.psiStar3[i]) {
+			this.f1 = this.waterContent(super.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
+		} else if(super.psiStar3[i]<suction && suction<=super.psiStar2[i]) {
+			this.f1 = this.waterContent(suction, i) - this.waterContent(super.psiStar3[i], i) + this.waterContent(super.psiStar1[i], i) + this.dWaterContent(super.psiStar1[i], i)*(suction-super.psiStar1[i]);
+		} else {
+			this.f1 = this.waterContent(super.psiStar1[i], i) + this.waterContent(super.psiStar2[i], i) - this.waterContent(super.psiStar3[i], i) + this.dWaterContent(super.psiStar2[i], i)*(suction-super.psiStar2[i]);
+		}
+		return this.f1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return theta2
+	 */
+	public double qIntegral(double suction, int i){
+		super.f2 = pIntegral(suction,i) - this.waterContent(suction,i);
+
+		return super.f2;
+	}
+	
+	/**
+	 * @param suction
+	 * @return dtheta1
+	 */
+	public double p(double suction,int i){
+		if (suction <= this.psiStar1[i]) {
+			super.df1 = this.dWaterContent(suction,i);
+		} else if(super.psiStar1[i]<suction && suction<super.psiStar3[i]) {
+			super.df1 = this.dWaterContent(this.psiStar1[i],i);
+		} else if (super.psiStar3[i]<=suction && suction <super.psiStar2[i]) {
+			super.df1 = this.dWaterContent(suction, i) + this.dWaterContent(super.psiStar1[i], i);
+		} else {
+			super.df1 = this.dWaterContent(super.psiStar2[i], i) + this.dWaterContent(super.psiStar1[i], i);
+		}
+			
+		return super.df1;
+	}
+	
+	
+	
+	/**
+	 * @param suction
+	 * @return dtheta2
+	 */
+	public double q(double suction,int i){
+		super.df2 = p(suction,i) - this.dWaterContent(suction,i);
+
+		return super.df2;
+	}
+	
 }
