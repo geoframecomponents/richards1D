@@ -105,7 +105,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double waterContent(double suction, int i);
+	public abstract double waterContent(double suction,int i);
 	
 	
 	/**
@@ -113,7 +113,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double dWaterContent(double suction, int i);
+	public abstract double dWaterContent(double suction,int i);
 	
 	
 	/**
@@ -121,7 +121,7 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double hydraulicConductivity(double suction, int i);
+	public abstract double hydraulicConductivity(double suction,int i);
 	
 	
 	/**
@@ -153,8 +153,10 @@ public abstract class SoilParametrization {
 	 * @param suction
 	 * @return
 	 */
-	public abstract double q(double suction, int i);
+	public abstract double q(double suction,int i);
 	
+	
+	// questo metodo e` da mettere nello script python della creazione del dominio di calcolo
 	/**
 	 * This method creates a data set to plot the hydraulic properties of the soil
 	 * SWRC(psi), hydraulic conductivity(Se), moisture capacity(psi)
