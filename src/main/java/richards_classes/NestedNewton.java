@@ -138,7 +138,7 @@ public class NestedNewton {
 		// Initial guess of psis
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if(i==NUM_CONTROL_VOLUMES-1) {
-				psis[i] = Math.max(psis[i],1);
+				psis[i] = Math.max(psis[i],0.1);
 				//System.out.println(i +"   "+psis[i]);
 			} else {
 				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999.0);
@@ -173,7 +173,7 @@ public class NestedNewton {
 				outerResidual += fs[j]*fs[j];
 			}
 			outerResidual = Math.pow(outerResidual,0.5);  
-			//System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
+			System.out.println("   Outer iteration " + i + " with residual " +  outerResidual);
 			if(outerResidual < newtonTolerance) {
 				break;
 			}
@@ -194,14 +194,14 @@ public class NestedNewton {
 				psis_outer = psis.clone();
 
 				// Initial guess of psis
-				for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-					if(j==NUM_CONTROL_VOLUMES-1) {
-						psis[j] = Math.max(psis[j],1);
-					} else {
+				//for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
+				//	if(j==NUM_CONTROL_VOLUMES-1) {
+				//		psis[j] = Math.max(psis[j],1);
+				//	} else {
 					//soilPar.set(par1SWRC[j], par2SWRC[j], par3SWRC[j], par4SWRC[j], par5SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999.0) ;
-					psis[j] = Math.max(psis[j], soilPar.getPsiStar1(j));
-					}
-				}
+				//	psis[j] = Math.max(psis[j], soilPar.getPsiStar1(j));
+				//	}
+				//}
 
 				//// INNER CYCLE ////
 				for(int j = 0; j < MAXITER_NEWT; j++) {
@@ -215,8 +215,10 @@ public class NestedNewton {
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+dis[l]);
 						} else if(l==NUM_CONTROL_VOLUMES-1) {
-							fks[l] = totalDepth.pIntegral(psis[l]) - ( totalDepth.qIntegral(psis_outer[l]) + totalDepth.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
-							dis[l] = totalDepth.p(psis[l]) - totalDepth.q(psis_outer[l]);
+							//fks[l] = totalDepth.pIntegral(psis[l]) - ( totalDepth.qIntegral(psis_outer[l]) + totalDepth.q(psis_outer[l])*(psis[l] - psis_outer[l]) ) - this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
+							//dis[l] = totalDepth.p(psis[l]) - totalDepth.q(psis_outer[l]);
+							fks[l] = totalDepth.pIntegral(psis[l])- this.rhss[l] + lowerDiagonal[l]*psis[l-1] + mainDiagonal[l]*psis[l];
+							dis[l] = totalDepth.p(psis[l]);
 							//System.out.println(l+" "+fks[l]);
 							//System.out.println(l+" "+totalDepthJordanDecomposition.p(psis[l]));
 						} else {
@@ -231,7 +233,7 @@ public class NestedNewton {
 					}
 					innerResidual = Math.pow(innerResidual,0.5);
 
-					//System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
+					System.out.println("     -Inner iteration " + j + " with residual " +  innerResidual);    
 
 					if(innerResidual < newtonTolerance) {
 						break;
