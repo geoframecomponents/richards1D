@@ -27,7 +27,7 @@ public class VanGenuchten extends SoilParametrization {
 	
 	// Van Genuchten's parameters
 	private double[] n;
-	private double[] m;
+	private double m;
 	private double[] alpha;
 
 	
@@ -84,9 +84,9 @@ public class VanGenuchten extends SoilParametrization {
 		this.m = 1-1/this.n;
 		this.psiStar1 = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
 	}
+	*/
 	
-	
-	
+	/*
 	public void set(double n, double alpha, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
 		
 		this.n = n;
@@ -124,9 +124,9 @@ public class VanGenuchten extends SoilParametrization {
 	 * @return theta water content at suction value
 	 */
 	public double waterContent(double suction, int i){
-				
+		this.m = 1-1/this.n[i];
 		if(suction <= 0) {
-		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), 1-1/this.n[i]);
+		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), this.m);//1-1/this.n);
 		} else {
 		    this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
@@ -141,9 +141,9 @@ public class VanGenuchten extends SoilParametrization {
 	 * @return dTheta the value of the moisture capacity 
 	 */
 	public double dWaterContent(double suction, int i){
-		
+		this.m = 1-1/this.n[i];
 		if (suction <= 0) {
-		    this.dTheta = this.alpha[i]*this.n[i]*(1-1/this.n[i])*(this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), (1-1/this.n[i]) + 1.0)*Math.pow(Math.abs(this.alpha[i]*suction), this.n[i] - 1.0);
+		    this.dTheta = this.alpha[i]*this.n[i]*this.m*(this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), this.m + 1.0)*Math.pow(Math.abs(this.alpha[i]*suction), this.n[i] - 1.0);
 		} else {
 		    this.dTheta =  9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
@@ -157,11 +157,11 @@ public class VanGenuchten extends SoilParametrization {
 	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
 	 */
-	public double hydraulicConductivity(double suction, int i){
-		
+	public double hydraulicConductivity(double suction,int i){
+		this.m = 1-1/this.n[i];
 		this.saturationDegree = (waterContent(suction,i) - thetaR[i]) / (thetaS[i] - thetaR[i]); 
 		if(this.saturationDegree<1) {
-			this.kappa = this.kappaSaturation[i] * Math.pow(this.saturationDegree, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(this.saturationDegree, 1.0/(1-1/this.n[i])), 1-1/this.n[i]), 2.0);
+			this.kappa = this.kappaSaturation[i] * Math.pow(this.saturationDegree, 0.5 ) * Math.pow(1.0 - Math.pow(1.0 - Math.pow(this.saturationDegree, 1.0/this.m), this.m), 2.0);
 		} else {
 			this.kappa = this.kappaSaturation[i];
 		}
@@ -174,11 +174,11 @@ public class VanGenuchten extends SoilParametrization {
 	 * @param suction
 	 * @return theta1 
 	 */
-	public double pIntegral(double suction, int i){
+	public double pIntegral(double suction,int i){
 		if(suction <= this.psiStar1[i]) {
-			super.f1 = this.waterContent(suction, i);
+			super.f1 = this.waterContent(suction,i);
 		} else {
-			this.f1 = this.waterContent(this.psiStar1[i], i) + this.dWaterContent(this.psiStar1[i], i)*(suction - this.psiStar1[i]);
+			this.f1 = this.waterContent(this.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
 		}
 
 		return this.f1;
@@ -191,7 +191,7 @@ public class VanGenuchten extends SoilParametrization {
 	 * @return theta2
 	 */
 	public double qIntegral(double suction, int i){
-		super.f2 = pIntegral(suction, i) - this.waterContent(suction, i);
+		super.f2 = pIntegral(suction,i) - this.waterContent(suction,i);
 
 		return super.f2;
 	}
@@ -200,14 +200,14 @@ public class VanGenuchten extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta1
 	 */
-	public double p(double suction, int i){
+	public double p(double suction,int i){
 		if (suction <= this.psiStar1[i]) {
 		    // left of critical value, take the original derivative
-			super.df1 = this.dWaterContent(suction, i);
+			super.df1 = this.dWaterContent(suction,i);
 		}
 		else {
 		    // on the right of the critical value, keep the maximum derivative
-			super.df1 = this.dWaterContent(this.psiStar1[i], i);
+			super.df1 = this.dWaterContent(this.psiStar1[i],i);
 		}
 
 		return super.df1;
@@ -219,8 +219,8 @@ public class VanGenuchten extends SoilParametrization {
 	 * @param suction
 	 * @return dtheta2
 	 */
-	public double q(double suction, int i){
-		super.df2 = p(suction, i) - this.dWaterContent(suction, i);
+	public double q(double suction,int i){
+		super.df2 = p(suction,i) - this.dWaterContent(suction,i);
 
 		return super.df2;
 	}
