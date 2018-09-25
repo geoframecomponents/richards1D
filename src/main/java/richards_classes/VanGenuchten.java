@@ -128,7 +128,7 @@ public class VanGenuchten extends SoilParametrization {
 		if(suction <= 0) {
 		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), this.m);//1-1/this.n);
 		} else {
-		    this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
+		    this.theta = this.thetaS[i];// + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 
 		return this.theta;
@@ -145,7 +145,7 @@ public class VanGenuchten extends SoilParametrization {
 		if (suction <= 0) {
 		    this.dTheta = this.alpha[i]*this.n[i]*this.m*(this.thetaS[i] - this.thetaR[i]) / Math.pow(1.0 + Math.pow(Math.abs(this.alpha[i]*suction), this.n[i]), this.m + 1.0)*Math.pow(Math.abs(this.alpha[i]*suction), this.n[i] - 1.0);
 		} else {
-		    this.dTheta =  9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
+		    this.dTheta = this.thetaS[i];//9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
