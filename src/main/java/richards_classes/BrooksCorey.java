@@ -111,8 +111,10 @@ public class BrooksCorey extends SoilParametrization {
 				
 		if(suction <= this.psiD[i]) {
 			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * Math.pow((this.psiD[i]/suction), this.n[i]);
-		} else {
-			this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
+		}//else if (this.psiD[i]<suction && suction<0){
+		//	this.theta = this.thetaS[i];
+		else {
+			this.theta = this.thetaS[i];// + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 		return this.theta;
 	}
@@ -126,10 +128,12 @@ public class BrooksCorey extends SoilParametrization {
 	public double dWaterContent(double suction,int i){
 		
 		if (suction <= this.psiD[i]) {
-		    this.dTheta = this.n[i]*(this.thetaS[i] - this.thetaR[i]) /Math.abs(this.psiD[i]) * Math.pow(this.psiD[i]/suction,this.n[i]+1);
+		    this.dTheta = this.n[i]*(this.thetaS[i] - this.thetaR[i])/Math.abs(this.psiD[i]) * Math.pow(this.psiD[i]/suction,this.n[i]+1);
 		} else {
-		    this.dTheta = + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
-		}
+		    this.dTheta = 0;
+		}// else {
+		//	this.dTheta = + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
+		//}
 		
 		return this.dTheta;
 	}
