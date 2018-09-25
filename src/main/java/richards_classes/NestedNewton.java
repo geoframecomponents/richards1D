@@ -165,7 +165,7 @@ public class NestedNewton {
 					//soilPar.set(par1SWRC[j],par2SWRC[j],par3SWRC[j],par4SWRC[j],par5SWRC[j],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[j],thetaS[j],-999.0);
 					fs[j] = soilPar.waterContent(psis[j],j)*dx[j] - rhss[j] + lowerDiagonal[j]*psis[j-1] + mainDiagonal[j]*psis[j] + upperDiagonal[j]*psis[j+1];
 					dis[j] = soilPar.dWaterContent(psis[j],j);
-					//System.out.println(j+" "+soilPar.waterContent(psis[j]));
+					//System.out.println(j+" "+soilPar.waterContent(psis[j],j));
 					//System.out.println(j+" "+fs[j]);
 				}
 			
@@ -194,14 +194,14 @@ public class NestedNewton {
 				psis_outer = psis.clone();
 
 				// Initial guess of psis
-				//for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
-				//	if(j==NUM_CONTROL_VOLUMES-1) {
-				//		psis[j] = Math.max(psis[j],1);
-				//	} else {
-					//soilPar.set(par1SWRC[j], par2SWRC[j], par3SWRC[j], par4SWRC[j], par5SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999.0) ;
-				//	psis[j] = Math.max(psis[j], soilPar.getPsiStar1(j));
-				//	}
-				//}
+				for(int j = 0; j < NUM_CONTROL_VOLUMES; j++) {
+					if(j==NUM_CONTROL_VOLUMES-1) {
+						psis[j] = Math.max(psis[j],0.11);
+					} else {
+				//soilPar.set(par1SWRC[j], par2SWRC[j], par3SWRC[j], par4SWRC[j], par5SWRC[j], alphaSpecificStorage[i], betaSpecificStorage[i], thetaR[j], thetaS[j], -999.0) ;
+					psis[j] = Math.max(psis[j], soilPar.getPsiStar1(j));
+					}
+				}
 
 				//// INNER CYCLE ////
 				for(int j = 0; j < MAXITER_NEWT; j++) {
