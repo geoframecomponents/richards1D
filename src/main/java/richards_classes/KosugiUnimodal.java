@@ -113,7 +113,7 @@ public class KosugiUnimodal extends SoilParametrization {
 		if(suction <= 0) {
 		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i])*0.5*( 1-Erf.erf( (Math.log(suction/this.psiMedian[i])-Math.pow(this.sigma[i], 2) )/(this.sigma[i]*Math.pow(2,0.5))) );
 		} else {
-		    this.theta = this.thetaS[i];// + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
+		    this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 
 		return this.theta;
@@ -130,7 +130,7 @@ public class KosugiUnimodal extends SoilParametrization {
 		if (suction < 0) {
 		    this.dTheta = (this.thetaS[i]-this.thetaR[i])/(Math.sqrt(2*Math.PI)*this.sigma[i]*(-suction)) * Math.exp(-Math.pow( Math.log(suction/this.psiMedian[i])-Math.pow(this.sigma[i], 2),2)/(2*Math.pow(this.sigma[i],2)));
 		} else {
-		    this.dTheta = 0;//  + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
+		    this.dTheta =  + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
@@ -165,8 +165,10 @@ public class KosugiUnimodal extends SoilParametrization {
 	public double pIntegral(double suction,int i){
 		if(suction <= this.psiStar1[i]) {
 			super.f1 = this.waterContent(suction,i);
-		} else {
+		} else if (this.psiStar1[i]<suction && suction<=0) {
 			this.f1 = this.waterContent(this.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
+		} else {
+			this.f1 = this.waterContent(this.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]) + this.dWaterContent(suction, i)*(suction-0);
 		}
 
 		return this.f1;
@@ -190,12 +192,11 @@ public class KosugiUnimodal extends SoilParametrization {
 	 */
 	public double p(double suction,int i){
 		if (suction <= this.psiStar1[i]) {
-		    // left of critical value, take the original derivative
 			super.df1 = this.dWaterContent(suction,i);
-		}
-		else {
-		    // on the right of the critical value, keep the maximum derivative
+		} else if (this.psiStar1[i]<suction && suction<=0) {
 			super.df1 = this.dWaterContent(this.psiStar1[i],i);
+		} else {
+			super.df1 = this.dWaterContent(this.psiStar1[i],i) + this.dWaterContent(suction, i);
 		}
 
 		return super.df1;
