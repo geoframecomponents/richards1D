@@ -94,7 +94,7 @@ public class Romano extends SoilParametrization {
 	
 	
 	
-	public void set(double[] w, double[] psiM1, double[] psiM2, double[] sigma1, double[] sigma2, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
+	public void set(double[] w, double[] sigma1, double[] sigma2, double[] psiM1, double[] psiM2, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.w = w;
 		this.psiM1 = psiM1; 
@@ -122,7 +122,7 @@ public class Romano extends SoilParametrization {
 	public double waterContent(double suction,int i){
 				
 		if(suction <= 0) {
-			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * (this.w[i]/2 * Erf.erfc(Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2)) ) + (1-w[i])/2* Erf.erfc(Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2)) ) );
+			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * ( this.w[i]/2 * Erf.erfc( Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2)) ) + (1-w[i])/2* Erf.erfc(Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2)) ) );
 		} else {
 			this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
@@ -158,10 +158,10 @@ public class Romano extends SoilParametrization {
 		
 		this.saturationDegree = (waterContent(suction,i) - super.thetaR[i]) / (super.thetaS[i] - super.thetaR[i]);
 		if(this.saturationDegree<1) {
-			this.aa = ( Math.pow(this.sigma1[i], 2) + Math.log(suction/this.psiM1[i])) / ( this.sigma1[i]*Math.sqrt(2) );
-			this.aa = ( Math.pow(this.sigma2[i], 2) + Math.log(suction/this.psiM2[i])) / ( this.sigma2[i]*Math.sqrt(2) );
+			this.aa = ( Math.pow(this.sigma1[i], 2) + Math.log(suction/this.psiM1[i]) ) / ( this.sigma1[i]*Math.sqrt(2) );
+			this.bb = ( Math.pow(this.sigma2[i], 2) + Math.log(suction/this.psiM2[i]) ) / ( this.sigma2[i]*Math.sqrt(2) );
 			this.r = this.psiM1[i]/this.psiM2[i] * (1-this.w[i])/this.w[i] * Math.exp(0.5*(Math.pow(this.sigma1[i],2)-Math.pow(this.sigma2[i],2)));
-			this.kappa = this.kappaSaturation[i]*Math.sqrt(this.saturationDegree)*Math.pow( 0.5*Erf.erfc(this.aa)/(1+this.r) + 0.5*Erf.erfc(this.bb)/(1+this.r),2);
+			this.kappa = this.kappaSaturation[i]*Math.sqrt(this.saturationDegree)*Math.pow( 0.5*Erf.erfc(this.aa)/(1+this.r) + 0.5*Erf.erfc(this.bb)/(1+1/this.r),2);
 		} else {
 			this.kappa = this.kappaSaturation[i];
 		}
