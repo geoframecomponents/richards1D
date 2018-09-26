@@ -124,7 +124,7 @@ public class Romano extends SoilParametrization {
 		if(suction <= 0) {
 			this.theta = this.thetaR[i] + (this.thetaS[i]-this.thetaR[i]) * ( this.w[i]/2 * Erf.erfc( Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2)) ) + (1-w[i])/2* Erf.erfc(Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2)) ) );
 		} else {
-			this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
+			this.theta = this.thetaS[i];// + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
 		return this.theta;
 	}
@@ -138,11 +138,11 @@ public class Romano extends SoilParametrization {
 	public double dWaterContent(double suction,int i){
 		
 		if (suction <= 0) {
-			this.gamma1 = Math.exp( -( Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2))) );
-			this.gamma2 = Math.exp( -( Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2))) );
+			this.gamma1 = Math.exp( -Math.pow(( Math.log(suction/this.psiM1[i])/(this.sigma1[i]*Math.sqrt(2))),2) );
+			this.gamma2 = Math.exp( -Math.pow(( Math.log(suction/this.psiM2[i])/(this.sigma2[i]*Math.sqrt(2))),2) );
 		    this.dTheta = 1/(Math.sqrt(2*Math.PI)*suction/this.psiM1[i])*(this.thetaS[i] - this.thetaR[i]) * ( this.w[i]/this.sigma1[i]*this.gamma1 + (1-this.w[i])/this.sigma2[i]*this.gamma2 );
 		} else {
-		    this.dTheta = + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
+		    this.dTheta = 0;//+ 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
 		
 		return this.dTheta;
@@ -181,9 +181,10 @@ public class Romano extends SoilParametrization {
 		} else if(super.psiStar1[i]<suction && suction<=super.psiStar3[i]) {
 			this.f1 = this.waterContent(super.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
 		} else if(super.psiStar3[i]<suction && suction<=super.psiStar2[i]) {
+			//qui
 			this.f1 = this.waterContent(suction, i) - this.waterContent(super.psiStar3[i], i) + this.waterContent(super.psiStar1[i], i) + this.dWaterContent(super.psiStar1[i], i)*(suction-super.psiStar1[i]);
 		} else {
-			this.f1 = this.waterContent(super.psiStar1[i], i) + this.waterContent(super.psiStar2[i], i) - this.waterContent(super.psiStar3[i], i) + this.dWaterContent(super.psiStar2[i], i)*(suction-super.psiStar2[i]);
+			this.f1 = this.waterContent(super.psiStar1[i], i) + this.waterContent(super.psiStar2[i], i) - this.waterContent(super.psiStar3[i], i) + this.dWaterContent(super.psiStar2[i], i)*(suction-super.psiStar2[i]) + this.dWaterContent(super.psiStar1[i], i)*(suction-super.psiStar1[i]);
 		}
 		return this.f1;
 	}
