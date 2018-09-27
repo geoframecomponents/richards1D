@@ -181,7 +181,6 @@ public class Romano extends SoilParametrization {
 		} else if(super.psiStar1[i]<suction && suction<=super.psiStar3[i]) {
 			this.f1 = this.waterContent(super.psiStar1[i],i) + this.dWaterContent(this.psiStar1[i],i)*(suction - this.psiStar1[i]);
 		} else if(super.psiStar3[i]<suction && suction<=super.psiStar2[i]) {
-			//qui
 			this.f1 = this.waterContent(suction, i) - this.waterContent(super.psiStar3[i], i) + this.waterContent(super.psiStar1[i], i) + this.dWaterContent(super.psiStar1[i], i)*(suction-super.psiStar1[i]);
 		} else if(super.psiStar2[i]<suction && suction<=0) {
 			this.f1 = this.waterContent(super.psiStar1[i], i) + this.waterContent(super.psiStar2[i], i) - this.waterContent(super.psiStar3[i], i) + this.dWaterContent(super.psiStar2[i], i)*(suction-super.psiStar2[i]) + this.dWaterContent(super.psiStar1[i], i)*(suction-super.psiStar1[i]);
