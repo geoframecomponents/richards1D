@@ -414,8 +414,7 @@ public class Richards1DSolver {
 				dx[i] = deltaZ[i];
 			}
 
-			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks,
-					soilPar, totalDepth, interfaceHydraulicConductivity, bottomBCType);
+			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, soilPar, totalDepth, interfaceHydraulicConductivity, bottomBCType);
 
 			//nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
@@ -437,7 +436,7 @@ public class Richards1DSolver {
 
 		bottomBC = 0.0;
 		if(inBottomBC != null)
-			bottomBC = inBottomBC.get(1)[0]-7;
+			bottomBC = inBottomBC.get(1)[0];
 		if(bottomBCType.equalsIgnoreCase("Bottom Neumann") || bottomBCType.equalsIgnoreCase("BottomNeumann")) {
 			bottomBC = bottomBC/tTimestep;
 		}
@@ -453,7 +452,7 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 			for(int picard=0; picard<picardIteration; picard++) {
-				
+				/*
 				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
 					if(i==0) {
 						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
@@ -470,13 +469,14 @@ public class Richards1DSolver {
 						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
 					}
 				}
+				*/
 				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
-				//k_b = soilPar.hydraulicConductivity(bottomBC);
+				k_b = soilPar.hydraulicConductivity(bottomBC,0);
 				// Compute volumes and hydraulic conductivity
 
-				//compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
-				//volumes = compute.computeWaterVolumes().clone();
-				//kappas = compute.computeKappas().clone();
+				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
+				volumes = compute.computeWaterVolumes().clone();
+				kappas = compute.computeKappas().clone();
 				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
 				//k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
 
@@ -538,7 +538,7 @@ public class Richards1DSolver {
 				 */ 
 				volume = 0.0;
 				volumeNew =0.0;
-
+				/*
 				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 					if( i == 0 ) {
 
@@ -580,7 +580,7 @@ public class Richards1DSolver {
 					} else {
 
 						kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-						velocities[i] =  -kP * (psis[i]+z[i]-psis[i-1]-z[i-1])/spaceDelta[i];
+						velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i]-kP;
 						//if(i==1) {
 						//	System.out.println(kP +","+psis[i+1]+","+z[i+1]+","+psis[i]+","+z[i]+","+spaceDelta[i+1]);
 						//}
@@ -591,17 +591,18 @@ public class Richards1DSolver {
 					volume +=volumes[i];
 					volumeNew +=volumesNew[i];
 				}
+				*/
 				//errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
 				//System.out.println("    errorMass: "+errorVolume);
 
 
-				//compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
+				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
-				//velocities = compute.computeVelocities().clone();
-				//volumesNew = compute.computeWaterVolumes().clone();
-				//volume = compute.computeTotalWaterVolumes(volumes);
-				//volumeNew = compute.computeTotalWaterVolumes(volumesNew);
-				//thetasNew = compute.computeThetas().clone();
+				velocities = compute.computeVelocities().clone();
+				volumesNew = compute.computeWaterVolumes().clone();
+				volume = compute.computeTotalWaterVolumes(volumes);
+				volumeNew = compute.computeTotalWaterVolumes(volumesNew);
+				thetasNew = compute.computeThetas().clone();
 				errorVolume = volumeNew - volume - timeDelta*(topBC + velocities[0]);
 
 			}
