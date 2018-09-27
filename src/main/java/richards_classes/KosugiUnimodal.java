@@ -111,7 +111,7 @@ public class KosugiUnimodal extends SoilParametrization {
 	public double waterContent(double suction, int i){
 				
 		if(suction <= 0) {
-		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i])*0.5*( 1-Erf.erf( (Math.log(suction/this.psiMedian[i])-Math.pow(this.sigma[i], 2) )/(this.sigma[i]*Math.pow(2,0.5))) );
+		    this.theta = this.thetaR[i] + (this.thetaS[i] - this.thetaR[i])*0.5*Erf.erfc( Math.log(suction/this.psiMedian[i])/(this.sigma[i]*Math.pow(2,0.5)) );
 		} else {
 		    this.theta = this.thetaS[i] + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i])*suction;
 		}
@@ -128,7 +128,7 @@ public class KosugiUnimodal extends SoilParametrization {
 	public double dWaterContent(double suction,int i){
 		
 		if (suction < 0) {
-		    this.dTheta = (this.thetaS[i]-this.thetaR[i])/(Math.sqrt(2*Math.PI)*this.sigma[i]*(-suction)) * Math.exp(-Math.pow( Math.log(suction/this.psiMedian[i])-Math.pow(this.sigma[i], 2),2)/(2*Math.pow(this.sigma[i],2)));
+		    this.dTheta = (this.thetaS[i]-this.thetaR[i])/(Math.sqrt(2*Math.PI)*this.sigma[i]*(-suction)) * Math.exp(-Math.pow( Math.log(suction/this.psiMedian[i]),2)/(2*Math.pow(this.sigma[i],2)));
 		} else {
 		    this.dTheta =  + 9.81*( this.alphaSpecificStorage[i] + this.thetaS[i]*this.betaSpecificStorage[i]);
 		}
