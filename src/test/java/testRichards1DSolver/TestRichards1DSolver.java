@@ -41,14 +41,14 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-01 12:00";
+		String endDate = "2017-01-05 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
 		String pathTopBC ="resources/Input/TestAll_2.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
-		String pathGrid =  "resources\\Input\\Clay_noPonding_Kosugi_Check.nc";
+		String pathGrid =  "resources\\Input\\Clay_noPonding_Kosugi_NewVersion.nc";
 		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -84,14 +84,14 @@ public class TestRichards1DSolver {
 		R1DSolver.alphaSpecificStorage = readNetCDF.alphaSS;
 		R1DSolver.betaSpecificStorage = readNetCDF.betaSS;
 		R1DSolver.et = readNetCDF.et;
-		R1DSolver.soilHydraulicModel = "Kosugi";
+		R1DSolver.soilHydraulicModel = "kosugi";
 		R1DSolver.interfaceHydraulicCondType = "mean";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom Dirichlet";
+		R1DSolver.bottomBCType = "Bottom impervious";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 300;
-		R1DSolver.newtonTolerance = Math.pow(10,-13);
+		R1DSolver.newtonTolerance = Math.pow(10,-11);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
 		//R1DSolver.picardIteration = 1;
@@ -119,17 +119,17 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "resources\\Output\\T_eclipseKosugi.nc";
+			writeNetCDF.fileName = "resources\\Output\\cancella4.nc";
 			//writeNetCDF.fileName = "C:\\Users\\Niccolo\\Desktop\\Clay_noPondingBC_Eclipse.nc";
-			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity\n		"
+			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity, con il codice vecchio stile\n		"
 					+ "Initial condition hydrostatic no ponding\n		"
 					+ "BC: top 2mm rainfall each 5min, bottom Dirichlet\n		"
-					+ "Clay parameters BC: ks=0.0000981m/s, psiD= -34m, n=1.5, thetaR=0.07, thetaS=0.35, alphaStorativity= 0 1/Pa, betaStorativity=0 1/Pa \n		"
+					//+ "Clay parameters BC: ks=0.000023m/s, psiD= -34m, n=1.5, thetaR=0.07, thetaS=0.35, alphaStorativity= 0 1/Pa, betaStorativity=0 1/Pa \n		"
 					//+ "Sand parameters: ks=0.003697m/s, alpha= 1.47m-1, n=1.7, thetaR=0.02, thetaS=0.38, alphaStorativity= 0 1/Pa, betaStorativity= 0 1/Pa\n		"
 					+ "Grid input file: " + pathGrid +"\n		"
 					+ "TopBC input file: " + pathTopBC +"\n		"
 					+ "BottomBC input file: " + pathBottomBC +"\n		"
-					+ "DeltaT: 10s\n		"
+					+ "DeltaT: 300s\n		"
 					+ "Picard iteration: 1\n		"
 				    + "Interface k: mean";
 			writeNetCDF.myVariables = buffer.myVariable;
