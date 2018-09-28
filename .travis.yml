@@ -22,4 +22,4 @@ deploy:
   on:
     tags: true
     all_branches: true
-    repo: geoframecomponents/richards1d
+    repo: geoframecomponents/richards1D
