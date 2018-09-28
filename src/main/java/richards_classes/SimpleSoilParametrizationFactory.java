@@ -56,9 +56,7 @@ public class SimpleSoilParametrizationFactory {
 		else if(type.equalsIgnoreCase("Romano")){
 			soilPar = new Romano();
 		}
-		else if(type.equalsIgnoreCase("Gardner")){
-			soilPar = new Gardner();
-		}
+
 		return soilPar;
 		}
 	
