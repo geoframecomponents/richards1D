@@ -608,7 +608,7 @@ public class Richards1DSolver {
 			}
 
 		}
-		System.out.println("    "+errorVolume);
+		//System.out.println("    "+errorVolume);
 		outputToBuffer.add(psis);
 		outputToBuffer.add(thetasNew);
 		outputToBuffer.add(psiIC);
@@ -619,6 +619,7 @@ public class Richards1DSolver {
 			bottomBC = bottomBC*tTimestep;
 		}
 		outputToBuffer.add(new double[] {bottomBC});
+		outputToBuffer.add(new double[] {psis[NUM_CONTROL_VOLUMES-1]/tTimestep});
 
 
 
