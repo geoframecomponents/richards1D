@@ -41,14 +41,14 @@ public class TestRichards1DSolver {
 
 
 		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-05 00:00";
+		String endDate = "2017-01-01 00:20";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
 		String pathTopBC ="resources/Input/TestAll_2.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
-		String pathGrid =  "resources\\Input\\Clay_noPonding_Kosugi_NewVersion.nc";
+		String pathGrid =  "resources\\Input\\Clay_noPonding.nc";
 		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -84,10 +84,10 @@ public class TestRichards1DSolver {
 		R1DSolver.alphaSpecificStorage = readNetCDF.alphaSS;
 		R1DSolver.betaSpecificStorage = readNetCDF.betaSS;
 		R1DSolver.et = readNetCDF.et;
-		R1DSolver.soilHydraulicModel = "kosugi";
+		R1DSolver.soilHydraulicModel = "van genuchten";
 		R1DSolver.interfaceHydraulicCondType = "mean";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom impervious";
+		R1DSolver.bottomBCType = "Bottom dirichlet";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 300;
