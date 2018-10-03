@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017 Niccolo Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@ package richards_classes;
 
 /**
  * The soil prametrization abstract class.
+ * 
+ * IMPROVEMENT: 'whereas hS is usually set equal to zero; if positive, 
+ *              hS represents a small layer of water ponded which can form on 
+ *              top of the soil surface during heavy rains before initiation of runoff' (Hydrus1D manual)
  * @author Niccolo' Tubini
  *
  */
