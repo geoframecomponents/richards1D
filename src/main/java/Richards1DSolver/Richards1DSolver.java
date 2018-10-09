@@ -219,6 +219,11 @@ public class Richards1DSolver {
 	@Description("ArrayList of variable to be stored in the buffer writer")
 	@Out
 	public ArrayList<double[]> outputToBuffer;
+	
+	@Description("Run-off")
+	@Unit("m/s")
+	@Out
+	public double runOff;
 
 
 	//////////////////////////////////////////
@@ -619,7 +624,8 @@ public class Richards1DSolver {
 			bottomBC = bottomBC*tTimestep;
 		}
 		outputToBuffer.add(new double[] {bottomBC});
-		outputToBuffer.add(new double[] {psis[NUM_CONTROL_VOLUMES-1]/tTimestep});
+		runOff = topBC+velocities[NUM_CONTROL_VOLUMES];
+		outputToBuffer.add(new double[] {runOff});
 
 
 

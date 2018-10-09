@@ -1,5 +1,5 @@
 /*
- * GNU GPL v3 License
+  * GNU GPL v3 License
  *
  * Copyright 2016 Marialaura Bancheri
  *
@@ -40,15 +40,15 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "2017-01-01 00:00" ;
-		String endDate = "2017-01-01 00:20";
+		String startDate = "2018-03-05 00:00" ;
+		String endDate = "2018-03-07 00:00";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/TestAll_2.csv";
-		String pathBottomBC ="resources/Input/TestAll_0.csv";
-		String pathGrid =  "resources\\Input\\Clay_noPonding.nc";
+		String pathTopBC ="resources/Input/Rain50mmh.csv";
+		String pathBottomBC ="resources/Input/Rain50mmh.csv";
+		String pathGrid =  "resources\\Input\\1_urban_dry.nc";
 		
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
@@ -87,7 +87,7 @@ public class TestRichards1DSolver {
 		R1DSolver.soilHydraulicModel = "van genuchten";
 		R1DSolver.interfaceHydraulicCondType = "mean";
 		R1DSolver.topBCType = "Top Neumann";
-		R1DSolver.bottomBCType = "Bottom dirichlet";
+		R1DSolver.bottomBCType = "Bottom free drainage";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
 		R1DSolver.timeDelta = 300;
@@ -119,7 +119,7 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "resources\\Output\\cancella4.nc";
+			writeNetCDF.fileName = "resources\\Output\\sim_1_urban_dry.nc";
 			//writeNetCDF.fileName = "C:\\Users\\Niccolo\\Desktop\\Clay_noPondingBC_Eclipse.nc";
 			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity, con il codice vecchio stile\n		"
 					+ "Initial condition hydrostatic no ponding\n		"
