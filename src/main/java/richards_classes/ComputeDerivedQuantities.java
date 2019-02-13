@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,12 +113,10 @@ public class ComputeDerivedQuantities {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
-				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999);
 				thetas[i] = soilPar.waterContent(psis[i],i);
 			} else if(i == NUM_CONTROL_VOLUMES-1) {
 				thetas[i] = totalDepth.totalDepth(psis[i]);
 			} else {
-				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999);
 				thetas[i] = soilPar.waterContent(psis[i],i);
 			}
 		}
@@ -127,6 +125,7 @@ public class ComputeDerivedQuantities {
 	}	
 
 
+	
 	/**
 	 * This method computes the hydraulic conductivity
 	 * 
@@ -137,10 +136,8 @@ public class ComputeDerivedQuantities {
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 
 			if(i==NUM_CONTROL_VOLUMES-1) {
-				//soilPar.set(par1SWRC[i-1],par2SWRC[i-1],par3SWRC[i-1],par4SWRC[i-1],par5SWRC[i-1],alphaSpecificStorage[i-1],betaSpecificStorage[i-1],thetaR[i-1],thetaS[i-1],ks[i-1]);
 				kappas[i] = soilPar.hydraulicConductivity(this.psis[i],i-1);
 			} else {
-				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
 				kappas[i] = soilPar.hydraulicConductivity(this.psis[i],i);
 			}
 
@@ -161,12 +158,10 @@ public class ComputeDerivedQuantities {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
-				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999);
 				volumes[i] = soilPar.waterContent(this.psis[i],i)*this.dx[i];
 			} else if(i == NUM_CONTROL_VOLUMES-1) {
 				volumes[i] = totalDepth.totalDepth(this.psis[i]);
 			} else {
-				//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],-999);
 				volumes[i] = soilPar.waterContent(this.psis[i],i)*this.dx[i];
 			}
 		}
@@ -205,7 +200,6 @@ public class ComputeDerivedQuantities {
 		for(int i = 0; i < NUM_CONTROL_VOLUMES+1; i++) {
 			if( i == 0 ) {
 
-				//kP = 0.5*(kappas[i] + kappas[i+1]);
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 					kM = kappas[i];
@@ -213,7 +207,6 @@ public class ComputeDerivedQuantities {
 				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
 					velocities[i] = + 0;
 				} else {
-					//kM = 0.5*(kappas[i] + k_b);
 					kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
 					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 				}
@@ -223,8 +216,6 @@ public class ComputeDerivedQuantities {
 				velocities[i] =  -kP * (psis[i-1]-psis[i-2])/spaceDelta[i-1] - kP;
 
 			} else {
-
-				//kP = 0.5*(kappas[i] + kappas[i+1]);
 				kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
 				velocities[i] =  -kM * (psis[i]-psis[i-1])/spaceDelta[i] - kM;
 
