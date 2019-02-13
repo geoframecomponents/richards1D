@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,6 +40,9 @@ public class Romano extends SoilParametrization {
 	private double aa;
 	private double bb;
 	private double r;
+	
+	
+	
 	/**
 	 * General constructor to be used when there are several soil layers
 	 * each one with its own parameters
@@ -50,50 +53,8 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
-	 * 
-	 * @param w		      >1
-	 * @param psiM1  Brooks-Corey's parameter      >0
-	 * @param psiM2 residual water content	     ]0,1[
-	 * @param sigma1 water content at saturation ]0,1[
-	 * @param sigma2 h
-	 * @param kappaSaturation hydraulic conductivity at saturation >0
+	 * Set parameters
 	 */
-	/*
-	public Romano(double w, double psiM1, double psiM2, double sigma1, double sigma2, double thetaR, double thetaS, double kappaSaturation){
-		this.w = w;
-		this.psiM1 = psiM1; 
-		this.psiM2 = psiM2;
-		this.sigma1 = sigma1;
-		this.sigma2 = sigma2; 
-		this.thetaR = thetaR;
-		this.thetaS = thetaS;
-		this.kappaSaturation = kappaSaturation;
-		/*
-		if(this.n < 1){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Brooks-Corey's parameter  n \n");
-		}
-		if(this.psiD > 0){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Brooks-Corey's parameter  psiD \n");
-		}
-		if(this.thetaR < 0 | this.thetaR > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content \n");
-		}
-		if(this.thetaS < 0 | this.thetaS > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of water content at saturation \n");
-		}
-		if(this.thetaR >this.thetaS){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content or the value of water content at saturation \n");
-		}
-		if(this.kappaSaturation <0){
-			throw new IllegalArgumentException( "ERROR: Check the value of hydraulic conductivity at saturation \n");
-		}
-		
-		
-	}
-	*/
-	
-	
-	
 	public void set(double[] w, double[] sigma1, double[] sigma2, double[] psiM1, double[] psiM2, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.w = w;
@@ -116,6 +77,7 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
+	 * Compute the water for a given water suction value
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
@@ -132,8 +94,9 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
-	 * @param suction
-	 * @return dTheta the value of the moisture capacity
+	 * Compute the derivative of the water content for a given water suction value
+	 * @param suction 
+	 * @return dTheta the value of the moisture capacity 
 	 */
 	public double dWaterContent(double suction,int i){
 		
@@ -151,7 +114,8 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
-	 * @param suction 
+	 * Compute the unsaturated hydraulic conductivity for a given water suction value
+	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
 	 */
 	public double hydraulicConductivity(double suction,int i){
@@ -172,6 +136,8 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_1 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta1 
 	 */
@@ -193,6 +159,8 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_2 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta2
 	 */
@@ -202,7 +170,11 @@ public class Romano extends SoilParametrization {
 		return super.f2;
 	}
 	
+	
+	
 	/**
+	 * Evaluate the function p of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta1
 	 */
@@ -225,6 +197,8 @@ public class Romano extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function q of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta2
 	 */

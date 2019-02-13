@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,57 +35,13 @@ public class BrooksCorey extends SoilParametrization {
 	 * General constructor to be used when there are several soil layers
 	 * each one with its own parameters
 	 */
-	
 	public BrooksCorey() {};
 	
 	
-	
+		
 	/**
-	 * 
-	 * @param n		Brooks-Corey's parameter      >1
-	 * @param psiD  Brooks-Corey's parameter      >0
-	 * @param thetaR residual water content	     ]0,1[
-	 * @param thetaS water content at saturation ]0,1[
-	 * @param kappaSaturation hydraulic conductivity at saturation >0
-	 * @exception if n<1 error check the value
-	 * @exception if psiD>0 error check the value
-	 * @exception if thetaR>1 or thetaR<0 error check the value
-	 * @exception if thetaS>1 or thetaR<0 error check the value
-	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
-	 * @exception if kappaSaturation <0 check the value
+	 * Set parameters
 	 */
-	/*
-	public BrooksCorey(double n, double psiD, double thetaR, double thetaS, double kappaSaturation){
-		this.n = n;
-		this.psiD = psiD; 
-		this.thetaR = thetaR;
-		this.thetaS = thetaS;
-		this.kappaSaturation = kappaSaturation;
-		
-		if(this.n < 1){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Brooks-Corey's parameter  n \n");
-		}
-		if(this.psiD > 0){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Brooks-Corey's parameter  psiD \n");
-		}
-		if(this.thetaR < 0 | this.thetaR > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content \n");
-		}
-		if(this.thetaS < 0 | this.thetaS > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of water content at saturation \n");
-		}
-		if(this.thetaR >this.thetaS){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content or the value of water content at saturation \n");
-		}
-		if(this.kappaSaturation <0){
-			throw new IllegalArgumentException( "ERROR: Check the value of hydraulic conductivity at saturation \n");
-		}
-		
-	}
-	*/
-	
-	
-	
 	public void set(double[] n, double[] psiD, double[] par3, double[] par4, double[] par5, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.n = n;
@@ -96,14 +52,13 @@ public class BrooksCorey extends SoilParametrization {
 		super.alphaSpecificStorage = alphaSpecificStorage;
 		super.betaSpecificStorage = betaSpecificStorage;
 		
-		//super.psiStar1 = this.psiD;
 		this.psiStar1 = this.psiD;
 	}
 	
 	
 	
-	
 	/**
+	 * Compute the water for a given water suction value
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
@@ -122,8 +77,9 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	/**
-	 * @param suction
-	 * @return dTheta the value of the moisture capacity
+	 * Compute the derivative of the water content for a given water suction value
+	 * @param suction 
+	 * @return dTheta the value of the moisture capacity 
 	 */
 	public double dWaterContent(double suction,int i){
 		
@@ -141,7 +97,8 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	/**
-	 * @param suction 
+	 * Compute the unsaturated hydraulic conductivity for a given water suction value
+	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
 	 */
 	public double hydraulicConductivity(double suction,int i){
@@ -159,6 +116,8 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_1 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta1 
 	 */
@@ -177,6 +136,8 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_2 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta2
 	 */
@@ -186,7 +147,11 @@ public class BrooksCorey extends SoilParametrization {
 		return super.f2;
 	}
 	
+	
+	
 	/**
+	 * Evaluate the function p of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta1
 	 */
@@ -205,6 +170,8 @@ public class BrooksCorey extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function q of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta2
 	 */
@@ -213,7 +180,5 @@ public class BrooksCorey extends SoilParametrization {
 
 		return super.df2;
 	}
-
-
 
 }

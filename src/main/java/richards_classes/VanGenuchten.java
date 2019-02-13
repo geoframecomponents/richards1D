@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,84 +25,23 @@ package richards_classes;
 
 public class VanGenuchten extends SoilParametrization {
 	
-	// Van Genuchten's parameters
 	private double[] n;
 	private double m;
 	private double[] alpha;
 
 	
+	
 	/**
 	 * General constructor to be used when there are several soil layers
 	 * each one with its own parameters
 	 */
-	
 	public VanGenuchten() {};
 	
+
 	
 	/**
-	 * 
-	 * @param n		Van Genuchten's parameter      >1
-	 * @param alpha Van Genuchten's parameter      >0
-	 * @param thetaR residual water content	     ]0,1[
-	 * @param thetaS water content at saturation ]0,1[
-	 * @param kappaSaturation hydraulic conductivity at saturation >0
-	 * @exception if n<1 error check the value
-	 * @exception if alpha<0 error check the value
-	 * @exception if thetaR>1 or thetaR<0 error check the value
-	 * @exception if thetaS>1 or thetaR<0 error check the value
-	 * @exception if thetaR > thetaS check the value: thetaR must be less then thetaS
-	 * @exception if kappaSaturation <0 check the value
+	 * Set parameters
 	 */
-	/*
-	public VanGenuchten(double n, double alpha, double thetaR, double thetaS, double kappaSaturation){
-		
-		this.n = n;
-		this.alpha = alpha; 
-		this.thetaR = thetaR;
-		this.thetaS = thetaS;
-		this.kappaSaturation = kappaSaturation;
-		
-		if(this.n < 1){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Van Genuchten's parameter  n \n");
-		}
-		if(this.alpha < 0){
-			throw new IllegalArgumentException( "ERROR: Check the value of the Van Genuchten's parameter  alpha \n");
-		}
-		if(this.thetaR < 0 | this.thetaR > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content \n");
-		}
-		if(this.thetaS < 0 | this.thetaS > 1 ){
-			throw new IllegalArgumentException( "ERROR: Check the value of water content at saturation \n");
-		}
-		if(this.thetaR >this.thetaS){
-			throw new IllegalArgumentException( "ERROR: Check the value of residual water content or the value of water content at saturation \n");
-		}
-		if(this.kappaSaturation <0){
-			throw new IllegalArgumentException( "ERROR: Check the value of hydraulic conductivity at saturation \n");
-		}
-		
-		this.m = 1-1/this.n;
-		this.psiStar1 = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
-	}
-	*/
-	
-	/*
-	public void set(double n, double alpha, double par3, double par4, double par5, double alphaSpecificStorage, double betaSpecificStorage, double thetaR, double thetaS, double kappaSaturation) {
-		
-		this.n = n;
-		this.alpha = alpha; 
-		this.thetaR = thetaR;
-		this.thetaS = thetaS;
-		this.kappaSaturation = kappaSaturation;
-		this.m = 1-1/this.n;
-		super.alphaSpecificStorage = alphaSpecificStorage;
-		super.betaSpecificStorage = betaSpecificStorage;
-		
-		this.psiStar1 = (-1.0/this.alpha)*Math.pow((this.n-1.0)/this.n,1.0/this.n);
-	}
-	*/
-	
-	
 	public void set(double[] n, double[] alpha, double[] par3, double[] par4, double[] par5, double[] psiStar1, double[] psiStar2, double[] psiStar3, double[] alphaSpecificStorage, double[] betaSpecificStorage, double[] thetaR, double[] thetaS, double[] kappaSaturation) {
 		
 		this.n = n;
@@ -110,7 +49,6 @@ public class VanGenuchten extends SoilParametrization {
 		this.thetaR = thetaR;
 		this.thetaS = thetaS;
 		this.kappaSaturation = kappaSaturation;
-		//this.m = 1-1/this.n;
 		super.alphaSpecificStorage = alphaSpecificStorage;
 		super.betaSpecificStorage = betaSpecificStorage;
 		
@@ -120,6 +58,7 @@ public class VanGenuchten extends SoilParametrization {
 
 	
 	/**
+	 * Compute the water for a given water suction value
 	 * @param suction 
 	 * @return theta water content at suction value
 	 */
@@ -137,6 +76,7 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	/**
+	 * Compute the derivative of the water content for a given water suction value
 	 * @param suction 
 	 * @return dTheta the value of the moisture capacity 
 	 */
@@ -154,6 +94,7 @@ public class VanGenuchten extends SoilParametrization {
 	
 		
 	/**
+	 * Compute the unsaturated hydraulic conductivity for a given water suction value
 	 * @param suction
 	 * @return kappa hydraulic conductivity at suction value
 	 */
@@ -171,6 +112,8 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_1 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta1 
 	 */
@@ -189,6 +132,8 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function theta_2 of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return theta2
 	 */
@@ -198,7 +143,11 @@ public class VanGenuchten extends SoilParametrization {
 		return super.f2;
 	}
 	
+	
+	
 	/**
+	 * Evaluate the function p of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta1
 	 */
@@ -217,6 +166,8 @@ public class VanGenuchten extends SoilParametrization {
 	
 	
 	/**
+	 * Evaluate the function q of the Jordan decomposition (Casulli and Zanolli, 2010) for a
+	 * given water suction value
 	 * @param suction
 	 * @return dtheta2
 	 */
