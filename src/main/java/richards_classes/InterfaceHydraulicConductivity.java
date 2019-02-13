@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@ package richards_classes;
 
 /**
  * Compute hydraulic conductivity at control volume interface
- * It is possible to compute hydraulic conductivity K(i+1/2):
- * - average of k[i] and k[i+1]
- * - max(k[i],k[i+1])
- * - min(k[i],k[i+1])
- * - weighted average of k[i] and k[i+1]
+ * It is possible to compute hydraulic conductivity K(i+1/2) as:
+ * - the average of k[i] and k[i+1]
+ * - the max(k[i],k[i+1])
+ * - the min(k[i],k[i+1])
+ * - the weighted average of k[i] and k[i+1]
  * @author Niccolo' Tubini
  */
 public abstract class InterfaceHydraulicConductivity {
