@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 package richards_classes;
 
 /**
- * In the case where the matrix A is tridiagonal, i.e. with the special structure there is a very fast and efficient special case of the Gauﬂ-algorithm, called the Thomas-algorithm.
+ * In the case where the matrix A is tridiagonal, i.e. with the special structure there is a very 
+ * fast and efficient special case of the Gauﬂ-algorithm, called the Thomas-algorithm.
  * Since it is a variation of the Gauﬂ-algorithm, the Thomas algorithm is a direct method to solve general
  * linear tridiagonal systems. As the original Gauﬂ-algorithm, it proceeds in two stages, one forward
  * elimination and one back-substitution.
