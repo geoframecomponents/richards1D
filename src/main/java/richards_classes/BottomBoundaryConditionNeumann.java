@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package richards_classes;
 
 /**
  * This class compute the element of the coefficient matrix and the right-hand side
- * when a Dirichlet boundary condition is applied at the bottom of the domain.
+ * when a Neumann boundary condition is applied at the bottom of the domain.
  * @author Niccolo' Tubini
  *
  */

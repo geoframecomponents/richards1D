@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,10 @@
 package richards_classes;
 
 /**
- * The boundary condition abstract class 
+ * The boundary condition abstract class.
+ * 
+ * For the 1D problem the matrix is tridiagonal and thus it is necessary to compute and store
+ * only the main, the lower, and the upper diagonal of the matrix.
  * @author Niccolo' Tubini
  *
  */

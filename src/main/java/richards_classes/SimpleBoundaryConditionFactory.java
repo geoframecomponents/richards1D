@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2017 
+ * Copyright 2017  Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package richards_classes;
 
 /**
- * A simple design factory for creating a BoundaryCondition objects.
+ * A simple design factory to create a BoundaryCondition objects.
  */
 
 public class SimpleBoundaryConditionFactory {
