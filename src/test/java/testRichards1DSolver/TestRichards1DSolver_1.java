@@ -156,7 +156,7 @@ public class TestRichards1DSolver_1 {
 		 * ASSERT 
 		 */
 		ReadNetCDFRichardsOutput1D readTestData = new ReadNetCDFRichardsOutput1D();
-		readTestData.richardsOutputFilename = "resources/output/test1.nc";
+		readTestData.richardsOutputFilename = "resources/Output/test1.nc";
 		readTestData.read();
 		
 		ReadNetCDFRichardsOutput1D readSimData = new ReadNetCDFRichardsOutput1D();
