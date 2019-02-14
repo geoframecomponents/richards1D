@@ -1,7 +1,7 @@
 /*
  * GNU GPL v3 License
  *
- * Copyright 2016 Marialaura Bancheri
+ * Copyright 2016 Niccolo` Tubini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import monodimensionalProblemTimeDependent.WriteNetCDFRichardsParameterization;
 
 @Description("Solve the Richards equation for the 1D domain.")
 @Documentation("")
-@Author(name = "Aaron Iemma, Niccolo' Tubini, Francesco Serafin, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
+@Author(name = "Niccolo' Tubini, Aaron Iemma, Francesco Serafin, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
 @Keywords("Hydrology, Richards, Infiltration")
 @Bibliography("Casulli (2010)")
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
@@ -159,11 +159,6 @@ public class Richards1DSolver {
 	@In
 	@Unit ("s")
 	public double timeDelta;
-
-	@Description("Control variable for the integration time loop ")
-	@In
-	@Unit ("s")
-	public double sumTimeDelta;
 
 	@Description("Tolerance for Newton iteration")
 	@In
@@ -324,6 +319,11 @@ public class Richards1DSolver {
 
 	@Description("It is needed to iterate on the date")
 	int step;
+	
+
+	@Description("Control variable for the integration time loop ")
+	@Unit ("s")
+	public double sumTimeDelta = 0.0;
 
 	@Description("Vector containing the z coordinates of the centres of control volumes")
 	double[] zeta;
