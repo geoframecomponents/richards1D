@@ -202,9 +202,8 @@ public class Richards1DSolver {
 	@In 
 	public String bottomBCType;
 
-	@Description("The first day of the simulation.")
+	@Description("The current date of the simulation.")
 	@In
-	@Out
 	public String inCurrentDate;
 
 	@Description("Path of output files")
