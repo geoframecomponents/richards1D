@@ -35,9 +35,9 @@ import monodimensionalProblemTimeDependent.WriteNetCDFRichardsParameterization;
 @Author(name = "Niccolo' Tubini, Aaron Iemma, Francesco Serafin, Michael Dumbser and Riccardo Rigon", contact = "tubini.niccolo@gmail.com")
 @Keywords("Hydrology, Richards, Infiltration")
 @Bibliography("Casulli (2010)")
-//@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-//@Name("shortradbal")
-//@Status(Status.CERTIFIED)
+//@Label()
+//@Name()
+//@Status()
 @License("General Public License Version 3 (GPLv3)")
 public class Richards1DSolver {
 
@@ -390,7 +390,6 @@ public class Richards1DSolver {
 			writeSoilPar = new WriteNetCDFRichardsParameterization();
 
 			SimpleSoilParametrizationFactory soilParFactory = new SimpleSoilParametrizationFactory();
-			//soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel,alpha,n,psiE,lambda,rMedian,sigma,thetaR,thetaS,ks);
 			soilPar = soilParFactory.createSoilParametrization(soilHydraulicModel);
 			soilPar.set(par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, psiStar1, psiStar2, psiStar3, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS, ks);
 			totalDepth = new TotalDepth();
@@ -414,17 +413,13 @@ public class Richards1DSolver {
 
 			compute = new ComputeDerivedQuantities(NUM_CONTROL_VOLUMES, dx, spaceDelta, soilPar, totalDepth, interfaceHydraulicConductivity, bottomBCType);
 
-			//nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth, par1SWRC, par2SWRC, par3SWRC, par4SWRC, par5SWRC, alphaSpecificStorage, betaSpecificStorage, thetaR, thetaS);
 			nestedNewtonAlg = new NestedNewton(nestedNewton, newtonTolerance, MAXITER_NEWT, NUM_CONTROL_VOLUMES, dx, soilPar, totalDepth);
 
 			// conversion from degree to radiant of slope angle
 			delta = delta*Math.PI/180;
 
-			// Create and print a matrxi with data necessary to plot SWRC, hydraulic conductivity and moisture capacity parametrization
-			//hydraulicParametrization = soilPar.hydraulicModelCurves1();
-			//writeSoilPar.writeNetCDF(hydraulicParametrization, dir+"/HydraulicParameterization", soilHydraulicModel);
-			//psis[320] = 0.6;
-		} // chiudi step==0
+
+		} // close step==0
 
 
 		//time = time + tTimestep;
@@ -450,6 +445,7 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 			for(int picard=0; picard<picardIteration; picard++) {
+				
 				// COMPUTE WATER VOLUMES AND HYDRAULIC CONDUCTIVITY AT TIME LEVEL n
 				k_b = soilPar.hydraulicConductivity(bottomBC,0);
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
@@ -514,7 +510,7 @@ public class Richards1DSolver {
 				 * computed with hydraulic conductivity at time level n 
 				 */ 
 				volume = 0.0;
-				volumeNew =0.0;
+				volumeNew = 0.0;
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
 				velocities = compute.computeVelocities().clone();
