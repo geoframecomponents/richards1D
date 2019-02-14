@@ -314,7 +314,6 @@ public class Richards1DSolver {
 	@Description("It is needed to iterate on the date")
 	int step;
 	
-
 	@Description("Control variable for the integration time loop ")
 	@Unit ("s")
 	public double sumTimeDelta = 0.0;
@@ -532,69 +531,13 @@ public class Richards1DSolver {
 				nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 				psis = nestedNewtonAlg.solver();
 
-				/* COMPUTE velocities AT CELL INTERFACES at time level n+1
-				 * with hydraulic conductivity at time level n 
+				/* COMPUTE DERIVED QUANTITIES
+				 * 
+				 * velocities AT CELL INTERFACES at time level n+1 are 
+				 * computed with hydraulic conductivity at time level n 
 				 */ 
 				volume = 0.0;
 				volumeNew =0.0;
-				/*
-				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
-					if( i == 0 ) {
-
-						
-						if(bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-							kM = kappas[i];
-							velocities[i] =  -kM;
-
-							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i],i);
-						} else if (bottomBCType.equalsIgnoreCase("Bottom Neumann") || bottomBCType.equalsIgnoreCase("BottomNeumann")) {
-							velocities[i] =  bottomBC;
-
-							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i],i);
-						} else if(bottomBCType.equalsIgnoreCase("Bottom Impervious") || bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-							velocities[i] = + 0;
-							//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i],i);
-						}
-						else {
-							kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
-							velocities[i] =  -kM * (psis[i]+z[i]-bottomBC-0)/spaceDelta[i];
-
-							//soilPar.set(par1SWRC[i],par2SWRC[i],par5SWRC[i],par5SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-							volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
-							thetasNew[i] = soilPar.waterContent(psis[i],i);
-						}
-
-					} else if(i == NUM_CONTROL_VOLUMES-1) {
-						kP = kappas[i];
-						velocities[i] =  -kP * (psis[i]+z[i]-psis[i-1]-z[i-1])/spaceDelta[i];
-
-						volumesNew[i] = totalDepth.totalDepth(psis[i]);
-						thetasNew[i] = totalDepth.totalDepth(psis[i]);
-					} else {
-
-						kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-						velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i]-kP;
-						//if(i==1) {
-						//	System.out.println(kP +","+psis[i+1]+","+z[i+1]+","+psis[i]+","+z[i]+","+spaceDelta[i+1]);
-						//}
-						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumesNew[i] = soilPar.waterContent(psis[i],i)*dx[i];
-						thetasNew[i] = soilPar.waterContent(psis[i],i);
-					}
-					volume +=volumes[i];
-					volumeNew +=volumesNew[i];
-				}
-				*/
-				//errorVolume = volumeNew - volume - timeDelta*(topBC - velocities[0]);
-				//System.out.println("    errorMass: "+errorVolume);
-
-
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
 				velocities = compute.computeVelocities().clone();
