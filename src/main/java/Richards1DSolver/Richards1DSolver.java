@@ -450,34 +450,11 @@ public class Richards1DSolver {
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
 			for(int picard=0; picard<picardIteration; picard++) {
-				/*
-				for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {  
-					if(i==0) {
-						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumes[i] = soilPar.waterContent(psis[i],i)*dx[i];
-						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
-						k_b = soilPar.hydraulicConductivity(bottomBC,i);  // I use the same parameters of the bottom cell
-					} else if(i==NUM_CONTROL_VOLUMES-1) {
-						volumes[i] = totalDepth.totalDepth(psis[i]);
-						//soilPar.set(par1SWRC[i-1],par2SWRC[i-1],par3SWRC[i-1],par4SWRC[i-1],par5SWRC[i-1],alphaSpecificStorage[i-1],betaSpecificStorage[i-1],thetaR[i-1],thetaS[i-1],ks[i-1]);
-						kappas[i] = soilPar.hydraulicConductivity(psis[i],i-1);
-					} else {
-						//soilPar.set(par1SWRC[i],par2SWRC[i],par3SWRC[i],par4SWRC[i],par5SWRC[i],alphaSpecificStorage[i],betaSpecificStorage[i],thetaR[i],thetaS[i],ks[i]);
-						volumes[i] = soilPar.waterContent(psis[i],i)*dx[i];
-						kappas[i] = soilPar.hydraulicConductivity(psis[i],i);
-					}
-				}
-				*/
-				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
+				// COMPUTE WATER VOLUMES AND HYDRAULIC CONDUCTIVITY AT TIME LEVEL n
 				k_b = soilPar.hydraulicConductivity(bottomBC,0);
-				// Compute volumes and hydraulic conductivity
-
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 				volumes = compute.computeWaterVolumes().clone();
 				kappas = compute.computeKappas().clone();
-				//soilPar.set(par1SWRC[0],par2SWRC[0],par3SWRC[0],par4SWRC[0],par5SWRC[0],alphaSpecificStorage[0],betaSpecificStorage[0],thetaR[0],thetaS[0],ks[0]);
-				//k_b = soilPar.hydraulicConductivity(bottomBC);  // I use the same parameters of the bottom cell
-
 
 				/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
 				   	 a lower diagonal psi_(i+1)
