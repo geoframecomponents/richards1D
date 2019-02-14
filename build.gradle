@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
 
-	compile name: 'NetCDF'
+	compile name: 'NetCDF-0.0.1'//'NetCDF'
 	
     compile 'org.slf4j:slf4j-api:1.7.21'
 
