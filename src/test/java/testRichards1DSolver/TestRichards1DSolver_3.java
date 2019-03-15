@@ -26,7 +26,7 @@ import java.util.*;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
-import bufferWriter.Buffer1D;
+import bufferWriter.RichardsBuffer1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsOutput1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
@@ -71,7 +71,7 @@ public class TestRichards1DSolver_3 {
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
-		Buffer1D buffer = new Buffer1D();
+		RichardsBuffer1D buffer = new RichardsBuffer1D();
 		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
 		ReadNetCDFRichardsGrid1D readNetCDF = new ReadNetCDFRichardsGrid1D();
 		

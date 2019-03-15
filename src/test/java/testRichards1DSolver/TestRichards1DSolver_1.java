@@ -26,7 +26,7 @@ import java.util.*;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
-import bufferWriter.Buffer1D;
+import bufferWriter.RichardsBuffer1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsOutput1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
@@ -55,11 +55,10 @@ public class TestRichards1DSolver_1 {
 		String pathTopBC ="resources/Input/TestAll_0.csv";
 		String pathBottomBC ="resources/Input/TestAll_0.csv";
 		String pathGrid =  "resources/Input/Clay_noPonding_hydrostatic_VG.nc";
-		String pathOutput = "resources/Output/Output_Clay_noPonding_hydrostatic_VG.nc";
+		String pathOutput = "resources/Output/Output_test1.nc";
 		String outputDescription = "\n"
 				+ "Initial condition hydrostatic no ponding\n		"
 				+ "Bottom dirichlet\n		"
-				//+ "Clay parameters VG: ks=0.000023m/s, psiD= -34m, n=1.5, thetaR=0.07, thetaS=0.35, alphaStorativity= 0 1/Pa, betaStorativity=0 1/Pa \n		"
 				+ "Clay parameters VG: ks=0.000023m/s, alpha= 5.88m-1, n=1.16, thetaR=0.07, thetaS=0.5, alphaStorativity= 0 1/Pa, betaStorativity= 0 1/Pa\n		"
 				+ "Grid input file: " + pathGrid +"\n		"
 				+ "TopBC input file: " + pathTopBC +"\n		"
@@ -72,7 +71,7 @@ public class TestRichards1DSolver_1 {
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
-		Buffer1D buffer = new Buffer1D();
+		RichardsBuffer1D buffer = new RichardsBuffer1D();
 		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
 		ReadNetCDFRichardsGrid1D readNetCDF = new ReadNetCDFRichardsGrid1D();
 		
@@ -165,8 +164,7 @@ public class TestRichards1DSolver_1 {
 		
 		assertEquals(readSimData.runOff.length, readTestData.runOff.length);
 		assertTrue("Runoff mismatch", Arrays.equals(readSimData.runOff,readTestData.runOff));
-		
-		
+	
 		
 	}
 

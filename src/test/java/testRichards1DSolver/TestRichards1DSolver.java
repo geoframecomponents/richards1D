@@ -23,7 +23,7 @@ import java.util.*;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 
 import Richards1DSolver.*;
-import bufferWriter.Buffer1D;
+import bufferWriter.RichardsBuffer1D;
 import monodimensionalProblemTimeDependent.ReadNetCDFRichardsGrid1D;
 import monodimensionalProblemTimeDependent.WriteNetCDFRichards1D;
 
@@ -40,20 +40,22 @@ public class TestRichards1DSolver {
 	public void Test() throws Exception {
 
 
-		String startDate = "2018-03-05 00:00" ;
-		String endDate = "2018-03-07 00:00";
+		String startDate = "2018-03-10 14:00" ;
+		String endDate = "2018-03-11 14:15";
 		int timeStepMinutes = 5;
 		String fId = "ID";
 
 
-		String pathTopBC ="resources/Input/Rain50mmh.csv";
-		String pathBottomBC ="resources/Input/Rain50mmh.csv";
-		String pathGrid =  "resources\\Input\\1_urban_dry.nc";
-		
+		String pathTopBC ="resources/Input/Rovereto7ggIn.csv";
+		String pathBottomBC ="resources/Input/Rovereto7ggIn.csv";
+		String pathGrid =  "resources\\Input\\Clay_noPonding.nc";
+		//String pathTopBC ="C:/Users/Niccolo/Desktop/OMS_Project_Richards1D-master/data/Timeseries/Besenello.csv";
+		//String pathBottomBC ="C:/Users/Niccolo/Desktop/OMS_Project_Richards1D-master/data/Timeseries/Besenello.csv";
+		//String pathGrid =  "C:/Users/Niccolo/Desktop/Clay_noPondingVG_exam.nc";
 		OmsTimeSeriesIteratorReader topBCReader = getTimeseriesReader(pathTopBC, fId, startDate, endDate, timeStepMinutes);
 		OmsTimeSeriesIteratorReader bottomBCReader = getTimeseriesReader(pathBottomBC, fId, startDate, endDate, timeStepMinutes);
 
-		Buffer1D buffer = new Buffer1D();
+		RichardsBuffer1D buffer = new RichardsBuffer1D();
 		WriteNetCDFRichards1D writeNetCDF = new WriteNetCDFRichards1D();
 		ReadNetCDFRichardsGrid1D readNetCDF = new ReadNetCDFRichardsGrid1D();
 		
@@ -90,7 +92,7 @@ public class TestRichards1DSolver {
 		R1DSolver.bottomBCType = "Bottom free drainage";
 		R1DSolver.delta = 0;
 		R1DSolver.tTimestep = 300;
-		R1DSolver.timeDelta = 300;
+		R1DSolver.timeDelta = 50;
 		R1DSolver.newtonTolerance = Math.pow(10,-11);
 		R1DSolver.dir = "resources/Output";
 		R1DSolver.nestedNewton =1;
@@ -119,17 +121,17 @@ public class TestRichards1DSolver {
 			
 			buffer.solve();
 			
-			writeNetCDF.fileName = "resources\\Output\\sim_1_urban_dry.nc";
+			writeNetCDF.fileName = "resources\\Output\\temp.nc";
 			//writeNetCDF.fileName = "C:\\Users\\Niccolo\\Desktop\\Clay_noPondingBC_Eclipse.nc";
-			writeNetCDF.briefDescritpion = "\n		Test problem 1 layers of clay no storativity, con il codice vecchio stile\n		"
+			writeNetCDF.briefDescritpion = "\n"
 					+ "Initial condition hydrostatic no ponding\n		"
-					+ "BC: top 2mm rainfall each 5min, bottom Dirichlet\n		"
+					+ "BC: top Rovereto_RioSecco_evento - Copy.csv, bottom free drainage\n		"
 					//+ "Clay parameters BC: ks=0.000023m/s, psiD= -34m, n=1.5, thetaR=0.07, thetaS=0.35, alphaStorativity= 0 1/Pa, betaStorativity=0 1/Pa \n		"
 					//+ "Sand parameters: ks=0.003697m/s, alpha= 1.47m-1, n=1.7, thetaR=0.02, thetaS=0.38, alphaStorativity= 0 1/Pa, betaStorativity= 0 1/Pa\n		"
 					+ "Grid input file: " + pathGrid +"\n		"
 					+ "TopBC input file: " + pathTopBC +"\n		"
 					+ "BottomBC input file: " + pathBottomBC +"\n		"
-					+ "DeltaT: 300s\n		"
+					+ "DeltaT: 50s\n		"
 					+ "Picard iteration: 1\n		"
 				    + "Interface k: mean";
 			writeNetCDF.myVariables = buffer.myVariable;
