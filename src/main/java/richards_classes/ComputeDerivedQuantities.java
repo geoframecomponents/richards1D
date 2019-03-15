@@ -18,6 +18,8 @@
  */
 
 package richards_classes;
+
+
 /**
  * This class computes derived quantities for Richards problem such as: 
  * 	- velocities at interfaces;
@@ -197,7 +199,7 @@ public class ComputeDerivedQuantities {
 	 */
 	public double[] computeVelocities() {
 
-		for(int i = 0; i < NUM_CONTROL_VOLUMES+1; i++) {
+		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
@@ -211,9 +213,9 @@ public class ComputeDerivedQuantities {
 					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 				}
 
-			} else if(i == NUM_CONTROL_VOLUMES) {
-				kP = kappas[i-1];
-				velocities[i] =  -kP * (psis[i-1]-psis[i-2])/spaceDelta[i-1] - kP;
+			} else if(i == NUM_CONTROL_VOLUMES-1) {
+				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
+				velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
 
 			} else {
 				kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);

@@ -374,7 +374,7 @@ public class Richards1DSolver {
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
 			volumesNew    = new double[NUM_CONTROL_VOLUMES];
 			thetasNew     = new double[NUM_CONTROL_VOLUMES];
-			velocities    = new double[NUM_CONTROL_VOLUMES+1];
+			velocities    = new double[NUM_CONTROL_VOLUMES];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
@@ -534,7 +534,7 @@ public class Richards1DSolver {
 			bottomBC = bottomBC*tTimestep;
 		}
 		outputToBuffer.add(new double[] {bottomBC});
-		outputToBuffer.add(new double[] {topBC+velocities[NUM_CONTROL_VOLUMES]});
+		outputToBuffer.add(new double[] {topBC+velocities[NUM_CONTROL_VOLUMES-1]});
 
 
 
