@@ -276,6 +276,19 @@ public class Richards1DSolver {
 	@Description("Vector collects velocities at cells' interfaces")
 	@Unit ("m/s")
 	double[] velocities;
+	
+	@Description("Vector collects velocities at cells' interfaces due to capillary forces")
+	@Unit ("m/s")
+	double[] velocitiesCapillary;
+
+	@Description("Vector collects velocities at cells' interfaces due to gravity gradient")
+	@Unit ("m/s")
+	double[] velocitiesGravitational;
+	
+	@Description("Vector collects the ration between the capillary velocity and "
+			+ "gravitational velocity at cells' interface")
+	@Unit ("-")
+	double[] peclet;
 
 	@Description("Vector collects the lower diagonal entries of the coefficient matrix")
 	@Unit ("?")
@@ -375,6 +388,9 @@ public class Richards1DSolver {
 			volumesNew    = new double[NUM_CONTROL_VOLUMES];
 			thetasNew     = new double[NUM_CONTROL_VOLUMES];
 			velocities    = new double[NUM_CONTROL_VOLUMES];
+			velocitiesCapillary    = new double[NUM_CONTROL_VOLUMES];
+			velocitiesGravitational    = new double[NUM_CONTROL_VOLUMES];
+			peclet = new double[NUM_CONTROL_VOLUMES];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
@@ -514,6 +530,9 @@ public class Richards1DSolver {
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
 				velocities = compute.computeVelocities().clone();
+				velocitiesCapillary = compute.computeCapillaryVelocities().clone();
+				velocitiesGravitational = compute.computeGravitationalVelocities().clone();
+				peclet = compute.computePeclet().clone();
 				volumesNew = compute.computeWaterVolumes().clone();
 				volume = compute.computeTotalWaterVolumes(volumes);
 				volumeNew = compute.computeTotalWaterVolumes(volumesNew);
@@ -528,6 +547,9 @@ public class Richards1DSolver {
 		outputToBuffer.add(thetasNew);
 		outputToBuffer.add(psiIC);
 		outputToBuffer.add(velocities);
+		outputToBuffer.add(velocitiesCapillary);
+		outputToBuffer.add(velocitiesGravitational);
+		outputToBuffer.add(peclet);
 		outputToBuffer.add(new double[] {errorVolume});
 		outputToBuffer.add(new double[] {topBC*tTimestep*1000}); // I want to have rainfall height instead of water flux
 		if(bottomBCType.equalsIgnoreCase("Bottom Neumann") || bottomBCType.equalsIgnoreCase("BottomNeumann")) {
