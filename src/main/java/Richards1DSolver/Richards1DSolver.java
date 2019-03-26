@@ -460,12 +460,14 @@ public class Richards1DSolver {
 			}
 			sumTimeDelta = sumTimeDelta + timeDelta;
 
+			compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
+			volumes = compute.computeWaterVolumes().clone();
 			for(int picard=0; picard<picardIteration; picard++) {
 				
 				// COMPUTE WATER VOLUMES AND HYDRAULIC CONDUCTIVITY AT TIME LEVEL n
 				k_b = soilPar.hydraulicConductivity(bottomBC,0);
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
-				volumes = compute.computeWaterVolumes().clone();
+				//volumes = compute.computeWaterVolumes().clone();
 				kappas = compute.computeKappas().clone();
 
 				/* COEFFICIENT MATRIX IS BUILD BY THREE VECTORS COLLECTING ELEMENTS OF THE THREE DIAGONAL:
@@ -515,7 +517,7 @@ public class Richards1DSolver {
 					}
 
 				}
-				System.out.println("");
+				//System.out.println("");
 				//// NESTED NEWTON ALGORITHM ////
 				nestedNewtonAlg.set(psis, mainDiagonal, upperDiagonal, lowerDiagonal, rhss);
 				psis = nestedNewtonAlg.solver();
@@ -556,7 +558,7 @@ public class Richards1DSolver {
 			bottomBC = bottomBC*tTimestep;
 		}
 		outputToBuffer.add(new double[] {bottomBC});
-		outputToBuffer.add(new double[] {topBC+velocities[NUM_CONTROL_VOLUMES-1]});
+		outputToBuffer.add(new double[] {Math.max(0.0, topBC+velocities[NUM_CONTROL_VOLUMES-1])});
 
 
 
