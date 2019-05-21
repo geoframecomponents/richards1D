@@ -16,6 +16,7 @@ before_deploy:
     - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
     - gradle -PprojVersion=$MOD_TAG build
 deploy:
+  dist: trusty
   provider: releases
   file: "${RELEASE_PKG_FILE}"
   skip_cleanup: true
