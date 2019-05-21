@@ -181,4 +181,22 @@ public class BrooksCorey extends SoilParametrization {
 		return super.df2;
 	}
 
+	
+	
+	/**
+	 * This method compute the derivative of hydraulic conductivity with respect
+	 * to water content (Rasmussen et al., 2000)
+	 * @param suction
+	 * @return
+	 */
+	public double dHydraulicConductivity(double suction,int i) {
+		
+		this.saturationDegree = (waterContent(suction,i) - thetaR[i]) / (thetaS[i] - thetaR[i]);
+		if(this.saturationDegree<1) {
+		super.dkappa = (3+2/this.n[i])*this.kappaSaturation[i]/(this.thetaS[i]-this.thetaR[i]) * Math.pow( (this.saturationDegree), 2+2/this.n[i] ); 
+		} else {
+			dkappa = (3+2/this.n[i])*this.kappaSaturation[i]/(this.thetaS[i]-this.thetaR[i]); // FIXME da riverdere per quando si considera la storativita`
+		}
+		return dkappa;
+	}
 }

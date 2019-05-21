@@ -178,5 +178,23 @@ public class VanGenuchten extends SoilParametrization {
 	}
 
 
+	
+	/**
+	 * This method compute the derivative of hydraulic conductivity with respect
+	 * to water content (Rasmussen et al., 2000)
+	 * @param suction
+	 * @return
+	 */
+	public double dHydraulicConductivity(double suction,int i) {
+		this.m = 1-1/this.n[i];
+		this.saturationDegree = (waterContent(suction,i) - thetaR[i]) / (thetaS[i] - thetaR[i]);
+		if(this.saturationDegree<1) {
+		super.dkappa = 0.5*this.kappaSaturation[i]/(this.thetaS[i]-this.thetaR[i]) * Math.pow( (this.saturationDegree), -0.5 ) * Math.pow( 1.0 - Math.pow( 1.0 - Math.pow( this.saturationDegree, 1.0/this.m ), this.m ), 2.0 ) + 
+				this.kappaSaturation[i]*Math.pow( (this.saturationDegree), 0.5 ) * 2 * ( 1.0 - Math.pow( 1.0 - Math.pow( this.saturationDegree, 1.0/this.m ), this.m ) ) * ( this.m* Math.pow( (1-Math.pow( this.saturationDegree,1.0/this.m) ) ,this.m-1.0) ) * (1/this.m*Math.pow(this.saturationDegree, 1.0/this.m-1)); 
+		} else {
+			dkappa = 0.5*this.kappaSaturation[i]/(this.thetaS[i]-this.thetaR[i]); // FIXME da riverdere per quando si considera la storativita`
+		}
+		return dkappa;
+	}
 
 }

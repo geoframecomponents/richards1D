@@ -208,4 +208,17 @@ public class Romano extends SoilParametrization {
 		return super.df2;
 	}
 
+	
+	
+	/**
+	 * FIXME
+	 * This method compute the derivative of hydraulic conductivity with respect
+	 * to water content (Rasmussen et al., 2000)
+	 * @param suction
+	 * @return
+	 */
+	public double dHydraulicConductivity(double suction,int i) {
+
+		return -999.0;
+	}
 }

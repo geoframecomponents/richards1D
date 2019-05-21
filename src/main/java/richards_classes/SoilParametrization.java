@@ -46,6 +46,7 @@ public abstract class SoilParametrization {
 	protected double f2;
 	protected double df1;
 	protected double df2;
+	protected double dkappa;
 
 
 	
@@ -145,6 +146,16 @@ public abstract class SoilParametrization {
 	 * @return
 	 */
 	public abstract double q(double suction,int i);
+	
+	
+	
+	/**
+	 * This method compute the derivative of hydraulic conductivity with respect
+	 * to water content (Rasmussen et al., 2000)
+	 * @param suction
+	 * @return
+	 */
+	public abstract double dHydraulicConductivity(double suction,int i);
 	
 	
 }
