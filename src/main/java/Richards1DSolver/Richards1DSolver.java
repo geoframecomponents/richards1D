@@ -273,22 +273,29 @@ public class Richards1DSolver {
 	@Unit ("-")
 	double errorVolume;
 
-	@Description("Vector collects velocities at cells' interfaces")
+	@Description("Vector collects Darcy velocities at cells' interfaces")
 	@Unit ("m/s")
-	double[] velocities;
+	double[] darcyVelocities;
 	
-	@Description("Vector collects velocities at cells' interfaces due to capillary forces")
+	@Description("Vector collects Darcy velocities at cells' interfaces due to capillary forces")
 	@Unit ("m/s")
-	double[] velocitiesCapillary;
+	double[] darcyVelocitiesCapillary;
 
-	@Description("Vector collects velocities at cells' interfaces due to gravity gradient")
+	@Description("Vector collects Darcy velocities at cells' interfaces due to gravity gradient")
 	@Unit ("m/s")
-	double[] velocitiesGravitational;
+	double[] darcyVelocitiesGravity;
 	
-	@Description("Vector collects the ration between the capillary velocity and "
-			+ "gravitational velocity at cells' interface")
+	@Description("Vector collects pore velocities at cells' interfaces")
+	@Unit ("m/s")
+	double[] poreVelocities;
+	
+	@Description("Vector collects celerities at cells' interfaces (Rasmussen et al. 2000)")
+	@Unit ("m/s")
+	double[] celerities;
+	
+	@Description("Vector collects the ratio between the celerity and the pore velocity")
 	@Unit ("-")
-	double[] peclet;
+	double[] kinematicRatios;
 
 	@Description("Vector collects the lower diagonal entries of the coefficient matrix")
 	@Unit ("?")
@@ -387,10 +394,12 @@ public class Richards1DSolver {
 			volumes		  = new double[NUM_CONTROL_VOLUMES];
 			volumesNew    = new double[NUM_CONTROL_VOLUMES];
 			thetasNew     = new double[NUM_CONTROL_VOLUMES];
-			velocities    = new double[NUM_CONTROL_VOLUMES];
-			velocitiesCapillary    = new double[NUM_CONTROL_VOLUMES];
-			velocitiesGravitational    = new double[NUM_CONTROL_VOLUMES];
-			peclet = new double[NUM_CONTROL_VOLUMES];
+			darcyVelocities = new double[NUM_CONTROL_VOLUMES];
+			darcyVelocitiesCapillary = new double[NUM_CONTROL_VOLUMES];
+			darcyVelocitiesGravity = new double[NUM_CONTROL_VOLUMES];
+			poreVelocities = new double[NUM_CONTROL_VOLUMES];
+			celerities = new double[NUM_CONTROL_VOLUMES];
+			kinematicRatios = new double[NUM_CONTROL_VOLUMES];
 			lowerDiagonal = new double[NUM_CONTROL_VOLUMES];
 			mainDiagonal  = new double[NUM_CONTROL_VOLUMES];
 			upperDiagonal = new double[NUM_CONTROL_VOLUMES];
@@ -531,15 +540,17 @@ public class Richards1DSolver {
 				volumeNew = 0.0;
 				compute.setComputeDerivedQuantities(psis, kappas, bottomBC, k_b);
 
-				velocities = compute.computeVelocities().clone();
-				velocitiesCapillary = compute.computeCapillaryVelocities().clone();
-				velocitiesGravitational = compute.computeGravitationalVelocities().clone();
-				peclet = compute.computePeclet().clone();
+				darcyVelocities = compute.computeDarcyVelocity().clone();
+				darcyVelocitiesCapillary = compute.computeDarcyVelocityCapillary().clone();
+				darcyVelocitiesGravity = compute.computeDarcyVelocityGravity().clone();
+				poreVelocities = compute.computePoreVelocity().clone();
+				celerities = compute.computeCelerity().clone();
+				kinematicRatios = compute.computeKinematicRatio().clone();
 				volumesNew = compute.computeWaterVolumes().clone();
 				volume = compute.computeTotalWaterVolumes(volumes);
 				volumeNew = compute.computeTotalWaterVolumes(volumesNew);
 				thetasNew = compute.computeThetas().clone();
-				errorVolume = volumeNew - volume - timeDelta*(topBC + velocities[0]);
+				errorVolume = volumeNew - volume - timeDelta*(topBC + darcyVelocities[0]);
 
 			}
 
@@ -548,17 +559,20 @@ public class Richards1DSolver {
 		outputToBuffer.add(psis);
 		outputToBuffer.add(thetasNew);
 		outputToBuffer.add(psiIC);
-		outputToBuffer.add(velocities);
-		outputToBuffer.add(velocitiesCapillary);
-		outputToBuffer.add(velocitiesGravitational);
-		outputToBuffer.add(peclet);
+		outputToBuffer.add(darcyVelocities);
+		outputToBuffer.add(darcyVelocitiesCapillary);
+		outputToBuffer.add(darcyVelocitiesGravity);
+		outputToBuffer.add(poreVelocities);
+		outputToBuffer.add(celerities);
+		outputToBuffer.add(kinematicRatios);
 		outputToBuffer.add(new double[] {errorVolume});
 		outputToBuffer.add(new double[] {topBC*tTimestep*1000}); // I want to have rainfall height instead of water flux
 		if(bottomBCType.equalsIgnoreCase("Bottom Neumann") || bottomBCType.equalsIgnoreCase("BottomNeumann")) {
 			bottomBC = bottomBC*tTimestep;
 		}
 		outputToBuffer.add(new double[] {bottomBC});
-		outputToBuffer.add(new double[] {Math.max(0.0, topBC+velocities[NUM_CONTROL_VOLUMES-1])});
+		//outputToBuffer.add(new double[] {Math.max(0.0, topBC+velocities[NUM_CONTROL_VOLUMES-1])});
+		outputToBuffer.add(new double[] {topBC+darcyVelocities[NUM_CONTROL_VOLUMES-1]});
 
 
 
