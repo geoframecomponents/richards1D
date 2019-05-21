@@ -47,10 +47,12 @@ public class ComputeDerivedQuantities {
 
 	double[] thetas;
 	double[] volumes;
-	double[] velocities;
-	double[] velocitiesCapillary;
-	double[] velocitiesGravitational;
-	double[] peclet;
+	double[] darcyVelocities;
+	double[] darcyVelocitiesCapillary;
+	double[] darcyVelocitiesGravity;
+	double[] poreVelocities;
+	double[] celerities;       // Rasmussen et al. 2000
+	double[] kinematicRatios; // Rasmussen et al. 2000
 
 	String bottomBCType;
 
@@ -84,10 +86,12 @@ public class ComputeDerivedQuantities {
 		this.thetas = new double[NUM_CONTROL_VOLUMES];
 		this.volumes = new double[NUM_CONTROL_VOLUMES];
 		this.kappas = new double[NUM_CONTROL_VOLUMES];
-		this.velocities = new double[NUM_CONTROL_VOLUMES];
-		this.velocitiesCapillary = new double[NUM_CONTROL_VOLUMES];
-		this.velocitiesGravitational = new double[NUM_CONTROL_VOLUMES];
-		this.peclet = new double[NUM_CONTROL_VOLUMES];
+		this.darcyVelocities = new double[NUM_CONTROL_VOLUMES];
+		this.darcyVelocitiesCapillary = new double[NUM_CONTROL_VOLUMES];
+		this.darcyVelocitiesGravity = new double[NUM_CONTROL_VOLUMES];
+		this.poreVelocities = new double[NUM_CONTROL_VOLUMES];
+		this.celerities = new double[NUM_CONTROL_VOLUMES];
+		this.kinematicRatios = new double[NUM_CONTROL_VOLUMES];
 		
 	}
 
@@ -204,33 +208,33 @@ public class ComputeDerivedQuantities {
 	 * 
 	 * @return velocities
 	 */
-	public double[] computeVelocities() {
+	public double[] computeDarcyVelocity() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
-				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 					kM = kappas[i];
-					velocities[i] =  -kM;
+					darcyVelocities[i] =  -kM;
 				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-					velocities[i] = + 0;
+					darcyVelocities[i] = + 0;
 				} else {
 					kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
-					velocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
+					darcyVelocities[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i] - kM;
 				}
 
 			} else if(i == NUM_CONTROL_VOLUMES-1) {
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
+				darcyVelocities[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i] - kP;
 
 			} else {
 				kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocities[i] =  -kM * (psis[i]-psis[i-1])/spaceDelta[i] - kM;
+				darcyVelocities[i] =  -kM * (psis[i]-psis[i-1])/spaceDelta[i] - kM;
 
 			}
 		}
-		return velocities;
+		return darcyVelocities;
 
 	}
 
@@ -239,34 +243,34 @@ public class ComputeDerivedQuantities {
 	/**
 	 * This method computes velocities due to capillary forces at each control volume interface
 	 * 
-	 * @return velocities
+	 * @return darcyVelocitiesCapillary
 	 */
-	public double[] computeCapillaryVelocities() {
+	public double[] computeDarcyVelocityCapillary() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
-				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
-					velocitiesCapillary[i] =  0.0;
+					darcyVelocitiesCapillary[i] =  0.0;
 				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-					velocitiesCapillary[i] = + 0.0;
+					darcyVelocitiesCapillary[i] = + 0.0;
 				} else {
 					kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
-					velocitiesCapillary[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i];
+					darcyVelocitiesCapillary[i] =  -kM * (psis[i]-bottomBC)/spaceDelta[i];
 				}
 
 			} else if(i == NUM_CONTROL_VOLUMES-1) {
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocitiesCapillary[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i];
+				darcyVelocitiesCapillary[i] =  -kP * (psis[i]-psis[i-1])/spaceDelta[i];
 
 			} else {
 				kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocitiesCapillary[i] =  -kM * (psis[i]-psis[i-1])/spaceDelta[i];
+				darcyVelocitiesCapillary[i] =  -kM * (psis[i]-psis[i-1])/spaceDelta[i];
 
 			}
 		}
-		return velocitiesCapillary;
+		return darcyVelocitiesCapillary;
 
 	}
 
@@ -274,61 +278,137 @@ public class ComputeDerivedQuantities {
 	/**
 	 * This method computes velocities due to gravity gradient at each control volume interface
 	 * 
-	 * @return velocities
+	 * @return darcyVelocitiesGravity
 	 */
-	public double[] computeGravitationalVelocities() {
+	public double[] computeDarcyVelocityGravity() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
-				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
 				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
 					kM = kappas[i];
-					velocitiesGravitational[i] =  -kM;
+					darcyVelocitiesGravity[i] =  -kM;
 				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-					velocitiesGravitational[i] = + 0.0;
+					darcyVelocitiesGravity[i] = + 0.0;
 				} else {
 					kM = interfaceHydraulicConductivity.compute(kappas[i],k_b,dx[i],dx[i]);
-					velocitiesGravitational[i] =  -kM;
+					darcyVelocitiesGravity[i] =  -kM;
 				}
 
 			} else if(i == NUM_CONTROL_VOLUMES-1) {
 				kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocitiesGravitational[i] =  -kP;
+				darcyVelocitiesGravity[i] =  -kP;
 
 			} else {
 				kM = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
-				velocitiesGravitational[i] =  -kM;
+				darcyVelocitiesGravity[i] =  -kM;
 
 			}
 		}
-		return velocitiesGravitational;
+		return darcyVelocitiesGravity;
 
 	}
 	
 	
+	
 	/**
-	 * This method computes the ration between capillary velocity and velocity due to gravity gradient
+	 * This method computes pore velocity at each control volume interface
+	 * 
+	 * The pore velocity is the Darcy velocity divided by porosity.
+	 * FIXME: at the interface of two different soils what is porosity?.
+	 * 
+	 * @return poreVelocities
+	 */
+	public double[] computePoreVelocity() {
+
+		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			if( i == 0 ) {
+
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
+				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+					kM = kappas[i];
+					poreVelocities[i] =  darcyVelocities[i]/(soilPar.thetaS[i]-soilPar.thetaR[i]);
+				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
+					poreVelocities[i] = + 0;
+				} else {
+					//kM = interfaceHydraulicConductivity.compute(thetas[i],soilPar.waterContent(bottomBC,i),dx[i],dx[i]);
+					poreVelocities[i] =  darcyVelocities[i]/(soilPar.thetaS[i]-soilPar.thetaR[i]);
+				}
+
+			} else if(i == NUM_CONTROL_VOLUMES-1) {
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i-1],dx[i],dx[i-1]);
+				poreVelocities[i] =  darcyVelocities[i]/(soilPar.thetaS[i-1]-soilPar.thetaR[i-1]);
+
+			} else {
+				//kM = interfaceHydraulicConductivity.compute(thetas[i],thetas[i-1],dx[i],dx[i-1]);
+				poreVelocities[i] = darcyVelocities[i]/(soilPar.thetaS[i]-soilPar.thetaR[i]);
+
+			}
+		}
+		return poreVelocities;
+
+	}
+	
+	
+	
+	/**
+	 * This method computes celerity of pressure wave at each control volume interface
+	 * 
+	 * @return celerities
+	 */
+	public double[] computeCelerity() {
+
+		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
+			if( i == 0 ) {
+
+				//kP = interfaceHydraulicConductivity.compute(kappas[i],kappas[i+1],dx[i],dx[i+1]);
+				if(this.bottomBCType.equalsIgnoreCase("Bottom Free Drainage") || this.bottomBCType.equalsIgnoreCase("BottomFreeDrainage")){
+					//kM = kappas[i];
+					celerities[i] =  -soilPar.dHydraulicConductivity(psis[i], i);
+				} else if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
+					celerities[i] = + 0.0;
+				} else {
+					kM = interfaceHydraulicConductivity.compute(soilPar.dHydraulicConductivity(psis[i], i),soilPar.dHydraulicConductivity(bottomBC, i),dx[i],dx[i]);
+					celerities[i] =  -kM * ( (psis[i]-bottomBC)/spaceDelta[i] +1 );
+				}
+
+			} else if(i == NUM_CONTROL_VOLUMES-1) {
+				kP = interfaceHydraulicConductivity.compute(soilPar.dHydraulicConductivity(psis[i-1], i-1),soilPar.dHydraulicConductivity(psis[i-1], i-1),dx[i],dx[i-1]);
+				celerities[i] =  -kP * ( (psis[i]-psis[i-1])/spaceDelta[i] +1 );
+
+			} else {
+				kM = interfaceHydraulicConductivity.compute(soilPar.dHydraulicConductivity(psis[i], i),soilPar.dHydraulicConductivity(psis[i-1], i-1),dx[i],dx[i-1]);
+				celerities[i] =  -kM * ( (psis[i]-psis[i-1])/spaceDelta[i] +1 ) ;
+
+			}
+		}
+		return celerities;
+
+	}	
+	
+	/**
+	 * This method computes the ratio between celerity and pore velocity 
 	 * at each control volume interface
 	 * 
-	 * @return peclet
+	 * @return kinematicRatios
 	 */
-	public double[] computePeclet() {
+	public double[] computeKinematicRatio() {
 
 		for(int i = 0; i < NUM_CONTROL_VOLUMES; i++) {
 			if( i == 0 ) {
 
 				if (this.bottomBCType.equalsIgnoreCase("Bottom Impervious") || this.bottomBCType.equalsIgnoreCase("BottomImpervious")) {
-					velocitiesGravitational[i] = Double.NaN;
+					kinematicRatios[i] = Double.NaN;
 				} else {
-					peclet[i] =  velocitiesCapillary[i]/velocitiesGravitational[i];
+					kinematicRatios[i] =  celerities[i]/poreVelocities[i];
 				}
 
 			} else {
-				peclet[i] =  velocitiesCapillary[i]/velocitiesGravitational[i];
+				kinematicRatios[i] =  celerities[i]/poreVelocities[i];
 			}
 		}
-		return peclet;
+		return kinematicRatios;
 
 	}
 
