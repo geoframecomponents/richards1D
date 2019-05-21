@@ -1,6 +1,7 @@
 language: java
 jdk:
     - oraclejdk8
+dist: trusty
 before_cache:
     - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
     - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -16,7 +17,6 @@ before_deploy:
     - echo "deploying $RELEASE_PKG_FILE to GitHub releases"
     - gradle -PprojVersion=$MOD_TAG build
 deploy:
-  dist: trusty
   provider: releases
   file: "${RELEASE_PKG_FILE}"
   skip_cleanup: true
